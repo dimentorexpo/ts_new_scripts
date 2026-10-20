@@ -1,785 +1,778 @@
-// ==========================================
-// HYBRID LINKS - Компактный UI + Управление кнопками
-// ==========================================
+/**
+ * Link_Hybrid.js — окно «Ссылки и инструменты» (ТП / КЦ)
+ * Visual Style: Corporate Graphite Dark (как Queue.js)
+ * Unique Prefix: lkg-
+ *
+ * Быстрые ссылки, переход по ID, свои кнопки (ПКМ — изменить), версии МП.
+ * Структура — по образцу CRM_Helper_v2/Modules/Link.js: справочники данных + рендер.
+ */
+(function () {
+    'use strict';
 
-// ==========================================
-// 1. CONFIG MANAGER
-// ==========================================
-class LinksConfigHybrid {
-    constructor() {
-        this.storageKey = 'AF_LinksHybrid';
-        this.config = this.loadConfig();
-        // isTP всегда актуализируем: сохранённый отдел мог устареть
-        // (оператор перешёл из ТП в КЦ), иначе панель ссылок застревает в старом отделе
-        const actualIsTP = this.checkIsTP();
-        if (this.config.isTP !== actualIsTP) {
-            this.config.isTP = actualIsTP;
-            this.saveConfig();
+    const STORAGE_KEY = 'AF_LinksHybrid'; // ключ прежний — свои кнопки пользователей сохраняются
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[ch]);
+
+    const notify = (msg, type) => {
+        if (typeof showCustomAlert === 'function') showCustomAlert(msg, type);
+        else alert(msg);
+    };
+
+    const open = (url) => window.open(url, '_blank', 'noopener');
+
+    /** Только http(s): в свою кнопку нельзя положить javascript:… */
+    function normalizeUrl(raw) {
+        try {
+            const url = new URL(String(raw).trim());
+            return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null;
+        } catch (_) {
+            return null;
         }
     }
 
-    loadConfig() {
-        const stored = localStorage.getItem(this.storageKey);
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch (e) {
-                return this.getDefaultConfig();
-            }
-        }
-        return this.getDefaultConfig();
+    /** Flex-админка за ТЕКУЩИЕ сутки по МСК (URL считается в момент клика). */
+    function flexAdminTodayUrl() {
+        const DAY = 86400;
+        const MSK = 3 * 3600;
+        const nowSec = Math.floor(Date.now() / 1000);
+        const dayStart = Math.floor((nowSec + MSK) / DAY) * DAY - MSK;
+        return `https://public-seminars-admin.skyeng.ru/english?dateFrom=${dayStart}&dateTo=${dayStart + DAY - 1}`;
     }
 
-    saveConfig() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.config));
-    }
+    /* ---------- Иконки (inline SVG, наследуют currentColor) ---------- */
 
-    getDefaultConfig() {
-        const isTP = this.checkIsTP();
-        return {
-            version: "1.0",
-            customButtons: [],
-            isTP: isTP
-        };
-    }
+    const svg = (path, size = 15) =>
+        `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 
-    checkIsTP() {
+    const ICONS = {
+        external: svg('<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>'),
+        copy: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/>'),
+        run: svg('<path d="M6 4l14 8-14 8z"/>'),
+        plus: svg('<path d="M12 5v14M5 12h14"/>', 16),
+        close: svg('<path d="M6 6l12 12M18 6L6 18"/>', 16)
+    };
+
+    /* ---------- Справочник: ТП ---------- */
+
+    // action — вызывает внешнюю функцию ChMAF вместо ссылки
+    const TP_LINKS = [
+        { id: 'deleteaclnk', top: true, icon: '🗑', label: 'ПД', title: 'Заявка на удаление персональных данных', url: 'https://infra.skyeng.ru/request/create/166' },
+        { id: 'knoweledgebase', top: true, icon: '📚', label: 'БЗ', title: 'База знаний в Confluence', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293' },
+        { id: 'essayadmin', top: true, icon: '📝', label: 'Эссе', title: 'Админка эссе', url: 'https://api-english.skyeng.ru/admin/platform/openanswer/list' },
+        { id: 'getStats', top: true, icon: '📋', label: 'Статистика', title: 'Статистика', action: 'getStatsButtonPress' },
+        { id: 'resetMMPassword', top: true, icon: '🔐', label: 'MM пароль', title: 'Infra: сброс пароля Mattermost', url: 'https://infra.skyeng.ru/request/create/233' },
+        { id: 'GrListData', top: true, icon: '👥', label: 'Список гр.', title: 'Состав группы по ID', action: 'getGrListDataButtonPress' },
+        { id: 'minecraftAccs', top: true, icon: '⛏️', label: 'Minecraft', title: 'УЗ Minecraft', url: 'https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw' },
+        { id: 'openIPCheck', top: true, icon: '🌐', label: 'IP инфо', title: 'Окно проверки IP', action: 'toggleIpCheck' },
+        { id: 'confbugs', top: true, icon: '🐞', label: 'Баги', title: 'Известные баги на платформе', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583' },
+        { id: 'timetable', icon: '📅', label: 'TimeTable', title: 'Timetable', url: 'https://timetable.skyeng.ru/' },
+        { id: 'talksadm', icon: '🗣', label: 'Talks', title: 'Talks Admin', url: 'https://vimbox.skyeng.ru/talks/admin/statistics' },
+        { id: 'compensNotFairPayments', icon: '🚫', label: 'Честн. оплат', title: 'Форма: нет честных оплат', url: 'https://forms.yandex.ru/cloud/6876066349363940156734b8/?page=1' },
+        { id: 'compens', icon: '💸', label: 'Компенсации', title: 'Создание операции компенсации', url: 'https://billing-marketing.skyeng.ru/accrual-operations/create' },
+        { id: 'CMS', icon: '🌀', label: 'CMS', title: 'CMS хранилище материалов уроков', url: 'https://cms-vimbox.skyeng.ru/vim' },
+        { id: 'kidscms', icon: '🌀', label: 'Kids CMS', title: 'CMS детских предметов', url: 'https://vimbox.skyeng.ru/kids/math/cms/lessons/1' },
+        { id: 'useradm', icon: '🛠️', label: 'Админка', title: 'Админка пользователей', url: 'https://id.skyeng.ru/admin/users' },
+        { id: 'transactions', icon: '💳', label: 'Поиск платежа', title: 'Поиск транзакций', url: 'https://accounting.skyeng.ru/userpayment/search/transaction' },
+        { id: 'billingadm', icon: '🧮', label: 'Начислятор', title: 'Начислятор биллинга', url: 'https://billing-api.skyeng.ru/operations' },
+        { id: 'subscribebilling', icon: '🔁', label: 'Подписки', title: 'Биллинг подписок', url: 'https://billing-api.skyeng.ru/subscriptions' },
+        { id: 'userfeatures', icon: '🏡', label: 'Фичи', title: 'Фичи (круги) пользователя', url: 'https://vimbox.skyeng.ru/circles/editor' },
+        { id: 'testroom', icon: 'ℹ️', label: 'TestRooms', title: 'Тестовые комнаты', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638' },
+        { id: 'apelation', icon: '💫', label: 'Апелляции', title: 'Форма апелляций', url: 'https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform' },
+        { id: 'browserstack', icon: '🌐', label: 'BrowserStack', title: 'BrowserStack', url: 'https://www.browserstack.com/users/sign_in' },
+        { id: 'certificates', icon: '📜', label: 'Сертификаты', title: 'Проверка сертификатов', url: 'https://billing-marketing.skyeng.ru/certificate/certSearch' },
+        { id: 'promocodes', icon: '🏷', label: 'Промокоды', title: 'Проверка промокодов', url: 'https://billing-marketing.skyeng.ru/promocode/list' },
+        { id: 'helpocentrstud', icon: '📔', label: 'БЗ У', title: 'Help Center для учеников', url: 'https://helpcenter.skyeng.ru/students' },
+        { id: 'helpocentrteach', icon: '📗', label: 'БЗ П', title: 'Help Center для преподавателей', url: 'https://helpcenter.skyeng.ru/teachers' },
+        { id: 'trshoothing', icon: '🔨', label: 'Траблшутер', title: 'Траблшутер', url: 'https://video-trouble-shooter.skyeng.ru/' },
+        { id: 'Synchronizer', icon: '♻️', label: 'Синхрон ДЗ', title: 'Синхронизация ДЗ', url: 'https://learning.skyeng.ru/upsert-history' },
+        { id: 'AddRemoveChat', icon: '💬', label: 'Чаты', title: 'Добавить / удалить чат', url: 'https://communications.skyeng.ru/gateway/support/chat-management' },
+        { id: 'CheckPrices', icon: '🏷', label: 'Цены', title: 'Check Price — наборы цен', url: 'https://billing-marketing.skyeng.ru/priceSet/list' },
+        { id: 'CheckVidConnection', icon: '📹', label: 'Видео', title: 'Проверка видеосервера', url: 'https://video-check.skyeng.ru/' },
+        { id: 'goProcash', icon: '💳', label: 'BIN', title: 'Check BIN банка', url: 'https://procash.app/tools/bin-lookup' },
+        { id: 'faqext', icon: '❓', label: 'ChMAF', title: 'Инструкция ChMAF', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971' },
+        { id: 'rkKidsTP', icon: '🧒', label: 'РК Kids', title: 'Админка Kids РК (встречи клубов)', url: 'https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting' },
+        { id: 'rkAdultsTP', icon: '👥', label: 'РК Adults', title: 'Админка Adults РК (расписание клубов)', url: 'https://skyeng.ru/clubs/admin/schedule' },
+        { id: 'flexAdminTP', icon: '🎓', label: 'Flex', title: 'Админка Flex (семинары за сегодня)', url: flexAdminTodayUrl }
+    ];
+
+    /* ---------- Справочник: КЦ ---------- */
+
+    const KC_LINKS = [
+        { id: 'knoweledgebaseKC', top: true, icon: '📚', label: 'БЗ', title: 'База знаний', url: 'https://confluence.skyeng.tech/display/CSW/Customer+Service+WIKI' },
+        { id: 'lessonrecordKC', top: true, icon: '👩‍🏫', label: 'Запись урока', title: 'Запись урока', url: 'https://tramway.skyeng.ru/record' },
+        { id: 'skyhomeKC', top: true, icon: '💼', label: 'Skyeng Home', title: 'Skyeng Home', url: 'https://home.skyeng.ru/dashboard' },
+        { id: 'timetableKC', icon: '📅', label: 'TimeTable', title: 'Timetable', url: 'https://timetable.skyeng.ru/' },
+        { id: 'CalcKC', icon: '🧮', label: 'Калькулятор', title: 'Операции биллинга', url: 'https://billing-api.skyeng.ru/operations' },
+        { id: 'nachislyatorKC', icon: '💸', label: 'Начислятор', title: 'Создание операции начисления', url: 'https://billing-marketing.skyeng.ru/accrual-operations/create' },
+        { id: 'rassrochKC', icon: '💳', label: 'Рассрочка', title: 'Список рассрочек', url: 'https://accounting.skyeng.ru/credit/list' },
+        { id: 'pondpisKC', icon: '🔁', label: 'Подписки', title: 'Биллинг подписок', url: 'https://billing-api.skyeng.ru/subscriptions' },
+        { id: 'omniKC', icon: '📩', label: 'Omni', title: 'Omnidesk', url: 'https://skyeng.omnidesk.ru/' },
+        { id: 'RKKC', icon: '👥', label: 'РК', title: 'Участники РК', url: 'https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubMemberCrudController&signature=V8w5PW8LT3GcoYMoSYzprG1lCW8F5sb5y7Bdrxh08pc' },
+        { id: 'rkKidsKC', icon: '🧒', label: 'РК Kids', title: 'Админка Kids РК (встречи клубов)', url: 'https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting' },
+        { id: 'rkAdultsKC', icon: '👥', label: 'РК Adults', title: 'Админка Adults РК (расписание клубов)', url: 'https://skyeng.ru/clubs/admin/schedule' },
+        { id: 'flexAdminKC', icon: '🎓', label: 'Flex', title: 'Админка Flex (семинары за сегодня)', url: flexAdminTodayUrl },
+        { id: 'shablKC', icon: '📝', label: 'Шаблоны', title: 'Таблица шаблонов', url: 'https://docs.google.com/spreadsheets/d/14paTabjaJcRIvlpTQzdGePltiN0bsPaFjFEbn4DD3Ho/edit#gid=410124091' },
+        { id: 'narushKC', icon: '⚠️', label: 'Нарушение БП', title: 'Форма нарушения БП', url: 'https://docs.google.com/forms/d/e/1FAIpQLSeAxtdad9yc5iLo-7v4rqMj5M2wdaJKOpzy5X_eWkHqHWY9sg/viewform' },
+        { id: 'grafKC', icon: '🗓', label: 'График', title: 'График смен', url: 'https://docs.google.com/spreadsheets/d/1SiD1yfpzIEF8ZafVXnq0Z-hyF0b45aAQ8s6BWgy-s0c/edit#gid=1933422994' }
+    ];
+
+    /* ---------- Поля «Переход по ID» (только ТП) ---------- */
+
+    // kind: open — открыть ссылку, copy — скопировать ссылку, sync — внешний синхронизатор
+    const TP_FIELDS = [
+        { btn: 'benchmark', input: 'cpuname', ph: 'Процессор', kind: 'open', url: 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=', title: 'Название CPU → рейтинг на cpubenchmark' },
+        { btn: 'credits', input: 'creditstatus', ph: 'ID У: рассрочки', kind: 'open', url: 'https://billing-api.skyeng.ru/installments?perPage=10&ownerId=', title: 'ID ученика → рассрочки' },
+        { btn: 'gotolookip', input: 'iplookup', ph: 'IP адрес', kind: 'open', url: 'https://check-host.net/ip-info?host=', title: 'IP → гео и хостинг' },
+        { btn: 'getlgsinfo', input: 'lgssearch', ph: 'ID группы LGS', kind: 'open', url: 'https://learning-groups-storage.skyeng.ru/group/', suffix: '?cp=(section:participants)', title: 'ID группы → админка LGS' },
+        { btn: 'cmsid', input: 'cmsstepid', ph: 'stepUUID в CMS', kind: 'open', url: 'https://content.vimbox.skyeng.ru/cms/step-store/update/id/', title: 'stepUUID → шаг в CMS' },
+        { btn: 'getschemes', input: 'schemesteacher', ph: 'ID П: схемы оплаты', kind: 'open', url: 'https://teacher-incentive.skyeng.ru/incentive/teacher/', title: 'ID преподавателя → схемы вознаграждения' },
+        { btn: 'getpushes', input: 'pushes', ph: 'ID У: пуши', kind: 'open', url: 'https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&userId=', title: 'ID ученика → отправленные пуши' },
+        { btn: 'gettrshinfo', input: 'trshooterhash', ph: 'Хеш комнаты', kind: 'open', url: 'https://video-trouble-shooter.skyeng.ru/?hash=', title: 'Хеш комнаты → траблшутер' },
+        { btn: 'doSynchrozine', input: 'sIdSynchronize', ph: 'ID услуги: синхрон', kind: 'sync', title: 'Синхронизация ДЗ по ID услуги' },
+        { btn: 'getenablerAP', input: 'enablerAP', ph: 'ID услуги: включить АП', kind: 'copy', build: v => `https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${v}`, msg: '💾 Ссылка АП скопирована', title: 'Копирует ссылку активации АП' },
+        { btn: 'doskiponboard', input: 'skiponboarding', ph: 'ID услуги: без онбординга', kind: 'copy', disabled: true, build: v => `https://learning.skyeng.ru/api/v1/education-service/${v}/skip-onboarding`, msg: '💾 Ссылка Skip Onbo скопирована', title: 'Отключить онбординг в ЛКУ (временно недоступно)' },
+        { btn: 'getskipAP', input: 'skipAP', ph: 'ID услуги: пропуск АП', kind: 'copy', disabled: true, build: v => `https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${v}&skipAutoSelection=1`, msg: '💾 Ссылка Skip AP скопирована', title: 'Пропустить АП (временно недоступно)' }
+    ];
+
+    const FIELD_ICONS = { open: ICONS.external, copy: ICONS.copy, sync: ICONS.run };
+
+    /* ---------- Конфиг (свои кнопки + отдел) ---------- */
+
+    function checkIsTP() {
         try {
             const data = JSON.parse(localStorage.getItem('AF_storage_data') || '{}');
             if (typeof scriptAdr !== 'undefined') {
                 return ![data.KC_addr, data.KC_addrRzrv].includes(scriptAdr);
             }
-        } catch (e) { }
+        } catch (_) { /* нет данных — считаем ТП */ }
         return true;
     }
 
-    addCustomButton(button) {
-        button.id = `custom-${Date.now()}`;
-        this.config.customButtons.push(button);
-        this.saveConfig();
-        return button.id;
+    function loadConfig() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+            if (parsed && Array.isArray(parsed.customButtons)) return parsed;
+        } catch (_) { /* битый JSON — с нуля */ }
+        return { version: '1.0', customButtons: [] };
     }
 
-    updateCustomButton(id, updates) {
-        const btn = this.config.customButtons.find(b => b.id === id);
-        if (btn) {
-            Object.assign(btn, updates);
-            this.saveConfig();
-            return true;
-        }
-        return false;
+    const config = loadConfig();
+    // Отдел всегда актуализируем: оператор мог перейти из ТП в КЦ
+    config.isTP = checkIsTP();
+    const saveConfig = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    saveConfig();
+
+    const isTP = config.isTP;
+    const LINKS = isTP ? TP_LINKS : KC_LINKS;
+    const linkById = new Map(LINKS.map(b => [b.id, b]));
+
+    /* ---------- Стили ---------- */
+
+    function injectStyles() {
+        if (document.getElementById('lkg-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'lkg-styles';
+        style.textContent = `
+            #AF_Links .lkg-panel {
+                box-sizing: border-box;
+                width: ${isTP ? 'min(790px, calc(100vw - 24px))' : 'min(560px, calc(100vw - 24px))'};
+                max-width: 100%;
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+                padding: 18px !important;
+                color: #edf2fb;
+                background:
+                    radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                    #111827 !important;
+                border: 1px solid #344258 !important;
+                border-radius: 18px;
+                box-shadow:
+                    0 26px 70px rgba(3, 9, 22, .52),
+                    inset 0 1px rgba(255, 255, 255, .06) !important;
+                font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+                position: relative;
+                scrollbar-width: thin;
+                scrollbar-color: #536a8e transparent;
+            }
+            #AF_Links .lkg-panel, #AF_Links .lkg-panel * { box-sizing: border-box; }
+
+            /* Шапка */
+            #AF_Links .lkg-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 14px;
+                padding-bottom: 14px;
+                border-bottom: 1px solid #344258;
+                cursor: move;
+            }
+            #AF_Links .lkg-title {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 7px 12px;
+                color: #a6b4cb;
+                background: #182335;
+                border: 1px solid #364660;
+                border-radius: 10px;
+                letter-spacing: .03em;
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+            #AF_Links .lkg-title b { color: #a9c0ff; font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+            #AF_Links .lkg-grow { flex: 1 1 auto; }
+
+            /* Кнопки */
+            #AF_Links .lkg-btn {
+                min-height: 36px;
+                padding: 8px 14px;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
+                border-radius: 9px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-family: inherit;
+                white-space: nowrap;
+                transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+            }
+            #AF_Links .lkg-btn:hover:not(:disabled) {
+                color: #fff;
+                background: #293b56;
+                border-color: #7799e2;
+                transform: translateY(-1px);
+            }
+            #AF_Links .lkg-btn:disabled { opacity: .45; cursor: not-allowed; }
+            #AF_Links .lkg-btn:focus-visible { outline: 2px solid #9ab5ff; outline-offset: 2px; }
+            #AF_Links .lkg-btn-sm { min-height: 30px; padding: 5px 10px; font-size: 12px; }
+
+            #AF_Links .lkg-btn-primary {
+                color: #eef3ff;
+                background: #4268c9;
+                border-color: #7293ed;
+                box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+            }
+            #AF_Links .lkg-btn-primary:hover:not(:disabled) {
+                background: #547ce1;
+                border-color: #a2b9fa;
+                box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
+            }
+            #AF_Links .lkg-btn-accent {
+                color: #cfe0ff;
+                background: #293e67;
+                border-color: #536fa7;
+            }
+            #AF_Links .lkg-btn-accent:hover:not(:disabled) {
+                background: #395892;
+                border-color: #87a9ed;
+            }
+            /* !important — перебить глобальный #hideMe из CSS/style.css */
+            #AF_Links #hideMe {
+                min-height: 36px !important;
+                width: auto !important;
+                padding: 8px 12px !important;
+                margin: 0 !important;
+                background: rgba(255, 116, 140, .08) !important;
+                border: 1px solid rgba(255, 116, 140, .3) !important;
+                border-radius: 9px !important;
+                color: #ffb0be !important;
+            }
+            #AF_Links #hideMe:hover { background: rgba(255, 116, 140, .2) !important; }
+
+            /* Секции */
+            #AF_Links .lkg-section + .lkg-section {
+                margin-top: 14px;
+                padding-top: 14px;
+                border-top: 1px solid #263349;
+            }
+            #AF_Links .lkg-section-title {
+                margin-bottom: 9px;
+                color: #8d9cb6;
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+            }
+
+            /* Сетка ссылок */
+            #AF_Links .lkg-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+                gap: 6px;
+            }
+            #AF_Links .lkg-link {
+                display: flex;
+                align-items: center;
+                gap: 7px;
+                min-width: 0;
+                min-height: 34px;
+                padding: 6px 9px;
+                color: #dce5f5;
+                background: #1a2536;
+                border: 1px solid #344258;
+                border-left: 3px solid #617fbd;
+                border-radius: 9px;
+                cursor: pointer;
+                font-size: 12px; font-weight: 600; line-height: 1.2;
+                font-family: inherit;
+                text-align: left;
+                transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+            }
+            #AF_Links .lkg-link:hover {
+                color: #fff;
+                background: #23334b;
+                border-color: #6685be;
+                border-left-color: #92afff;
+                transform: translateY(-1px);
+            }
+            #AF_Links .lkg-link.is-action { border-left-color: #c49a4a; }
+            #AF_Links .lkg-link.is-action:hover { border-left-color: #f0c674; }
+            #AF_Links .lkg-link.is-custom { border-left-color: #4fae8c; border-style: dashed; border-left-style: solid; }
+            #AF_Links .lkg-link.is-custom:hover { border-left-color: #7fe0bb; }
+            #AF_Links .lkg-link-ico { flex: 0 0 auto; font-size: 15px; line-height: 1; }
+            #AF_Links .lkg-link-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+            /* Строка быстрого доступа (только значки) */
+            #AF_Links .lkg-quick {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(66px, 1fr));
+                gap: 6px;
+            }
+            #AF_Links .lkg-link.lkg-quick-btn,
+            #AF_Links .lkg-link.lkg-quick-btn:hover {
+                border: 1px solid #344258;
+            }
+            #AF_Links .lkg-link.lkg-quick-btn:hover { border-color: #6685be; }
+            #AF_Links .lkg-quick-btn {
+                flex-direction: column;
+                justify-content: center;
+                gap: 4px;
+                min-height: 58px;
+                padding: 7px 4px;
+                text-align: center;
+            }
+            #AF_Links .lkg-quick-btn .lkg-link-ico { font-size: 19px; }
+            #AF_Links .lkg-quick-btn .lkg-link-text { max-width: 100%; font-size: 11px; color: #b9c6dc; }
+            #AF_Links .lkg-quick-btn:hover .lkg-link-text { color: #fff; }
+
+            /* Поля «Переход по ID» */
+            #AF_Links .lkg-fields {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 6px;
+            }
+            #AF_Links .lkg-field { display: flex; min-width: 0; }
+            #AF_Links .lkg-input {
+                flex: 1 1 auto;
+                min-width: 0;
+                height: 34px;
+                padding: 0 10px;
+                color: #edf2fb;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-right: none;
+                border-radius: 9px 0 0 9px;
+                outline: none;
+                font-size: 12px;
+                font-family: inherit;
+                transition: background .2s, border-color .2s, box-shadow .2s;
+            }
+            #AF_Links .lkg-input:hover:not(:disabled) { background: #142034; border-color: #657caa; }
+            #AF_Links .lkg-input:focus {
+                background: #142034;
+                border-color: #829fff;
+                box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
+            }
+            #AF_Links .lkg-input::placeholder { color: #7d8ca6; }
+            #AF_Links .lkg-input:disabled { opacity: .45; cursor: not-allowed; }
+            #AF_Links .lkg-input.is-invalid { border-color: #ff748c; box-shadow: 0 0 0 3px rgba(255, 116, 140, .16); }
+            #AF_Links .lkg-field-btn {
+                flex: 0 0 36px;
+                height: 34px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                color: #cfe0ff;
+                background: #293e67;
+                border: 1px solid #536fa7;
+                border-radius: 0 9px 9px 0;
+                cursor: pointer;
+                transition: background-color .16s ease, border-color .16s ease;
+            }
+            #AF_Links .lkg-field-btn:hover:not(:disabled) { color: #fff; background: #395892; border-color: #87a9ed; }
+            #AF_Links .lkg-field-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+            /* Подвал */
+            #AF_Links .lkg-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            #AF_Links .lkg-label { color: #8d9cb6; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+            #AF_Links .lkg-version { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 11px; color: #b6c9f5; }
+
+            #AF_Links .lkg-panel::-webkit-scrollbar { width: 6px; }
+            #AF_Links .lkg-panel::-webkit-scrollbar-thumb { background: #536a8e; border-radius: 4px; }
+
+            /* Диалог своей кнопки */
+            .lkg-dialog-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 2147483000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(3, 9, 22, .62);
+                font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            }
+            .lkg-dialog {
+                width: min(400px, calc(100vw - 32px));
+                color: #edf2fb;
+                background:
+                    radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+                    #111827;
+                border: 1px solid #344258;
+                border-radius: 16px;
+                box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+            }
+            .lkg-dialog * { box-sizing: border-box; }
+            .lkg-dialog-body { padding: 18px 18px 6px; }
+            .lkg-dialog-title { font-size: 15px; font-weight: 700; color: #f0f4fb; margin-bottom: 4px; }
+            .lkg-dialog-msg { font-size: 12px; color: #8d9cb6; margin-bottom: 14px; }
+            .lkg-dialog label { display: block; margin-bottom: 10px; }
+            .lkg-dialog label span { display: block; margin-bottom: 4px; color: #8d9cb6; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+            .lkg-dialog input {
+                width: 100%;
+                height: 36px;
+                padding: 0 10px;
+                color: #edf2fb;
+                background: #0d1625;
+                border: 1px solid #3a4961;
+                border-radius: 9px;
+                outline: none;
+                font-size: 13px;
+                font-family: inherit;
+            }
+            .lkg-dialog input:focus { background: #142034; border-color: #829fff; box-shadow: 0 0 0 3px rgba(110, 152, 247, .16); }
+            .lkg-dialog input.is-invalid { border-color: #ff748c; }
+            .lkg-dialog-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 18px 18px; }
+            .lkg-dialog-foot button {
+                min-height: 34px;
+                padding: 7px 14px;
+                color: #dce5f5;
+                background: #1b283c;
+                border: 1px solid #3c4d68;
+                border-radius: 9px;
+                cursor: pointer;
+                font-size: 13px; font-weight: 600;
+                font-family: inherit;
+            }
+            .lkg-dialog-foot button:hover { color: #fff; background: #293b56; border-color: #7799e2; }
+            .lkg-dialog-foot .is-primary { color: #eef3ff; background: #4268c9; border-color: #7293ed; }
+            .lkg-dialog-foot .is-primary:hover { background: #547ce1; border-color: #a2b9fa; }
+            .lkg-dialog-foot .is-danger { margin-right: auto; color: #ffb0be; background: rgba(255, 116, 140, .08); border-color: rgba(255, 116, 140, .3); }
+            .lkg-dialog-foot .is-danger:hover { background: rgba(255, 116, 140, .2); border-color: rgba(255, 116, 140, .55); }
+        `;
+        document.head.appendChild(style);
     }
 
-    deleteCustomButton(id) {
-        const index = this.config.customButtons.findIndex(b => b.id === id);
-        if (index !== -1) {
-            this.config.customButtons.splice(index, 1);
-            this.saveConfig();
-            return true;
-        }
-        return false;
+    /* ---------- Разметка ---------- */
+
+    function linksGridHtml() {
+        const base = LINKS.filter(b => !b.top).map(b =>
+            `<button type="button" class="lkg-link${b.action ? ' is-action' : ''}" id="${b.id}" title="${esc(b.title)}">` +
+            `<span class="lkg-link-ico">${b.icon}</span><span class="lkg-link-text">${esc(b.label)}</span></button>`
+        );
+        const own = config.customButtons.map(b =>
+            `<button type="button" class="lkg-link is-custom" data-custom-id="${esc(b.id)}" title="${esc(b.title)} — правый клик: изменить">` +
+            `<span class="lkg-link-ico">${esc(b.icon)}</span><span class="lkg-link-text">${esc(b.title)}</span></button>`
+        );
+        return `<div class="lkg-grid">${base.concat(own).join('')}</div>`;
     }
 
-    getCustomButtons() {
-        return this.config.customButtons;
-    }
-}
+    const quickHtml = () => `<div class="lkg-quick">${LINKS.filter(b => b.top).map(b =>
+        `<button type="button" class="lkg-link lkg-quick-btn${b.action ? ' is-action' : ''}" id="${b.id}" title="${esc(b.title)}"><span class="lkg-link-ico">${b.icon}</span><span class="lkg-link-text">${esc(b.label)}</span></button>`
+    ).join('')}</div>`;
 
-// ==========================================
-// 2. HTML TEMPLATES (Компактные из оригинала)
-// ==========================================
-// Экранирование пользовательских данных (названия/иконки/URL своих кнопок)
-const linksEsc = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-})[ch]);
+    const fieldsHtml = () => `<div class="lkg-fields">${TP_FIELDS.map(f => `
+        <div class="lkg-field">
+            <input class="lkg-input" id="${f.input}" placeholder="${esc(f.ph)}" title="${esc(f.title)}" autocomplete="off"${f.disabled ? ' disabled' : ''}>
+            <button type="button" class="lkg-field-btn" id="${f.btn}" title="${esc(f.title)}" aria-label="${esc(f.title)}"${f.disabled ? ' disabled' : ''}>${FIELD_ICONS[f.kind]}</button>
+        </div>`).join('')}</div>`;
 
-const getLinksHTML = (isTP, customButtons) => {
+    function panelHtml() {
+        const tpExtra = isTP ? `
+            <div class="lkg-section">
+                <div class="lkg-section-title">Переход по ID</div>
+                ${fieldsHtml()}
+            </div>
+            <div class="lkg-section lkg-foot">
+                <button type="button" class="lkg-btn lkg-btn-sm lkg-btn-accent" id="restartlesson" title="Скопировать setStatus('classwork')">${ICONS.copy} Classwork</button>
+                <button type="button" class="lkg-btn lkg-btn-sm lkg-btn-primary" id="openGrabber" title="Открыть Grabber">📊 Grabber</button>
+                <span class="lkg-grow"></span>
+                <span class="lkg-label">Версии МП</span>
+                <button type="button" class="lkg-btn lkg-btn-sm lkg-version" id="curVeriOS" title="Актуальная версия iOS. Клик — App Store">iOS: …</button>
+                <button type="button" class="lkg-btn lkg-btn-sm lkg-version" id="curVerAndroid" title="Актуальная версия Android. Клик — Google Play">Android: …</button>
+            </div>` : '';
 
-    if (!isTP) {
-        // KC версия
-        console.log('[Link_Hybrid] Генерируем KC версию');
         return `
-<div class="sky-panel" id="main_links_panel_kc">
-    <div class="chmaf-drag-handle" style="padding: 2px 2px 10px; border-bottom: 1px solid #344258; margin-bottom: 10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
-        <span style="color: #f0f4fb; font-weight: 600; font-size: 14px;">🔗 Ссылки KC</span>
-        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="padding: 4px 8px; font-size: 12px;">❌</button>
-    </div>
-    <div class="sky-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 4px;">
-        <button title="База знаний" id="knoweledgebaseKC" class="sky-btn">📚</button>
-        <button title="Запись урока" id="lessonrecordKC" class="sky-btn">👩‍🏫</button>
-        <button title="Skyeng Home" id="skyhomeKC" class="sky-btn">💼</button>
-    </div>
-    <div class="sky-grid" style="grid-template-columns: repeat(2, 1fr); gap: 4px;">
-        <button class="sky-btn" id="timetableKC">📅 TimeTable</button>
-        <button class="sky-btn" id="CalcKC">🧮 Калькулятор</button>
-        <button class="sky-btn" id="nachislyatorKC">💸 Начислятор</button>
-        <button class="sky-btn" id="rassrochKC">💳 Рассрочка</button>
-        <button class="sky-btn" id="pondpisKC">💰 Подписки</button>
-        <button class="sky-btn" id="omniKC">📩 Omni</button>
-        <button class="sky-btn" id="RKKC">👥 РК</button>
-        <button class="sky-btn" id="rkKidsKC" title="Админка Kids РК (встречи клубов)">🧒 РК Kids</button>
-        <button class="sky-btn" id="rkAdultsKC" title="Админка Adults РК (расписание клубов)">👥 РК Adults</button>
-        <button class="sky-btn" id="flexAdminKC" title="Админка Flex (публичные семинары)">🎓 Flex</button>
-        <button class="sky-btn" id="shablKC">📝 Шаблоны</button>
-        <button class="sky-btn" id="narushKC">⚠️ Нарушение БП</button>
-        <button class="sky-btn" id="grafKC">📅 График</button>
-        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${linksEsc(btn.id)}" title="${linksEsc(btn.title)}">${linksEsc(btn.icon)} ${linksEsc(btn.title)}</button>`).join('')}
-    </div>
-    <div style="text-align: center; margin-top: 6px;">
-        <button class="sky-btn" id="add-custom-btn">➕ Добавить кнопку</button>
-    </div>
-</div>`;
+            <div class="lkg-panel" id="lkg-container">
+                <div class="lkg-header chmaf-drag-handle" id="lkg-drag-handle">
+                    <button type="button" class="lkg-btn buttonHide" id="hideMe" title="Скрыть окно">❌</button>
+                    <div class="lkg-title">🔗 Ссылки и инструменты <b>${isTP ? 'ТП' : 'КЦ'}</b></div>
+                    <span class="lkg-grow"></span>
+                    <button type="button" class="lkg-btn lkg-btn-accent" id="add-custom-btn" title="Добавить свою кнопку-ссылку">${ICONS.plus} Кнопка</button>
+                </div>
+                <div class="lkg-section">
+                    <div class="lkg-section-title">Быстрый доступ</div>
+                    ${quickHtml()}
+                </div>
+                <div class="lkg-section">
+                    <div class="lkg-section-title">Ссылки</div>
+                    <div id="lkg-grid-holder">${linksGridHtml()}</div>
+                </div>
+                ${tpExtra}
+            </div>`;
     }
 
-    // TP версия
-    console.log('[Link_Hybrid] Генерируем TP версию');
-    const html = `
-<div class="sky-panel" id="main_links_panel">
-    <div class="chmaf-drag-handle" style="padding: 2px 2px 10px; border-bottom: 1px solid #344258; margin-bottom: 10px; cursor: grab; display: flex; align-items: center; justify-content: space-between;">
-        <span style="color: #f0f4fb; font-weight: 600; font-size: 14px;">🔗 Ссылки TP</span>
-        <button title="Скрытие меню" id="hideMe" class="sky-btn" style="padding: 4px 8px; font-size: 12px;">❌</button>
-    </div>
-    <div class="sky-grid" style="grid-template-columns: repeat(10, 1fr); margin-bottom: 4px;">
-        <button title="Удаление ПД" id="deleteaclnk" class="sky-btn">🗑</button>
-        <button title="База знаний" id="knoweledgebase" class="sky-btn">📚</button>
-        <button title="Админка эссе" id="essayadmin" class="sky-btn">📝</button>
-        <button title="Статистика" id="getStats" class="sky-btn">📋</button>
-        <button title="Сброс пароля MM" id="resetMMPassword" class="sky-btn">🔐</button>
-        <button title="Список группы" id="GrListData" class="sky-btn">👩‍👩‍👧‍👦</button>
-        <button title="УЗ Minecraft" id="minecraftAccs" class="sky-btn">⛏️</button>
-        <button title="Информация по IP" id="openIPCheck" class="sky-btn">🌐</button>
-        <button title="Известные баги" id="confbugs" class="sky-btn">🐞</button>
-    </div>
+    /* ---------- Действия ---------- */
 
-    <div class="sky-grid" style="grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 6px;">
-        <button class="sky-btn" id="timetable" title="Timetable">📅 TimeTable</button>
-        <button class="sky-btn" id="talksadm" title="Talks Admin">💋 Talks</button>
-        <button class="sky-btn" id="compensNotFairPayments" title="Нет честных оплат">🚫 Честн.Оплат</button>
-        <button class="sky-btn" id="compens" title="Компенсации">💸 Компенсац.</button>
-        <button class="sky-btn" id="CMS" title="CMS">🌀 CMS</button>
-        <button class="sky-btn" id="useradm" title="Админка пользователей">🛠️ Админка</button>
-        <button class="sky-btn" id="transactions" title="Поиск транзакций">💰 Поиск $</button>
-        <button class="sky-btn" id="billingadm" title="Начислятор">💸 Начислятор</button>
-        <button class="sky-btn" id="userfeatures" title="User Фичи">🏡 Фичи</button>
-        <button class="sky-btn" id="kidscms" title="Kids CMS">🌀 Kids CMS</button>
-        <button class="sky-btn" id="testroom" title="Тестовые комнаты">ℹ️ TestRooms</button>
-        <button class="sky-btn" id="subscribebilling" title="Подписки">💰 $Подписки</button>
-        <button class="sky-btn" id="apelation" title="Апелляции">💫 Апелляции</button>
-        <button class="sky-btn" id="browserstack" title="BrowserStack">🌐 B-Stack</button>
-        <button class="sky-btn" id="certificates" title="Сертификаты">📜 Сертиф.</button>
-        <button class="sky-btn" id="promocodes" title="Промокоды">*️⃣ Промо</button>
-        <button class="sky-btn" id="helpocentrstud" title="Help БЗ У">📔 БЗ У</button>
-        <button class="sky-btn" id="helpocentrteach" title="Help БЗ П">📗 БЗ П</button>
-        <button class="sky-btn" id="trshoothing" title="Траблшутинг">🔨 ТраблШут</button>
-        <button class="sky-btn" id="Synchronizer" title="Синхрон ДЗ">♻️ Синхрон</button>
-        <button class="sky-btn" id="AddRemoveChat" title="Добавить/Удалить чат">➕/➖ Чат</button>
-        <button class="sky-btn" id="CheckPrices" title="Check Price">🤑 Prices</button>
-        <button class="sky-btn" id="CheckVidConnection" title="Видеосервер">📹 Video</button>
-        <button class="sky-btn" id="goProcash" title="Check BIN">💳 BIN</button>
-        <button class="sky-btn" id="faqext" title="Инструкция">❓ ChMAF</button>
-        <button class="sky-btn" id="rkKidsTP" title="Админка Kids РК (встречи клубов)">🧒 РК Kids</button>
-        <button class="sky-btn" id="rkAdultsTP" title="Админка Adults РК (расписание клубов)">👥 РК Adults</button>
-        <button class="sky-btn" id="flexAdminTP" title="Админка Flex (публичные семинары)">🎓 Flex</button>
-        ${customButtons.map(btn => `<button class="sky-btn custom-btn" data-custom-id="${linksEsc(btn.id)}" title="${linksEsc(btn.title)}">${linksEsc(btn.icon)} ${linksEsc(btn.title)}</button>`).join('')}
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
-        <div class="sky-input-group">
-            <input class="sky-input" id="cpuname" placeholder="CPU name" title="Рейтинг CPU">
-            <button class="sky-btn" id="benchmark">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="creditstatus" placeholder="ID У рассрочка">
-            <button class="sky-btn" id="credits">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="iplookup" placeholder="IP адрес">
-            <button class="sky-btn" id="gotolookip">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="lgssearch" placeholder="ID Группы LGS">
-            <button class="sky-btn" id="getlgsinfo">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="cmsstepid" placeholder="CMS stepUUID">
-            <button class="sky-btn" id="cmsid">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="schemesteacher" placeholder="ID П схемы">
-            <button class="sky-btn" id="getschemes">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="pushes" placeholder="ID У пуши">
-            <button class="sky-btn" id="getpushes">🔎</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="trshooterhash" placeholder="Hash комнаты">
-            <button class="sky-btn" id="gettrshinfo">🚀</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="sIdSynchronize" placeholder="ID Ус синхр">
-            <button class="sky-btn" id="doSynchrozine">🚀</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="enablerAP" placeholder="ID услуги АП">
-            <button class="sky-btn" id="getenablerAP">💾</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="skiponboarding" placeholder="ID ус(skip Onbo)" title="Отключить онбоардинг в ЛКУ" disabled>
-            <button class="sky-btn" id="doskiponboard" disabled>💾</button>
-        </div>
-        <div class="sky-input-group">
-            <input class="sky-input" id="skipAP" placeholder="ID ус(skipАП)" title="Пропустить АП (копирует ссылку)" disabled>
-            <button class="sky-btn" id="getskipAP" disabled>💾</button>
-        </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; border-top: 1px solid #344258; padding-top: 5px;">
-        <button class="sky-btn" id="restartlesson">Classwork💾</button>
-        <button class="sky-btn" id="openGrabber">📊 Grabber</button>
-        <button class="sky-btn" id="add-custom-btn">➕ Кнопка</button>
-        <div style="display: flex; gap: 4px;">
-            <button class="sky-btn" id="curVeriOS" style="font-size: 10px;">iOS: ⏳</button>
-            <button class="sky-btn" id="curVerAndroid" style="font-size: 10px;">Android: ⏳</button>
-        </div>
-    </div>
-</div>`;
-
-    return html;
-};
-
-
-// ==========================================
-// 3. MODAL для добавления/редактирования
-// ==========================================
-function showCustomButtonModal(config, existingButton = null) {
-    const isEdit = !!existingButton;
-    const modalHTML = `
-<div class="premium-modal-overlay" id="custom-btn-modal">
-    <div class="premium-modal">
-        <div class="premium-modal-header">
-            <div class="premium-modal-title">${isEdit ? '✏️ Редактировать' : '➕ Добавить'} кнопку</div>
-            <button class="premium-modal-close" id="modal-close">❌</button>
-        </div>
-        <div class="premium-modal-body">
-            <div class="premium-form-group">
-                <label class="premium-form-label">Название</label>
-                <input type="text" class="premium-form-input" id="btn-title" value="${linksEsc(existingButton?.title)}" placeholder="Моя ссылка">
-            </div>
-            <div class="premium-form-group">
-                <label class="premium-form-label">Иконка (эмодзи)</label>
-                <input type="text" class="premium-form-input" id="btn-icon" value="${linksEsc(existingButton?.icon)}" placeholder="🔗" maxlength="8">
-            </div>
-            <div class="premium-form-group">
-                <label class="premium-form-label">URL</label>
-                <input type="text" class="premium-form-input" id="btn-url" value="${linksEsc(existingButton?.url)}" placeholder="https://example.com">
-            </div>
-        </div>
-        <div class="premium-modal-footer">
-            ${isEdit ? '<button class="premium-btn premium-btn-danger" id="delete-btn">🗑️ Удалить</button>' : ''}
-            <button class="premium-btn premium-btn-secondary" id="cancel-btn">Отмена</button>
-            <button class="premium-btn premium-btn-primary" id="save-btn">💾 Сохранить</button>
-        </div>
-    </div>
-</div>`;
-
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    const modal = document.getElementById('custom-btn-modal');
-    const close = () => modal.remove();
-
-    document.getElementById('modal-close').onclick = close;
-    document.getElementById('cancel-btn').onclick = close;
-    modal.onclick = (e) => { if (e.target === modal) close(); };
-    modal.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    document.getElementById('btn-title')?.focus();
-
-    document.getElementById('save-btn').onclick = () => {
-        const title = document.getElementById('btn-title').value.trim();
-        const icon = document.getElementById('btn-icon').value.trim();
-        const url = document.getElementById('btn-url').value.trim();
-
-        if (!title || !icon || !url) {
-            if (typeof showCustomAlert === 'function') showCustomAlert('Заполните все поля', 'warning');
-            else alert('Заполните все поля');
-            return;
-        }
-        // Только http(s): ссылка вида javascript:… выполнила бы код на странице
-        if (!/^https?:\/\//i.test(url)) {
-            if (typeof showCustomAlert === 'function') showCustomAlert('URL должен начинаться с http:// или https://', 'warning');
-            else alert('URL должен начинаться с http:// или https://');
-            return;
-        }
-
-        if (isEdit) {
-            config.updateCustomButton(existingButton.id, { title, icon, url });
-        } else {
-            config.addCustomButton({ title, icon, url });
-        }
-
-        close();
-        reloadLinksPanel();
-    };
-
-    if (isEdit) {
-        document.getElementById('delete-btn').onclick = () => {
-            if (confirm(`Удалить кнопку "${existingButton.title}"?`)) {
-                config.deleteCustomButton(existingButton.id);
-                close();
-                reloadLinksPanel();
-            }
-        };
-    }
-}
-
-// ==========================================
-// 4. ИНИЦИАЛИЗАЦИЯ
-// ==========================================
-let linksConfig = null;
-
-function reloadLinksPanel() {
-    const container = document.getElementById('AF_Links');
-    if (!container) return;
-
-    const isTP = linksConfig.config.isTP;
-    const customButtons = linksConfig.getCustomButtons();
-    container.innerHTML = getLinksHTML(isTP, customButtons);
-    // Кнопка ❌ пересоздана — привязываем закрытие заново (раньше после
-    // добавления/правки своей кнопки окно переставало закрываться по ❌)
-    if (typeof hideWindowOnClick === 'function') hideWindowOnClick('AF_Links', 'hideMe');
-    initEventHandlers(isTP ? 'TP' : 'KC');
-}
-
-function initEventHandlers(section) {
-    // Кнопка добавления
-    const addBtn = document.getElementById('add-custom-btn');
-    if (addBtn) {
-        addBtn.onclick = () => showCustomButtonModal(linksConfig);
-    }
-
-    // Правый клик на кастомных кнопках
-    document.querySelectorAll('.custom-btn').forEach(btn => {
-        btn.oncontextmenu = (e) => {
-            e.preventDefault();
-            const id = btn.dataset.customId;
-            const button = linksConfig.getCustomButtons().find(b => b.id === id);
-            if (button) showCustomButtonModal(linksConfig, button);
-        };
-        btn.onclick = () => {
-            const id = btn.dataset.customId;
-            const button = linksConfig.getCustomButtons().find(b => b.id === id);
-            if (button?.url && /^https?:\/\//i.test(button.url)) window.open(button.url, '_blank');
-        };
-    });
-
-    if (section === 'KC') {
-        const linksKC = {
-            'knoweledgebaseKC': "https://confluence.skyeng.tech/display/CSW/Customer+Service+WIKI",
-            'lessonrecordKC': "https://tramway.skyeng.ru/record",
-            'skyhomeKC': "https://home.skyeng.ru/dashboard",
-            'timetableKC': "https://timetable.skyeng.ru/",
-            'CalcKC': "https://billing-api.skyeng.ru/operations",
-            'nachislyatorKC': "https://billing-marketing.skyeng.ru/accrual-operations/create",
-            'rassrochKC': "https://accounting.skyeng.ru/credit/list",
-            'pondpisKC': "https://billing-api.skyeng.ru/subscriptions",
-            'omniKC': "https://skyeng.omnidesk.ru/",
-            'RKKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubMemberCrudController&signature=V8w5PW8LT3GcoYMoSYzprG1lCW8F5sb5y7Bdrxh08pc",
-            'rkKidsKC': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
-            'rkAdultsKC': "https://skyeng.ru/clubs/admin/schedule",
-            'flexAdminKC': flexAdminTodayUrl,
-            'shablKC': "https://docs.google.com/spreadsheets/d/14paTabjaJcRIvlpTQzdGePltiN0bsPaFjFEbn4DD3Ho/edit#gid=410124091",
-            'narushKC': "https://docs.google.com/forms/d/e/1FAIpQLSeAxtdad9yc5iLo-7v4rqMj5M2wdaJKOpzy5X_eWkHqHWY9sg/viewform",
-            'grafKC': "https://docs.google.com/spreadsheets/d/1SiD1yfpzIEF8ZafVXnq0Z-hyF0b45aAQ8s6BWgy-s0c/edit#gid=1933422994"
-        };
-        bindSimpleLinks(linksKC);
-        return;
-    }
-
-    // TP ссылки
-    const linksTP = {
-        'knoweledgebase': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293",
-        'essayadmin': "https://api-english.skyeng.ru/admin/platform/openanswer/list",
-        'timetable': "https://timetable.skyeng.ru/",
-        'talksadm': "https://vimbox.skyeng.ru/talks/admin/statistics",
-        'billingadm': "https://billing-api.skyeng.ru/operations",
-        'CMS': "https://cms-vimbox.skyeng.ru/vim",
-        'confbugs': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=96042583",
-        'compens': "https://billing-marketing.skyeng.ru/accrual-operations/create",
-        'useradm': "https://id.skyeng.ru/admin/users",
-        'compensNotFairPayments': "https://forms.yandex.ru/cloud/6876066349363940156734b8/?page=1",
-        'transactions': "https://accounting.skyeng.ru/userpayment/search/transaction",
-        'subscribebilling': "https://billing-api.skyeng.ru/subscriptions",
-        'apelation': "https://docs.google.com/forms/d/e/1FAIpQLSdgsb6pte1H1dz15Eb5NjDe0gj3kEnh0hTe6Cgy8d81mT7NUA/viewform",
-        'browserstack': "https://www.browserstack.com/users/sign_in",
-        'trshoothing': "https://video-trouble-shooter.skyeng.ru/",
-        'Synchronizer': "https://learning.skyeng.ru/upsert-history",
-        'testroom': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=82244638",
-        'certificates': "https://billing-marketing.skyeng.ru/certificate/certSearch",
-        'promocodes': "https://billing-marketing.skyeng.ru/promocode/list",
-        'helpocentrteach': "https://helpcenter.skyeng.ru/teachers",
-        'helpocentrstud': "https://helpcenter.skyeng.ru/students",
-        'kidscms': "https://vimbox.skyeng.ru/kids/math/cms/lessons/1",
-        'userfeatures': "https://vimbox.skyeng.ru/circles/editor",
-        'AddRemoveChat': "https://communications.skyeng.ru/gateway/support/chat-management",
-        'CheckPrices': "https://billing-marketing.skyeng.ru/priceSet/list",
-        'CheckVidConnection': "https://video-check.skyeng.ru/",
-        'goProcash': "https://procash.app/tools/bin-lookup",
-        'minecraftAccs': "https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw",
-        'deleteaclnk': "https://infra.skyeng.ru/request/create/166",
-        'resetMMPassword': "https://infra.skyeng.ru/request/create/233",
-        'faqext': "https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971",
-        'rkKidsTP': "https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting",
-        'rkAdultsTP': "https://skyeng.ru/clubs/admin/schedule",
-        'flexAdminTP': flexAdminTodayUrl
-    };
-
-    bindSimpleLinks(linksTP);
-
-    // Input actions
-    const inputActions = [
-        { btn: 'benchmark', input: 'cpuname', url: 'https://www.cpubenchmark.net/cpu_lookup.php?cpu=', error: 'Введите CPU' },
-        { btn: 'getschemes', input: 'schemesteacher', url: 'https://teacher-incentive.skyeng.ru/incentive/teacher/', error: 'Введите ID П' },
-        { btn: 'gotolookip', input: 'iplookup', url: 'https://check-host.net/ip-info?host=', error: 'Введите IP' },
-        { btn: 'cmsid', input: 'cmsstepid', url: 'https://content.vimbox.skyeng.ru/cms/step-store/update/id/', error: 'Введите STEPUUID' },
-        { btn: 'credits', input: 'creditstatus', url: 'https://billing-api.skyeng.ru/installments?perPage=10&ownerId=', error: 'Введите ID У' },
-        { btn: 'getlgsinfo', input: 'lgssearch', url: 'https://learning-groups-storage.skyeng.ru/group/', error: 'Введите ID группы', suffix: '?cp=(section:participants)' },
-        { btn: 'getpushes', input: 'pushes', url: 'https://push-notifications.skyeng.ru/cms/logs?page=1&paginateBy=100&userId=', error: 'Введите ID У' },
-        { btn: 'gettrshinfo', input: 'trshooterhash', url: 'https://video-trouble-shooter.skyeng.ru/?hash=', error: 'Введите hash' }
-    ];
-
-    inputActions.forEach(({ btn, input, url, error, suffix }) => {
-        const buttonEl = document.getElementById(btn);
-        const inputEl = document.getElementById(input);
-        if (buttonEl && inputEl) {
-            const action = () => {
-                const val = inputEl.value.trim();
-                if (!val) {
-                    if (typeof showCustomAlert === 'function') showCustomAlert(error);
-                    else alert(error);
-                } else {
-                    window.open(suffix ? `${url}${val}${suffix}` : `${url}${val}`, '_blank');
-                    inputEl.value = '';
-                }
-            };
-            buttonEl.onclick = action;
-            inputEl.onkeypress = (e) => { if (e.key === 'Enter') action(); };
-        }
-    });
-
-    // АП
-    const btnAP = document.getElementById('getenablerAP');
-    const inputAP = document.getElementById('enablerAP');
-    if (btnAP && inputAP) {
-        btnAP.onclick = () => {
-            const val = inputAP.value.trim();
-            if (val && typeof copyToClipboard === 'function') {
-                copyToClipboard(`https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${val}`);
-                if (typeof showCustomAlert === 'function') showCustomAlert('💾 Ссылка АП скопирована');
-            }
-            inputAP.value = '';
-        };
-        inputAP.onkeypress = (e) => { if (e.key === 'Enter') btnAP.click(); };
-    }
-
-    // Skip Onboarding
-    const btnSkipOnbo = document.getElementById('doskiponboard');
-    const inputSkipOnbo = document.getElementById('skiponboarding');
-    if (btnSkipOnbo && inputSkipOnbo) {
-        btnSkipOnbo.onclick = () => {
-            const val = inputSkipOnbo.value.trim();
-            if (val && typeof copyToClipboard === 'function') {
-                copyToClipboard(`https://learning.skyeng.ru/api/v1/education-service/${val}/skip-onboarding`);
-                if (typeof showCustomAlert === 'function') showCustomAlert('💾 Ссылка Skip Onbo скопирована');
-                inputSkipOnbo.value = '';
-            }
-        };
-    }
-
-    // Skip AP
-    const btnSkipAP = document.getElementById('getskipAP');
-    const inputSkipAP = document.getElementById('skipAP');
-    if (btnSkipAP && inputSkipAP) {
-        btnSkipAP.onclick = () => {
-            const val = inputSkipAP.value.trim();
-            if (val && typeof copyToClipboard === 'function') {
-                copyToClipboard(`https://pcs.skyeng.ru/cabinet/teacher-selection?educationServiceId=${val}&skipAutoSelection=1`);
-                if (typeof showCustomAlert === 'function') showCustomAlert('💾 Ссылка Skip AP скопирована');
-                inputSkipAP.value = '';
-            }
-        };
-    }
-
-    // Synchronizer
-    const btnSync = document.getElementById('doSynchrozine');
-    const inputSync = document.getElementById('sIdSynchronize');
-    if (btnSync && inputSync && typeof setupSynchronizer === 'function') {
-        setupSynchronizer();
-    }
-
-    // Classwork
-    const btnRestart = document.getElementById('restartlesson');
-    if (btnRestart) {
-        btnRestart.onclick = () => {
-            if (typeof copyToClipboard === 'function') copyToClipboard("setStatus('classwork')");
-            if (typeof showCustomAlert === 'function') showCustomAlert('💾 Команда скопирована');
-        };
-    }
-
-    // IP Check
-    const btnIpCheck = document.getElementById('openIPCheck');
-    if (btnIpCheck) {
-        btnIpCheck.onclick = () => {
+    const ACTIONS = {
+        getStatsButtonPress: () => typeof getStatsButtonPress === 'function' && getStatsButtonPress(),
+        getGrListDataButtonPress: () => typeof getGrListDataButtonPress === 'function' && getGrListDataButtonPress(),
+        toggleIpCheck: () => {
             const panel = document.getElementById('AF_IpCheck');
             if (panel) panel.style.display = panel.style.display === '' ? 'none' : '';
-        };
-    }
-
-    // Внешние функции
-    const bindExt = (id, func) => {
-        const el = document.getElementById(id);
-        if (el && typeof func === 'function') el.onclick = func;
+        }
     };
-    bindExt('GrListData', typeof getGrListDataButtonPress !== 'undefined' ? getGrListDataButtonPress : null);
-    bindExt('getStats', typeof getStatsButtonPress !== 'undefined' ? getStatsButtonPress : null);
-    bindExt('openGrabber', typeof getopenGrabberButtonPress !== 'undefined' ? getopenGrabberButtonPress : null);
 
-    // Версии
-    const btnIos = document.getElementById('curVeriOS');
-    const btnAnd = document.getElementById('curVerAndroid');
-    if (btnIos) btnIos.onclick = () => window.open("https://apps.apple.com/ru/app/skyeng-%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%8F%D0%B7%D1%8B%D0%BA-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/id1065290732", "_blank");
-    if (btnAnd) btnAnd.onclick = () => window.open("https://play.google.com/store/apps/details?id=skyeng.words.prod", "_blank");
-
-    getVersionsApp();
-}
-
-async function getVersionsApp() {
-    const iosEl = document.getElementById('curVeriOS');
-    const andEl = document.getElementById('curVerAndroid');
-    try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec');
-        if (!res.ok) throw new Error("Network response was not ok");
-        const data = await res.json();
-        const result = data.result;
-        if (iosEl) {
-            const iosVer = result[1][0];
-            const iosBuild = result[1][1];
-            iosEl.textContent = `${iosVer} (${iosBuild})`;
+    async function copyText(text) {
+        if (typeof copyToClipboard === 'function') {
+            copyToClipboard(text);
+            return true;
         }
-        if (andEl) {
-            const andVer = result[0][0];
-            const andBuild = result[0][1];
-            andEl.textContent = `${andVer} (${andBuild})`;
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (_) {
+            return false;
         }
-    } catch (e) {
-        console.error("Ошибка загрузки версий:", e);
-        if (iosEl) iosEl.textContent = 'iOS: ❌';
-        if (andEl) andEl.textContent = 'Android: ❌';
-    }
-}
-
-// Ссылка на flex-админку за ТЕКУЩИЕ сутки по МСК. Раньше в ссылке были зашиты
-// timestamps одного конкретного дня (25.08.2026), и она всегда открывала его.
-function flexAdminTodayUrl() {
-    const DAY = 86400;
-    const MSK = 3 * 3600;
-    const nowSec = Math.floor(Date.now() / 1000);
-    const dayStart = Math.floor((nowSec + MSK) / DAY) * DAY - MSK;
-    return `https://public-seminars-admin.skyeng.ru/english?dateFrom=${dayStart}&dateTo=${dayStart + DAY - 1}`;
-}
-
-function bindSimpleLinks(linksMap) {
-    Object.entries(linksMap).forEach(([id, url]) => {
-        const el = document.getElementById(id);
-        // URL вычисляем при клике: ссылка «на сегодня» не должна застревать на дне загрузки
-        if (el) el.onclick = () => window.open(typeof url === 'function' ? url() : url, '_blank');
-    });
-}
-
-// ==========================================
-// 4.5 СТИЛИ ОКНА (corporate graphite — визуальная копия окна очереди Queue.js).
-// Базовые .sky-* живут в CSS/style.css и могут использоваться другими панелями,
-// поэтому перекрашиваем скоупом #AF_Links, не трогая общий файл.
-// ==========================================
-function injectLinksGraphiteStyles() {
-    if (document.getElementById('AF_Links-graphite-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'AF_Links-graphite-styles';
-    style.textContent = `
-        #AF_Links .sky-panel {
-            background:
-                radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
-                #111827 !important;
-            border: 1px solid #344258 !important;
-            border-radius: 18px !important;
-            box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            color: #edf2fb;
-            scrollbar-width: thin;
-            scrollbar-color: #536a8e transparent;
-        }
-
-        #AF_Links .sky-btn {
-            background: #1b283c;
-            border: 1px solid #3c4d68;
-            border-radius: 9px;
-            color: #dce5f5;
-            box-shadow: none;
-            transition:
-                background-color .16s ease,
-                border-color .16s ease,
-                transform .16s ease;
-        }
-
-        #AF_Links .sky-btn:hover {
-            background: #293b56;
-            border-color: #7799e2;
-            color: #fff;
-            box-shadow: none;
-            transform: translateY(-1px);
-        }
-
-        #AF_Links .sky-btn:active {
-            transform: translateY(0);
-            background: #243550;
-        }
-
-        #AF_Links .sky-btn:focus-visible {
-            outline: 2px solid #9ab5ff;
-            outline-offset: 2px;
-        }
-
-        /* Кнопка закрытия — красная гамма кнопки «❌» из очереди.
-           !important нужен, чтобы перебить #hideMe из CSS/style.css. */
-        #AF_Links #hideMe,
-        #AF_Links #hideMe:hover {
-            background: rgba(255, 116, 140, .08) !important;
-            border: 1px solid rgba(255, 116, 140, .3) !important;
-            color: #ffb0be !important;
-        }
-
-        #AF_Links #hideMe:hover {
-            background: rgba(255, 116, 140, .2) !important;
-        }
-
-        /* Спец-кнопки футера: Classwork — вторичная, Grabber — первичная,
-           «➕ Кнопка» — как действие (в стиле assignToMe из очереди) */
-        #AF_Links #restartlesson,
-        #AF_Links #restartlesson:hover {
-            background: #293e67 !important;
-            border: 1px solid #536fa7 !important;
-            color: #cfe0ff !important;
-        }
-
-        #AF_Links #restartlesson:hover {
-            background: #395892 !important;
-            border-color: #87a9ed !important;
-            color: #fff !important;
-        }
-
-        #AF_Links #openGrabber {
-            background: #4268c9;
-            border: 1px solid #7293ed;
-            color: #eef3ff;
-            box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
-        }
-
-        #AF_Links #openGrabber:hover {
-            background: #547ce1;
-            border-color: #a2b9fa;
-            box-shadow: 0 6px 19px rgba(58, 96, 205, .3);
-        }
-
-        #AF_Links #add-custom-btn {
-            background: #293e67;
-            border-color: #536fa7;
-            color: #cfe0ff;
-        }
-
-        #AF_Links #add-custom-btn:hover {
-            background: #395892;
-            border-color: #87a9ed;
-        }
-
-        #AF_Links .sky-input {
-            background: #0d1625;
-            border: 1px solid #3a4961;
-            color: #edf2fb;
-        }
-
-        #AF_Links .sky-input:hover {
-            background: #142034;
-            border-color: #657caa;
-        }
-
-        #AF_Links .sky-input:focus {
-            background: #142034;
-            border-color: #829fff;
-            box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
-        }
-
-        #AF_Links .sky-input::placeholder {
-            color: #7d8ca6;
-        }
-
-        #AF_Links .sky-input:disabled {
-            opacity: .45;
-            cursor: not-allowed;
-        }
-    `;
-
-    document.head.appendChild(style);
-}
-
-// ==========================================
-// 5. ЗАПУСК
-// ==========================================
-async function initLinksHybrid() {
-    injectLinksGraphiteStyles();
-
-    linksConfig = new LinksConfigHybrid();
-    const isTP = linksConfig.config.isTP;
-    const customButtons = linksConfig.getCustomButtons();
-
-
-    if (typeof createWindow === 'function') {
-        createWindow('AF_Links', 'winTopLinks', 'winLeftLinks', getLinksHTML(isTP, customButtons));
-    } else {
-        console.warn('[Link_Hybrid] createWindow не найдена');
     }
 
-    const panel = document.getElementById('AF_Links');
-    if (!panel) {
-        console.error('[Link_Hybrid] Панель AF_Links не найдена!');
-        return;
+    function renderGrid() {
+        const holder = document.getElementById('lkg-grid-holder');
+        if (holder) holder.innerHTML = linksGridHtml();
     }
 
-    panel.style.display = 'none';
+    /* ---------- Диалог своей кнопки ---------- */
 
-    if (typeof hideWindowOnDoubleClick === 'function') hideWindowOnDoubleClick('AF_Links');
-    if (typeof hideWindowOnClick === 'function') hideWindowOnClick('AF_Links', 'hideMe');
+    function editCustomButton(existing) {
+        const overlay = document.createElement('div');
+        overlay.className = 'lkg-dialog-overlay';
+        overlay.innerHTML = `
+            <div class="lkg-dialog" role="dialog" aria-modal="true">
+                <div class="lkg-dialog-body">
+                    <div class="lkg-dialog-title">${existing ? '✏️ Изменить кнопку' : '➕ Новая кнопка'}</div>
+                    <div class="lkg-dialog-msg">Кнопка появится в разделе «Ссылки». Правый клик по ней — изменить.</div>
+                    <label><span>Название</span><input id="lkg-btn-title" maxlength="40" placeholder="Моя ссылка"></label>
+                    <label><span>Значок (эмодзи)</span><input id="lkg-btn-icon" maxlength="8" placeholder="🔗"></label>
+                    <label><span>Адрес</span><input id="lkg-btn-url" placeholder="https://…"></label>
+                </div>
+                <div class="lkg-dialog-foot">
+                    ${existing ? '<button type="button" class="is-danger" id="lkg-btn-delete">🗑 Удалить</button>' : ''}
+                    <button type="button" id="lkg-btn-cancel">Отмена</button>
+                    <button type="button" class="is-primary" id="lkg-btn-save">Сохранить</button>
+                </div>
+            </div>`;
 
-    initEventHandlers(isTP ? 'TP' : 'KC');
+        const $ = sel => overlay.querySelector(sel);
+        $('#lkg-btn-title').value = existing ? existing.title : '';
+        $('#lkg-btn-icon').value = existing ? existing.icon : '';
+        $('#lkg-btn-url').value = existing ? existing.url : '';
 
-    const btnL = document.getElementById('links');
-    if (btnL) {
-        btnL.onclick = () => {
-            if (panel.style.display === 'none') {
-                panel.style.display = '';
-                if (isTP) getVersionsApp();
-            } else {
-                panel.style.display = 'none';
+        const close = () => overlay.remove();
+        $('#lkg-btn-cancel').onclick = close;
+        overlay.addEventListener('mousedown', e => { if (e.target === overlay) close(); });
+        overlay.addEventListener('keydown', e => {
+            if (e.key === 'Escape') close();
+            if (e.key === 'Enter') $('#lkg-btn-save').click();
+        });
+
+        $('#lkg-btn-save').onclick = () => {
+            const title = $('#lkg-btn-title').value.trim();
+            const icon = $('#lkg-btn-icon').value.trim() || '🔗';
+            const url = normalizeUrl($('#lkg-btn-url').value);
+            $('#lkg-btn-title').classList.toggle('is-invalid', !title);
+            $('#lkg-btn-url').classList.toggle('is-invalid', !url);
+            if (!title || !url) {
+                notify('Нужны название и адрес, начинающийся с http:// или https://', 'warning');
+                return;
             }
+            if (existing) Object.assign(existing, { title, icon, url });
+            else config.customButtons.push({ id: `custom-${Date.now()}`, title, icon, url });
+            saveConfig();
+            renderGrid();
+            close();
         };
-    } else {
-        console.warn('[Link_Hybrid] Кнопка links не найдена');
-    }
-}
 
-// Запуск
-if (typeof createWindow === 'function') {
-    initLinksHybrid();
-} else {
-    setTimeout(initLinksHybrid, 1000);
-}
+        if (existing) {
+            $('#lkg-btn-delete').onclick = () => {
+                if (!confirm(`Удалить кнопку «${existing.title}»?`)) return;
+                config.customButtons = config.customButtons.filter(b => b.id !== existing.id);
+                saveConfig();
+                renderGrid();
+                close();
+            };
+        }
+
+        document.body.appendChild(overlay);
+        $('#lkg-btn-title').focus();
+    }
+
+    /* ---------- Версии мобильных приложений ---------- */
+
+    let versionsPromise = null;
+
+    function loadVersions() {
+        if (versionsPromise) return versionsPromise;
+        const iosEl = document.getElementById('curVeriOS');
+        const andEl = document.getElementById('curVerAndroid');
+        if (!iosEl || !andEl) return Promise.resolve();
+
+        versionsPromise = fetch('https://script.google.com/macros/s/AKfycbwgym7WoXavCcMa7mpzlA4GHGncpWixKwyxhSJT1TU8tZg4KmRemyZqyQ3c5G2cKTxDrQ/exec')
+            .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+            .then(data => {
+                const v = data && data.result;
+                if (!v || !v[0] || !v[1]) throw new Error('пустой ответ');
+                iosEl.textContent = `${v[1][0]} (${v[1][1]})`;
+                andEl.textContent = `${v[0][0]} (${v[0][1]})`;
+            })
+            .catch(err => {
+                console.warn('[Link_Hybrid] версии приложений не загружены:', err);
+                iosEl.textContent = 'iOS: ❌';
+                andEl.textContent = 'Android: ❌';
+                versionsPromise = null; // повторим при следующем открытии
+            });
+        return versionsPromise;
+    }
+
+    /* ---------- События ---------- */
+
+    function attachEvents(win) {
+        // Делегирование: переживает перерисовку сетки
+        win.addEventListener('click', e => {
+            const btn = e.target.closest('.lkg-link');
+            if (!btn) return;
+            if (btn.dataset.customId) {
+                const item = config.customButtons.find(b => b.id === btn.dataset.customId);
+                const url = item && normalizeUrl(item.url);
+                if (url) open(url);
+                return;
+            }
+            const item = linkById.get(btn.id);
+            if (!item) return;
+            if (item.action) ACTIONS[item.action]?.();
+            else if (item.url) open(typeof item.url === 'function' ? item.url() : item.url);
+        });
+
+        win.addEventListener('contextmenu', e => {
+            const btn = e.target.closest('.lkg-link[data-custom-id]');
+            if (!btn) return;
+            e.preventDefault();
+            const item = config.customButtons.find(b => b.id === btn.dataset.customId);
+            if (item) editCustomButton(item);
+        });
+
+        document.getElementById('add-custom-btn').onclick = () => editCustomButton(null);
+
+        if (!isTP) return;
+
+        TP_FIELDS.forEach(f => {
+            const buttonEl = document.getElementById(f.btn);
+            const inputEl = document.getElementById(f.input);
+            if (!buttonEl || !inputEl || f.disabled) return;
+
+            if (f.kind === 'sync') {
+                // Логика синхронизатора живёт во внешнем модуле (если подключён)
+                if (typeof setupSynchronizer === 'function') setupSynchronizer();
+                else buttonEl.disabled = inputEl.disabled = true;
+                return;
+            }
+
+            const run = async () => {
+                const value = inputEl.value.trim();
+                if (!value) {
+                    inputEl.classList.add('is-invalid');
+                    inputEl.focus();
+                    setTimeout(() => inputEl.classList.remove('is-invalid'), 1200);
+                    return;
+                }
+                const encoded = encodeURIComponent(value);
+                if (f.kind === 'copy') {
+                    if (await copyText(f.build(encoded))) notify(f.msg);
+                    else notify('Не удалось скопировать ссылку', 'error');
+                } else {
+                    open(`${f.url}${encoded}${f.suffix || ''}`);
+                }
+                inputEl.value = '';
+            };
+
+            buttonEl.onclick = run;
+            inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+        });
+
+        document.getElementById('restartlesson').onclick = async () => {
+            if (await copyText("setStatus('classwork')")) notify('💾 Команда скопирована');
+        };
+        document.getElementById('openGrabber').onclick = () => {
+            if (typeof getopenGrabberButtonPress === 'function') getopenGrabberButtonPress();
+        };
+        document.getElementById('curVeriOS').onclick = () =>
+            open('https://apps.apple.com/ru/app/skyeng-%D0%B0%D0%BD%D0%B3%D0%BB%D0%B8%D0%B9%D1%81%D0%BA%D0%B8%D0%B9-%D1%8F%D0%B7%D1%8B%D0%BA-%D0%BE%D0%BD%D0%BB%D0%B0%D0%B9%D0%BD/id1065290732');
+        document.getElementById('curVerAndroid').onclick = () =>
+            open('https://play.google.com/store/apps/details?id=skyeng.words.prod');
+    }
+
+    /* ---------- Запуск ---------- */
+
+    function init() {
+        if (document.getElementById('AF_Links')) return;
+        if (typeof createWindow !== 'function') {
+            console.warn('[Link_Hybrid] createWindow не найдена');
+            return;
+        }
+
+        injectStyles();
+        createWindow('AF_Links', 'winTopLinks', 'winLeftLinks', panelHtml());
+
+        const win = document.getElementById('AF_Links');
+        if (!win) {
+            console.error('[Link_Hybrid] Панель AF_Links не найдена!');
+            return;
+        }
+        win.style.display = 'none';
+
+        if (typeof hideWindowOnDoubleClick === 'function') hideWindowOnDoubleClick('AF_Links');
+        if (typeof hideWindowOnClick === 'function') hideWindowOnClick('AF_Links', 'hideMe');
+
+        attachEvents(win);
+
+        const btnL = document.getElementById('links');
+        if (btnL) {
+            btnL.onclick = () => {
+                const hidden = win.style.display === 'none';
+                win.style.display = hidden ? '' : 'none';
+                if (hidden && isTP) loadVersions();
+            };
+        } else {
+            console.warn('[Link_Hybrid] Кнопка links не найдена');
+        }
+    }
+
+    if (typeof createWindow === 'function') init();
+    else setTimeout(init, 1000);
+})();
