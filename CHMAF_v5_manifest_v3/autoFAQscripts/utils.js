@@ -1587,15 +1587,18 @@ function injectModuleMenuStyles() {
     z-index: 2147483647 !important;
 
     box-sizing: border-box;
-    width: min(248px, calc(100vw - 24px));
+    width: min(420px, calc(100vw - 24px));
     max-height: calc(100dvh - 24px);
     padding: 8px;
     margin: 0;
     overflow-x: hidden;
     overflow-y: auto;
 
-    flex-direction: column;
-    gap: 3px;
+    /* Два столбца: flex-wrap, т.к. меню открывается через display:flex */
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 4px;
 
     background: rgba(20, 22, 34, 0.97);
     backdrop-filter: blur(20px);
@@ -1609,16 +1612,17 @@ function injectModuleMenuStyles() {
     display: flex !important;
     align-items: center;
     justify-content: flex-start;
-    gap: 11px;
+    gap: 9px;
 
-    width: 100%;
-    min-height: 42px;
+    width: calc(50% - 2px);
+    flex: 0 0 calc(50% - 2px);
+    min-height: 40px;
     margin: 0;
-    padding: 9px 12px;
+    padding: 8px 10px;
 
     color: #e9ecf5;
-    background: transparent;
-    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 9px;
     box-shadow: none;
 
@@ -1632,7 +1636,15 @@ function injectModuleMenuStyles() {
 #chmaf-module-menu .m-menu-btn:focus-visible {
     color: #fff;
     background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
     outline: none;
+}
+
+@media (max-width: 460px) {
+    #chmaf-module-menu .m-menu-btn {
+        width: 100%;
+        flex-basis: 100%;
+    }
 }
 
 #chmaf-module-menu .chmaf-menu-icon {
