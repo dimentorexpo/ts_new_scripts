@@ -1,6 +1,6 @@
 /**
  * SettingsApp.js — окно «Настройки»: звук новой задачи, SkyAuto,
- * тестовые аккаунты, экспорт и импорт настроек.
+ * тема TroubleShooter, тестовые аккаунты, экспорт и импорт настроек.
  * Плеер (audioCRM, crmSetSound, crmPlaySound) живёт в content.js.
  */
 (function () {
@@ -53,6 +53,14 @@
                 <span>Автовзятие задач (SkyAuto)</span>
             </label>
             <div class="crm-hint" style="margin-top:6px">Работает на странице /customer-support/start в статусе «В работе».</div>
+        </div>
+
+        <div class="crm-section">
+            <div class="crm-section-title">Внешний вид</div>
+            <label class="crm-switch" title="Тема страницы video-trouble-shooter.skyeng.ru. Применяется сразу, без перезагрузки">
+                <input type="checkbox" id="tsDarkThemeCRM"><span class="crm-switch-track"></span>
+                <span id="tsDarkThemeTextCRM">TroubleShooter: тёмная тема</span>
+            </label>
         </div>
 
         <div class="crm-section">
@@ -216,6 +224,36 @@
         localStorage.setItem('skyauto_enabled', e.target.checked ? '1' : '0');
     });
 
+    /* ---------- Тема TroubleShooter ---------- */
+
+    // Хранится в chrome.storage.local: страница TroubleShooter — другой домен,
+    // localStorage CRM ей недоступен. По умолчанию — тёмная.
+    const TS_THEME_KEY = 'tsDarkTheme';
+
+    function setThemeLabel(dark) {
+        $('tsDarkThemeTextCRM').textContent = `TroubleShooter: ${dark ? 'тёмная' : 'светлая'} тема`;
+    }
+
+    function syncTsTheme() {
+        try {
+            chrome.storage.local.get(TS_THEME_KEY, (res) => {
+                const dark = res?.[TS_THEME_KEY] !== false;
+                $('tsDarkThemeCRM').checked = dark;
+                setThemeLabel(dark);
+            });
+        } catch (_) { /* контекст расширения недоступен */ }
+    }
+
+    $('tsDarkThemeCRM').addEventListener('change', (e) => {
+        const dark = e.target.checked;
+        setThemeLabel(dark);
+        try {
+            chrome.storage.local.set({ [TS_THEME_KEY]: dark });
+        } catch (_) {
+            crmToast('Расширение обновилось — перезагрузите страницу', 'warning');
+        }
+    });
+
     /* ---------- Тестовые аккаунты ---------- */
 
     function bindTestAccount(inputId, buttonId, storageKey, who) {
@@ -315,6 +353,7 @@
         $('rangeCRMvalue').textContent = `${Math.round(audioCRM.volume * 100)}%`;
         syncRepeatControls();
         syncSoundSelect();
+        syncTsTheme();
     }
 
     win.addEventListener('crm:hidden', () => {

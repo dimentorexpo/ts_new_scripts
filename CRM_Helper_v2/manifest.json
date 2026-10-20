@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.39",
+    "version": "2.0.40",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -70,6 +70,18 @@
             "css": [
                 "/CSS/styles.css"
             ]
+        },
+        {
+            "js": [
+                "/Modules/MuteLessonSound.js"
+            ],
+            "matches": [
+                "*://vimbox.skyeng.ru/*",
+                "*://student.skyeng.ru/*",
+                "*://teacher.skyeng.ru/*"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
         }
     ],
     "icons": {
