@@ -109,6 +109,33 @@
 
 #AF_Compensation .is-invalid { border-color: var(--comp-bad) !important; box-shadow: 0 0 0 3px var(--error-light, rgba(239,68,68,.15)); }
 
+/* Проверка честных оплат */
+#AF_Compensation .comp-check { margin: 0 0 12px; padding: 8px 10px; background: var(--comp-raised); border: 1px solid var(--comp-line); border-radius: var(--comp-r); }
+#AF_Compensation .comp-check-row { display: flex; align-items: center; gap: 8px; }
+#AF_Compensation .comp-check-input { flex: 1; }
+#AF_Compensation .comp-check-result {
+  position: absolute; top: 0; left: calc(100% + 8px); width: 300px;
+  padding: 12px; font-size: 12px; color: var(--comp-text-2);
+  background: var(--comp-bg); border: 1px solid var(--comp-line);
+  border-radius: var(--radius-lg, 12px); box-shadow: var(--shadow-xl, 0 12px 40px rgba(0,0,0,.45));
+}
+#AF_Compensation.comp-side-left .comp-check-result { left: auto; right: calc(100% + 8px); }
+#AF_Compensation .comp-check-close {
+  float: right; width: 22px; height: 22px; margin: -4px -4px 4px 6px; padding: 0;
+  color: var(--comp-text-3); background: transparent; border: 0; cursor: pointer; font-size: 13px;
+}
+#AF_Compensation .comp-check-close:hover { color: var(--comp-text); }
+#AF_Compensation .comp-check-result[hidden] { display: none; }
+#AF_Compensation .comp-check-verdict { margin: 0 0 8px; padding: 7px 10px; border-radius: var(--comp-r); font-weight: 600; color: var(--comp-text); }
+#AF_Compensation .comp-check-result[data-state="nohonest"] .comp-check-verdict { background: var(--warning-light, rgba(245,158,11,.12)); border: 1px solid rgba(245,158,11,.35); }
+#AF_Compensation .comp-check-result[data-state="honest"] .comp-check-verdict { background: var(--success-light, rgba(16,185,129,.12)); border: 1px solid rgba(16,185,129,.35); }
+#AF_Compensation .comp-check-result[data-state="err"] { color: var(--comp-bad); }
+#AF_Compensation .comp-check-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+#AF_Compensation .comp-check-grid > span:nth-child(odd) { color: var(--comp-text-3); }
+#AF_Compensation .comp-check-grid > span:nth-child(even) { color: var(--comp-text); word-break: break-word; }
+#AF_Compensation .comp-yes { color: var(--comp-ok); }
+#AF_Compensation .comp-no { color: var(--comp-text-2); font-weight: 500; }
+
 @media (max-width: 520px) {
   #AF_Compensation .comp-grid, #AF_Compensation .comp-ops { grid-template-columns: 1fr; }
 }

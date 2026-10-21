@@ -114,6 +114,15 @@
         <button type="button" class="comp-btn comp-auth-btn" id="compLogin" hidden>Войти</button>
     </div>
 
+    <div class="comp-check">
+        <div class="comp-check-row">
+            <span class="comp-label">Проверка честных оплат</span>
+            <input id="compCheckId" class="comp-input comp-check-input" inputmode="numeric" autocomplete="off" placeholder="ID ученика">
+            <button type="button" class="comp-btn" id="compCheckBtn">🔎 Проверить</button>
+        </div>
+    </div>
+    <div class="comp-check-result" id="compCheckResult" hidden></div>
+
     <div class="comp-grid">
         <label class="comp-field">
             <span class="comp-label">Отдел</span>
@@ -387,6 +396,72 @@
         }
     }
 
+    /* ---------- Проверка честных оплат (billing-marketing) ---------- */
+
+    const BOUNTY_URL = 'https://billing-marketing.skyeng.ru/api/frontend/v1/bounty/student-info';
+
+    function bgFetch(url, requestOptions) {
+        return compAsk({ action: 'getFetchRequest', fetchURL: url, requestOptions })
+            .then(r => r.fetchansver);
+    }
+
+    /* Боковая панель результата: справа от окна, если не влезает — слева */
+    function placeSide() {
+        const r = win.getBoundingClientRect();
+        const W = 300;
+        win.classList.toggle('comp-side-left', r.right + W + 12 > window.innerWidth && r.left > W + 12);
+    }
+
+    async function compCheckHonest() {
+        const id = $('compCheckId').value.trim();
+        const box = $('compCheckResult');
+        if (!id) { $('compCheckId').classList.add('is-invalid'); return; }
+
+        const btn = $('compCheckBtn');
+        setBusy(btn, true);
+        placeSide();
+        box.hidden = false;
+        box.dataset.state = 'loading';
+        box.textContent = 'Проверяю…';
+        try {
+            const text = await bgFetch(BOUNTY_URL, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'accept': 'application/json, text/plain, */*', 'content-type': 'application/json' },
+                body: JSON.stringify({ studentId: Number(id) })
+            });
+            let json;
+            try { json = JSON.parse(text); } catch { throw new Error('Ответ не JSON — возможно, нет входа в billing-marketing'); }
+            const d = json?.data;
+            if (!d) throw new Error(json?.message || 'Пустой ответ сервера');
+
+            const yesNo = v => v ? '<b class="comp-yes">Имеет</b>' : '<b class="comp-no">Не имеет</b>';
+            const honest = !!d.hasHonestPayment;
+            box.dataset.state = honest ? 'honest' : 'nohonest';
+            box.innerHTML = `
+                <button type="button" class="comp-check-close" title="Скрыть">✕</button>
+                <div class="comp-check-verdict">${honest
+                    ? '✅ Есть честная оплата — компенсация через эту форму не нужна'
+                    : '⚠️ Нет честных оплат — можно оформлять компенсацию'}</div>
+                <div class="comp-check-grid">
+                    <span>Имя</span><span>${esc(d.name || '—')}</span>
+                    <span>Тип ученика</span><span>${esc(d.type || '—')}</span>
+                    <span>Применение сертификата</span><span>${yesNo(d.hasCertificateApplied)}${d.certificateType ? ` (${esc(d.certificateType)})` : ''}</span>
+                    <span>Первая оплата</span><span>${yesNo(honest)}</span>
+                    <span>Тип продукта</span><span>${esc(d.productType || '—')}</span>
+                </div>`;
+            if (!$('compStudent').value) $('compStudent').value = id;
+        } catch (e) {
+            box.dataset.state = 'err';
+            const msg = /HTTP 40[13]/.test(e.message)
+                ? 'Нет доступа — откройте billing-marketing.skyeng.ru и войдите'
+                : e.message;
+            box.textContent = `Ошибка: ${msg}`;
+        } finally {
+            setBusy(btn, false);
+        }
+    }
+
     /* ---------- Создание окна (лениво, при первом открытии) ---------- */
 
     function hide() {
@@ -448,6 +523,16 @@
             ta.focus();
         });
 
+        $('compCheckId').addEventListener('input', e => {
+            const clean = e.target.value.replace(/\D+/g, '');
+            if (clean !== e.target.value) e.target.value = clean;
+            e.target.classList.remove('is-invalid');
+        });
+        $('compCheckId').addEventListener('keydown', e => { if (e.key === 'Enter') compCheckHonest(); });
+        $('compCheckBtn').addEventListener('click', compCheckHonest);
+        $('compCheckResult').addEventListener('click', e => {
+            if (e.target.closest('.comp-check-close')) $('compCheckResult').hidden = true;
+        });
         $('hideComp').addEventListener('click', hide);
         $('compRefresh').addEventListener('click', () => compCheckAuth(true));
         $('compSend').addEventListener('click', compSend);
