@@ -1358,6 +1358,7 @@
         ['country', 'Страна'],
         ['afrt', 'AFRT'],
         ['queue', 'Очередь'],
+        ['autoClose', 'Автозакрытие'],
         ['department', 'Отдел'],
         ['text', 'Комментарий / сообщение']
     ];
@@ -1985,6 +1986,26 @@
         return { afrt, queue };
     }
 
+    /*
+     * Автозакрытие чата:
+     *  - 'inactivity' — CloseConversation с payload.src === 'inactivity_timer'
+     *  - 'pause'      — CloseConversation с payload.src === 'pause' (после отложенного)
+     */
+    function detectAutoClose(messages) {
+        if (!Array.isArray(messages)) return null;
+
+        for (const m of messages) {
+            const ev = m?.eventTpe ?? m?.eventType;
+            if (ev !== 'CloseConversation') continue;
+
+            const src = m?.payload?.src;
+            if (src === 'inactivity_timer') return 'inactivity';
+            if (src === 'pause') return 'pause';
+        }
+
+        return null;
+    }
+
     async function loadChat(chat, filters) {
         const data = await apiJson(
             `${API}/conversations/${encodeURIComponent(chat.id)}`
@@ -1995,6 +2016,7 @@
             : [];
 
         const { afrt, queue } = calculateAFRT(messages);
+        const autoClose = detectAutoClose(messages);
 
         // Если чат был переведен (закрыт не этим оператором):
         if (!chat.isClosedByOperator) {
@@ -2029,6 +2051,7 @@
                 sla: null,
                 afrt,
                 queue,
+                autoClose,
                 country: String(data.channelUser?.payload?.country ?? '—'),
                 department: '—',
                 userType: String(data.channelUser?.payload?.userType ?? 'null'),
@@ -2185,6 +2208,7 @@
                 : duration <= 25 * 60 * 1000,
             afrt,
             queue,
+            autoClose,
             country: String(
                 data.channelUser?.payload?.country ?? '—'
             ),
@@ -2235,6 +2259,12 @@
 
         if (field === 'queue') {
             return record.queue ? 'Очередь' : '—';
+        }
+
+        if (field === 'autoClose') {
+            if (record.autoClose === 'inactivity') return 'Неактивность';
+            if (record.autoClose === 'pause') return 'После отложенного';
+            return '—';
         }
 
         if (field === 'sla') {

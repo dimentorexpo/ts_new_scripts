@@ -833,6 +833,24 @@
     return row;
   }
 
+  // "2026-10-22T07:27+03:00" → "22 октября 2026, 07:27" (МСК)
+  function awakeDateText(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return "";
+    const parts = new Intl.DateTimeFormat("ru-RU", {
+      timeZone: "Europe/Moscow",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).formatToParts(date);
+    const get = type => parts.find(p => p.type === type)?.value || "";
+    return `${get("day")} ${get("month")} ${get("year")}, ${get("hour")}:${get("minute")}`;
+  }
+
   function eventText(message) {
     const payload = message.payload || {};
 
@@ -873,6 +891,19 @@
 
         if (payload.src === "pause") {
           return "Автозакрытие после паузы";
+        }
+
+        if (
+          String(payload.closeOnAwake) === "true" &&
+          payload.status === "ClosedTemporary"
+        ) {
+          const who = payload.sender
+            ? operatorName(payload.sender)
+            : "Оператор";
+          const until = awakeDateText(payload.awakeDt);
+          return until
+            ? `${who} поставил(а) диалог на паузу с автозакрытием до ${until}`
+            : `${who} поставил(а) диалог на паузу с автозакрытием`;
         }
 
         return payload.sender
