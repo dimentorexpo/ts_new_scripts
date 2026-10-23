@@ -293,8 +293,20 @@ function ensureTsThemeStyle() {
 
     html.chmaf-ts-dark,
     html.chmaf-ts-dark body {
-      background: #111827 !important;
+      background: #2e3440 !important; /* Nord: polar night */
       color-scheme: dark;
+    }
+
+    /* Страница задаёт body { font-weight: 300 } (Light). Тонкие штрихи после
+       инверсии и фильтра расплываются: подписи полей, «Устройства пользователя»,
+       время под полосами браузеров, текст плашки «Внимание!». Поднимаем
+       унаследованный вес до 500; явные жирные элементы остаются как были. */
+    html.chmaf-ts-dark body {
+      font-weight: 500 !important;
+    }
+    html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(.form-control-name, .ant-select-selection-placeholder) {
+      color: #000000 !important;
+      letter-spacing: .01em !important;
     }
 
     /* Общее сглаживание и четкость шрифтов */
@@ -306,9 +318,12 @@ function ensureTsThemeStyle() {
       text-rendering: optimizeLegibility !important;
     }
 
-    /* Всё содержимое страницы, кроме окон ChMAF (легкий синий оттенок + контрастность без размывающего оверлея) */
+    /* Всё содержимое страницы, кроме окон ChMAF. Полная инверсия + SVG-фильтр
+       #chmaf-ts-nord: белый фон → Nord #2e3440, чёрный текст → #eceff4, а гамма
+       0.7 поднимает серый второстепенный текст (#64748b было ≈ #898989, стало ≈ #afb3b6)
+       и делает видимыми светло-серые панели и рамки. */
     html.chmaf-ts-dark body > :not(script):not(style):not(link):not(.chmaf-ts-keep):not(#webrtc-diag-floating-btn) {
-      filter: invert(.88) hue-rotate(185deg) contrast(1.04);
+      filter: invert(1) hue-rotate(180deg) url(#chmaf-ts-nord);
     }
 
     /* Картинки и видео возвращаем к нормальным цветам */
@@ -466,19 +481,19 @@ function ensureTsThemeStyle() {
 
     /* Ячейки журнала: тёмный фон + цветная полоса слева вместо сплошной заливки */
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-info {
-      background: #d9edff !important;            /* → #1a2a48 */
+      background: #eef6ff !important;            /* → Nord-синий #3b4a5e */
       box-shadow: inset 3px 0 0 #285ac5 !important; /* → #7aa2f7 */
     }
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-good {
-      background: #d0f2e4 !important;            /* → #163126 */
+      background: #e6f8ef !important;            /* → тёмно-зелёный */
       box-shadow: inset 3px 0 0 #006900 !important; /* → #4ade80 */
     }
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) td.-warning {
-      background: #f6e8cf !important;            /* → #352a16 */
+      background: #fbf2e2 !important;            /* → тёмно-янтарный */
       box-shadow: inset 3px 0 0 #622800 !important; /* → #facc15 */
     }
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) :is(td.-error, td.-bad, td.-danger, td.-critical) {
-      background: #ffebf7 !important;            /* → #33202a */
+      background: #fff3f8 !important;            /* → тёмно-красный */
       box-shadow: inset 3px 0 0 #f24a4a !important; /* → #f87171 */
     }
 
@@ -511,7 +526,7 @@ function ensureTsThemeStyle() {
 
     /* Плашка «Внимание!» во вкладке «Статистика» → насыщенная янтарная, без полосы сбоку */
     html.chmaf-ts-dark body > :not(.chmaf-ts-keep) .b-warning {
-      background: #f9dfaf !important;          /* → #45300a */
+      background: #fcefd6 !important;          /* → приглушённый янтарь на Nord */
       border: 1px solid #bc8521 !important;    /* → #a07424 */
       box-shadow: none !important;
     }
@@ -523,14 +538,51 @@ function ensureTsThemeStyle() {
       color: #140000 !important;               /* → #f3e3c3 */
     }
 
-    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #111827; }
-    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #344258; border-radius: 8px; border: 2px solid #111827; }
+    html.chmaf-ts-dark ::-webkit-scrollbar { width: 10px; height: 10px; background: #2e3440; }
+    html.chmaf-ts-dark ::-webkit-scrollbar-thumb { background: #4c566a; border-radius: 8px; border: 2px solid #2e3440; }
+    html.chmaf-ts-dark ::-webkit-scrollbar-thumb:hover { background: #616e88; }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
 
+// SVG-фильтр палитры Nord. Лежит в body с классом chmaf-ts-keep, поэтому сам
+// не фильтруется. Каналы: offset = Nord #2e3440, offset + amplitude = #eceff4.
+const TS_NORD_FILTER_ID = 'chmaf-ts-nord';
+
+function ensureTsNordFilter() {
+  if (document.getElementById(TS_NORD_FILTER_ID)) return;
+  if (!document.body) {
+    document.addEventListener('DOMContentLoaded', ensureTsNordFilter, { once: true });
+    return;
+  }
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'chmaf-ts-keep');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('width', '0');
+  svg.setAttribute('height', '0');
+  svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+  const filter = document.createElementNS(NS, 'filter');
+  filter.id = TS_NORD_FILTER_ID;
+  filter.setAttribute('color-interpolation-filters', 'sRGB');
+  const transfer = document.createElementNS(NS, 'feComponentTransfer');
+  const channels = { R: [0.745, 0.180], G: [0.733, 0.204], B: [0.706, 0.251] };
+  for (const [ch, [amplitude, offset]] of Object.entries(channels)) {
+    const fn = document.createElementNS(NS, 'feFunc' + ch);
+    fn.setAttribute('type', 'gamma');
+    fn.setAttribute('amplitude', String(amplitude));
+    fn.setAttribute('exponent', '0.7');
+    fn.setAttribute('offset', String(offset));
+    transfer.appendChild(fn);
+  }
+  filter.appendChild(transfer);
+  svg.appendChild(filter);
+  document.body.appendChild(svg);
+}
+
 function applyTsTheme(dark) {
   ensureTsThemeStyle();
+  if (dark) ensureTsNordFilter();
   document.documentElement.classList.toggle('chmaf-ts-dark', Boolean(dark));
   if (dark) tagBrowserBars();
 }
@@ -945,28 +997,28 @@ const TS_STATS = (() => {
     // Светлые цвета страницы: в тёмной теме инвертируются вместе с ней
     style.textContent = `
       .ts-an { margin: 6px 0 14px; padding: 12px 14px; background: #ffffff; border: 1px solid #d9e1ee;
-        border-radius: 12px; box-shadow: 0 1px 3px rgba(15, 23, 42, .06); font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #1f2937; }
+        border-radius: 12px; box-shadow: 0 1px 3px rgba(15, 23, 42, .06); font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #0f172a; }
       .ts-an[hidden], .ts-field-hint[hidden] { display: none; }
       .ts-an-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
       .ts-an-title { font-weight: 700; font-size: 14px; color: #0f172a; }
-      .ts-an-hint { color: #64748b; font-size: 12px; }
+      .ts-an-hint { color: #475569; font-size: 12.5px; font-weight: 500; }
       .ts-an-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
       .ts-an-col { padding: 10px 12px; border: 1px solid #e5eaf2; border-left: 3px solid #d6337a; border-radius: 10px; background: #fbfcfe; }
       .ts-an-audio { border-left-color: #0ea5c6; }
-      .ts-an-media { margin-bottom: 8px; color: #475569; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+      .ts-an-media { margin-bottom: 8px; color: #1e293b; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
       .ts-an-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 6px; }
       .ts-an-stat { padding: 7px 8px; background: #f1f5fb; border-radius: 8px; text-align: center; }
       .ts-an-stat-value { font-size: 15px; font-weight: 800; color: #0f172a; white-space: nowrap; font-variant-numeric: tabular-nums; }
-      .ts-an-stat-label { margin-top: 2px; color: #64748b; font-size: 11px; }
+      .ts-an-stat-label { margin-top: 2px; color: #334155; font-size: 12px; font-weight: 500; }
       .ts-an-stat.good { background: #e8f7ee; } .ts-an-stat.good .ts-an-stat-value { color: #157347; }
       .ts-an-stat.warn { background: #fff4e0; } .ts-an-stat.warn .ts-an-stat-value { color: #b45309; }
       .ts-an-stat.bad  { background: #fdecef; } .ts-an-stat.bad  .ts-an-stat-value { color: #c02646; }
       .ts-an-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-      .ts-an-facts span { padding: 2px 8px; background: #eef2f8; border-radius: 999px; color: #475569; font-size: 11.5px; font-weight: 600; }
+      .ts-an-facts span { padding: 2px 8px; background: #eef2f8; border-radius: 999px; color: #1e293b; font-size: 12px; font-weight: 600; }
       .ts-an-facts .is-warn { background: #fff4e0; color: #b45309; }
       .ts-an-facts .is-bad { background: #fdecef; color: #c02646; }
       .ts-an-facts .is-info { background: #e8efff; color: #2f56b5; }
-      .ts-an-empty, .ts-an-loading { color: #64748b; font-size: 12.5px; }
+      .ts-an-empty, .ts-an-loading { color: #334155; font-size: 13px; font-weight: 500; }
       .ts-an-error { color: #c02646; font-size: 12.5px; }
 
       /* Описание метрики рядом с полями: было тонким серым текстом (font-weight 300) */
