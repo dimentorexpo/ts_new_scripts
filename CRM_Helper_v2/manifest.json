@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.40",
+    "version": "2.0.41",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -9,11 +9,6 @@
     "action": {
         "default_icon": "/Icons/32.png",
         "default_title": "CRMHelper - Easy help for your work"
-    },
-    "externally_connectable": {
-        "matches": [
-            "*://crm2.skyeng.ru/*"
-        ]
     },
     "content_scripts": [
         {
@@ -89,16 +84,6 @@
         "48": "/Icons/48.png",
         "128": "/Icons/128.png"
     },
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "Modules/*"
-            ],
-            "matches": [
-                "https://*.skyeng.ru/*"
-            ]
-        }
-    ],
     "permissions": [
         "storage",
         "clipboardWrite"

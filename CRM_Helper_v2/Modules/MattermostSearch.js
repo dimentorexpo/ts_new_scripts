@@ -9,7 +9,11 @@
     const MM_ORIGIN = 'https://mm-time.skyeng.tech';
     const CACHE_KEY = 'mms_cache_v1';
     const TEAM_KEY = 'mms_team_id';
+    const RECENT_KEY = 'mmsRecentQueries';  // история поисковых запросов
+    const RECENT_MAX = 8;
     const SEARCH_LIMIT = 20;
+    // Потолки кэша каналов/пользователей: старые записи вытесняются первыми.
+    const CACHE_MAX = { channels: 500, users: 1500 };
 
     /* ---------- Окно ---------- */
 
@@ -26,6 +30,7 @@
                 <input class="crm-input crm-grow" id="mms-query" placeholder="Что ищем? Enter — найти" autocomplete="off">
                 <button type="button" class="crm-btn crm-btn-primary" id="mms-search">Найти</button>
             </div>
+            <div class="crm-recent crm-hidden" id="mms-recent" style="margin-top:8px"></div>
             <div class="crm-hint" id="mms-status" style="margin-top:8px; min-height:18px"></div>
             <div class="mms-channel-bar crm-hidden" id="mms-channel-bar"></div>
             <div class="mms-results" id="mms-results"><div class="crm-empty">Введите запрос и нажмите «Найти».</div></div>
@@ -43,6 +48,7 @@
         status: document.getElementById('mms-status'),
         results: document.getElementById('mms-results'),
         channelBar: document.getElementById('mms-channel-bar'),
+        recent: document.getElementById('mms-recent'),
         searchBtn: document.getElementById('mms-search')
     };
     const EMPTY_HTML = '<div class="crm-empty">Введите запрос и нажмите «Найти».</div>';
@@ -58,6 +64,16 @@
     const persistCache = () => {
         try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (_) { /* переполнение — не критично */ }
     };
+
+    /** Ограничивает рост кэша: ключи хранятся в порядке добавления, старые вытесняем первыми. */
+    function trimCache() {
+        for (const kind of Object.keys(CACHE_MAX)) {
+            const keys = Object.keys(cache[kind]);
+            if (keys.length > CACHE_MAX[kind]) {
+                for (const id of keys.slice(0, keys.length - CACHE_MAX[kind])) delete cache[kind][id];
+            }
+        }
+    }
 
     /* ---------- API ---------- */
 
@@ -88,6 +104,50 @@
         dom.status.textContent = text || '';
         dom.status.style.color = tone === 'bad' ? 'var(--crm-bad)' : tone === 'ok' ? 'var(--crm-ok)' : '';
     }
+
+    /* ---------- История запросов ---------- */
+
+    function loadRecent() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+            return Array.isArray(parsed) ? parsed.filter((q) => typeof q === 'string' && q.trim()).slice(0, RECENT_MAX) : [];
+        } catch (_) { return []; }
+    }
+
+    let recent = loadRecent();
+
+    function saveRecent() {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+    }
+
+    /** Запоминает запрос и обновляет чипы. */
+    function addRecent(query) {
+        const q = String(query || '').trim();
+        if (q.length < 2) return; // короткие запросы («ДЗ») тоже запоминаем
+        recent = [q, ...recent.filter((x) => x !== q)].slice(0, RECENT_MAX);
+        saveRecent();
+        renderRecent();
+    }
+
+    function renderRecent() {
+        const box = dom.recent;
+        if (!recent.length) {
+            box.classList.add('crm-hidden');
+            box.innerHTML = '';
+            return;
+        }
+        box.classList.remove('crm-hidden');
+        box.innerHTML =
+            '<span class="crm-recent-label">Недавние:</span>' +
+            recent.map((q) => `<button type="button" class="crm-recent-chip" data-q="${crmEsc(q)}" title="Повторить поиск">${crmEsc(q)}</button>`).join('');
+    }
+
+    dom.recent.addEventListener('click', (e) => {
+        const chip = e.target.closest('.crm-recent-chip');
+        if (!chip) return;
+        dom.query.value = chip.dataset.q;
+        runSearch();
+    });
 
     /* ---------- Текст и подсветка ---------- */
 
@@ -212,6 +272,7 @@
                     .catch(() => {})
                 : Promise.resolve()
         ]);
+        trimCache();
         persistCache();
     }
 
@@ -332,6 +393,7 @@
             results = fresh;
             drawChannelBar();
             drawResults();
+            addRecent(terms);
         } catch (e) {
             if (seq !== searchSeq) return;
             setStatus(errorText(e), 'bad');
@@ -451,6 +513,7 @@
     document.getElementById('mattermostfinder').onclick = () => {
         if (!crmToggleWindow(win)) return;
         if (!teamsLoaded) loadTeams();
+        renderRecent();
         dom.query.focus();
     };
 })();

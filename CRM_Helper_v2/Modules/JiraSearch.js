@@ -12,6 +12,8 @@
     const PAGE_SIZE = 50;
     const FAV_KEY = 'jiraFavsV2';           // новое избранное: [{id, key, title}]
     const LEGACY_FAV_KEY = 'bugsarray';     // старое: массив HTML-строк (не удаляется)
+    const RECENT_KEY = 'jiraRecentQueries'; // история поисковых запросов
+    const RECENT_MAX = 8;
     const HELP_URL = 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971#id-%F0%9F%A7%A9%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5ChatMasterAutoFaq-jirasearch%F0%9F%94%8EJiraSearch';
 
     /* ---------- JQL ---------- */
@@ -54,6 +56,7 @@
                     <input class="crm-input" id="testJira" placeholder="Слово для поиска или номер задачи (PS-1234)" autocomplete="off">
                     <button type="button" class="crm-btn crm-btn-primary" id="getJiraTasks" title="Enter — найти. Номер задачи открывает её карточку">Найти</button>
                 </div>
+                <div class="crm-recent crm-hidden" id="jiraRecent"></div>
             </div>
 
             <div id="jira_tasks_box" style="margin-top:12px">
@@ -141,6 +144,50 @@
             .forEach((b) => b.classList.toggle('is-on', isFav(item.key)));
         if (activePreset === 'favouriteBugs') renderFavs();
     }
+
+    /* ---------- История запросов ---------- */
+
+    function loadRecent() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+            return Array.isArray(parsed) ? parsed.filter((q) => typeof q === 'string' && q.trim()).slice(0, RECENT_MAX) : [];
+        } catch (_) { return []; }
+    }
+
+    let recent = loadRecent();
+
+    function saveRecent() {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+    }
+
+    /** Запоминает запрос и обновляет чипы. */
+    function addRecent(query) {
+        const q = String(query || '').trim();
+        if (q.length < 2) return; // «ДЗ» и подобные короткие запросы тоже запоминаем
+        recent = [q, ...recent.filter((x) => x !== q)].slice(0, RECENT_MAX);
+        saveRecent();
+        renderRecent();
+    }
+
+    function renderRecent() {
+        const box = document.getElementById('jiraRecent');
+        if (!recent.length) {
+            box.classList.add('crm-hidden');
+            box.innerHTML = '';
+            return;
+        }
+        box.classList.remove('crm-hidden');
+        box.innerHTML =
+            '<span class="crm-recent-label">Недавние:</span>' +
+            recent.map((q) => `<button type="button" class="crm-recent-chip" data-q="${crmEsc(q)}" title="Повторить поиск">${crmEsc(q)}</button>`).join('');
+    }
+
+    document.getElementById('jiraRecent').addEventListener('click', (e) => {
+        const chip = e.target.closest('.crm-recent-chip');
+        if (!chip) return;
+        els.text.value = chip.dataset.q;
+        search(0);
+    });
 
     /* ---------- Отрисовка ---------- */
 
@@ -319,6 +366,7 @@
             loadPriorityIcons(els.list);
             els.amount.textContent = `Найдено задач: ${total}`;
             renderPages(total, start);
+            addRecent(query);
         } catch (e) {
             if (seq !== searchSeq) return;
             const auth = e.status === 401 || e.status === 403;
@@ -500,8 +548,10 @@
         if (!crmToggleWindow(win)) return;
         checkToken();
         if (!els.jql.value) selectPreset(activePreset);
+        renderRecent();
         els.text.focus();
     };
 
     selectPreset('defaultQuery');
+    renderRecent();
 })();

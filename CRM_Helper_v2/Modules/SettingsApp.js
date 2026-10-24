@@ -84,6 +84,17 @@
                 <button type="button" class="crm-btn crm-grow" id="loadsettingsCRM" title="Загрузить настройки из ранее сохранённого .json">${crmIcon('upload', 15)} Импорт</button>
                 <input type="file" id="fileinputCRM" accept=".json,application/json" hidden>
             </div>
+        </div>
+
+        <div class="crm-section">
+            <div class="crm-section-title">Обновления</div>
+            <div class="crm-row">
+                <span class="crm-label">Версия</span>
+                <span class="crm-label crm-mono" id="crmVersionLabel"></span>
+                <span class="crm-grow"></span>
+                <button type="button" class="crm-btn" id="checkUpdateCRM" title="Сверить версию с репозиторием расширения на GitHub">Проверить обновления</button>
+            </div>
+            <div class="crm-hint" id="updateStatusCRM" style="margin-top:6px; min-height:16px"></div>
         </div>`;
 
     createWindowCRM('winSettingsApp', 'winTopSettingsApp', 'winLeftSettingsApp', html);
@@ -97,15 +108,17 @@
 
     /* ---------- Список звуков ---------- */
 
+    let soundContainer = []; // список звуков [название, ссылка] (было глобальным soundsconteinerCRM)
+
     async function loadSoundList() {
         try {
             const r = await fetch('https://script.google.com/macros/s/AKfycbyD1l-oLcE-BBmyN1QmcHKoi0rwVfCwWjE6cfTqw6Y9QQGAju-9inKbwSOfHCI6qBEjtg/exec');
             const data = await r.json();
-            soundsconteinerCRM = data && data.result;
+            soundContainer = (data && data.result) || [];
         } catch (err) {
             console.warn('[Settings] список звуков не загружен:', err);
         }
-        (soundsconteinerCRM || []).forEach(([name, url]) => {
+        soundContainer.forEach(([name, url]) => {
             if (name) addOptionCRM(soundList, name, url);
         });
         syncSoundSelect();
@@ -280,7 +293,10 @@
 
     // В файл попадают только настройки расширения: служебные ключи самой CRM
     // (токены, кэш интерфейса) не выгружаются и при импорте не перезаписываются.
-    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|mms_.*|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
+    // Старые ключи remindertextCRM* и т. п. оставлены: резервные копии, сделанные
+    // до перехода на crm_reminders_v2, при импорте всё ещё восстанавливаются
+    // (AlarmClock мигрирует их в новый формат).
+    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
 
     $('savesettingstofileCRM').onclick = () => {
         const data = {};
@@ -339,6 +355,72 @@
         };
         reader.readAsText(file);
     });
+
+    /* ---------- Обновления ---------- */
+
+    // manifest.json в ветке main репозитория расширения — источник актуальной версии.
+    const UPDATE_MANIFEST_URL = 'https://raw.githubusercontent.com/dimentorexpo/ts_new_scripts/main/CRM_Helper_v2/manifest.json';
+    const APP_VERSION = chrome.runtime.getManifest().version;
+
+    /** Сравнение «x.y.z»: > 0, если a новее b. */
+    function compareVersions(a, b) {
+        const pa = String(a).split('.').map(Number);
+        const pb = String(b).split('.').map(Number);
+        for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+            const diff = (pa[i] || 0) - (pb[i] || 0);
+            if (diff) return diff;
+        }
+        return 0;
+    }
+
+    $('crmVersionLabel').textContent = `v${APP_VERSION}`;
+
+    let updateSeq = 0;
+
+    $('checkUpdateCRM').onclick = async () => {
+        const btn = $('checkUpdateCRM');
+        const status = $('updateStatusCRM');
+        const seq = ++updateSeq;
+        crmSetBusy(btn, true);
+        status.textContent = 'Проверяю…';
+        try {
+            const res = await fetch(UPDATE_MANIFEST_URL, { cache: 'no-store' });
+            const manifest = await res.json();
+            if (seq !== updateSeq) return;
+
+            const remote = String(manifest.version || '').trim();
+            if (!remote) throw new Error('в манифесте на сервере нет версии');
+            const cmp = compareVersions(remote, APP_VERSION);
+
+            if (cmp > 0) {
+                status.textContent = `Доступна новая версия: v${remote}.`;
+                const ok = await crmConfirm({
+                    title: 'Обновить расширение?',
+                    message: `Установлена v${APP_VERSION}, в репозитории v${remote}.\n` +
+                        'После обновления вкладки CRM нужно перезагрузить (Ctrl+R).',
+                    okText: 'Обновить'
+                });
+                if (ok) {
+                    status.textContent = `Обновляю до v${remote}…`;
+                    try {
+                        // После chrome.runtime.reload() промис отклонится («контекст исчез») — глушим.
+                        const p = chrome.runtime.sendMessage({ action: 'reloadExtension' });
+                        if (p && p.catch) p.catch(() => {});
+                    } catch (_) {
+                        crmToast('Расширение обновилось — перезагрузите страницу', 'warning');
+                    }
+                }
+            } else if (cmp < 0) {
+                status.textContent = `Установлена v${APP_VERSION} — новее, чем в репозитории (v${remote}).`;
+            } else {
+                status.textContent = `У вас последняя версия (v${APP_VERSION}).`;
+            }
+        } catch (e) {
+            if (seq === updateSeq) status.textContent = `Не удалось проверить обновления: ${e.message}`;
+        } finally {
+            if (seq === updateSeq) crmSetBusy(btn, false);
+        }
+    };
 
     /* ---------- Открытие окна ---------- */
 

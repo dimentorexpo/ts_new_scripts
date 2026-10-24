@@ -326,6 +326,12 @@
 
     let versionsPromise = null;
 
+    /** Скрипт-источник иногда сам присылает «iOS 10.19» — не дублируем платформу. */
+    function versionText(platform, value, note) {
+        const name = String(value || '').trim();
+        return new RegExp(`^${platform}\\b`, 'i').test(name) ? `${name} (${note})` : `${platform}: ${name} (${note})`;
+    }
+
     function loadVersions() {
         if (versionsPromise) return versionsPromise;
         const iosEl = document.getElementById('curVeriOSCRM');
@@ -336,8 +342,8 @@
             .then((data) => {
                 const v = data && data.result;
                 if (!v || !v[0] || !v[1]) throw new Error('пустой ответ');
-                iosEl.textContent = `iOS: ${v[1][0]} (${v[1][1]})`;
-                andEl.textContent = `Android: ${v[0][0]} (${v[0][1]})`;
+                iosEl.textContent = versionText('iOS', v[1][0], v[1][1]);
+                andEl.textContent = versionText('Android', v[0][0], v[0][1]);
             })
             .catch((err) => {
                 console.warn('[Links] версии приложений не загружены:', err);

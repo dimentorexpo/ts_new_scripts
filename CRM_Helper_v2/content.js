@@ -120,9 +120,6 @@ async function crmCopy(text) {
     return ok;
 }
 
-/** Совместимость со старым кодом. */
-const copyToClipboard = (str) => { crmCopy(str); };
-
 /** Кнопка в состоянии «идёт запрос». */
 function crmSetBusy(button, busy) {
     if (!button) return;
@@ -139,23 +136,6 @@ function crmSleep(ms) {
 function crmPersonIdFromUrl() {
     const m = location.pathname.match(/\/persons\/(\d{3,12})/);
     return m ? m[1] : '';
-}
-
-/** Ограничение количества символов в поле значением maxLength. */
-function maxLengthCheck(object) {
-    if (object.maxLength > 0 && object.value.length > object.maxLength) {
-        object.value = object.value.slice(0, object.maxLength);
-    }
-}
-
-/** Принудительная установка значения поля в границы min/max. */
-function checkMinMaxValue(input) {
-    const minValue = parseInt(input.min, 10);
-    const maxValue = parseInt(input.max, 10);
-    const currentValue = parseInt(input.value, 10);
-    if (Number.isNaN(currentValue)) return;
-    if (!Number.isNaN(minValue) && currentValue < minValue) input.value = minValue;
-    else if (!Number.isNaN(maxValue) && currentValue > maxValue) input.value = maxValue;
 }
 
 /** Разрешить ввод только цифр. */
@@ -262,17 +242,6 @@ function crmToast(message, type = 'info', opts = {}) {
 }
 window.crmToast = crmToast;
 
-/** Старое API уведомлений: тип угадывается по тексту, если не указан явно. */
-function createAndShowButton(text, type) {
-    let normalized = type || 'success';
-    if (!type) {
-        if (/не удалось|ошибка|error|запрет/i.test(text)) normalized = 'error';
-        else if (/внимание|не указан/i.test(text)) normalized = 'warning';
-    }
-    return crmToast(text, normalized);
-}
-window.createAndShowButton = createAndShowButton;
-
 /**
  * Модальный диалог подтверждения (замена confirm()).
  * Для разрушительных действий danger: true — фокус по умолчанию на «Отмена».
@@ -355,6 +324,43 @@ function checkelementtype(event) {
 }
 
 /**
+ * Общее перетаскивание мышью: тянем за handle, двигаем target.
+ * Слушатели навешиваются на время перетаскивания, после отпускания снимаются.
+ * @param {Element} handle - за что тянем
+ * @param {Element} target - что двигаем (меняет style.left/top)
+ * @param {{onEnd?: Function, freeArea?: Function}} [opts]
+ *   freeArea(event) — true, если цель клика не интерактивный элемент (по умолчанию checkelementtype).
+ *   onEnd() — вызывается после отпускания (сохранить позицию и т. п.).
+ */
+function crmDraggable(handle, target, opts = {}) {
+    if (!handle || !target) return;
+    const isFree = opts.freeArea || checkelementtype;
+    handle.addEventListener('mousedown', (event) => {
+        if (event.button !== 0 || !isFree(event)) return;
+        event.preventDefault();
+
+        const startX = event.clientX;
+        const startY = event.clientY;
+        const elemLeft = target.offsetLeft;
+        const elemTop = target.offsetTop;
+
+        const onMove = (e) => {
+            if (!(e.buttons & 1)) { onUp(); return; }
+            target.style.left = `${elemLeft + e.clientX - startX}px`;
+            target.style.top = `${elemTop + e.clientY - startY}px`;
+        };
+        const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            if (opts.onEnd) opts.onEnd();
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    });
+}
+
+/**
  * Создаёт плавающее окно расширения.
  * Перетаскивается за шапку (.crm-head), позиция запоминается в localStorage.
  */
@@ -373,34 +379,17 @@ function createWindowCRM(id, topKey, leftKey, content, opts = {}) {
 
     win.addEventListener('mousedown', () => crmBringToFront(win), true);
 
-    win.addEventListener('mousedown', (event) => {
-        if (event.button !== 0) return;
-        const handle = win.querySelector('.crm-head');
-        if (handle && !handle.contains(event.target)) return; // тянем только за шапку
-        if (!checkelementtype(event)) return;
-
-        event.preventDefault();
-        const startX = event.clientX;
-        const startY = event.clientY;
-        const elemLeft = win.offsetLeft;
-        const elemTop = win.offsetTop;
-
-        const onMove = (e) => {
-            if (!(e.buttons & 1)) { onUp(); return; }
-            win.style.left = `${elemLeft + e.clientX - startX}px`;
-            win.style.top = `${elemTop + e.clientY - startY}px`;
-        };
-        const onUp = () => {
-            document.removeEventListener('mousemove', onMove);
-            document.removeEventListener('mouseup', onUp);
-            crmClampWindow(win);
-            localStorage.setItem(topKey, String(win.offsetTop));
-            localStorage.setItem(leftKey, String(win.offsetLeft));
-        };
-
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-    });
+    const handle = win.querySelector('.crm-head');
+    if (handle) {
+        crmDraggable(handle, win, {
+            freeArea: (event) => handle.contains(event.target) && checkelementtype(event),
+            onEnd: () => {
+                crmClampWindow(win);
+                localStorage.setItem(topKey, String(win.offsetTop));
+                localStorage.setItem(leftKey, String(win.offsetLeft));
+            }
+        });
+    }
 
     return win;
 }
@@ -432,12 +421,6 @@ function crmToggleWindow(idOrEl) {
     }
     crmHideWindow(win);
     return false;
-}
-
-/** Изменить display элемента (старое API). */
-function setDisplayStyle(element, value) {
-    if (value === 'none') crmHideWindow(element);
-    else element.style.display = value;
 }
 
 /** Скрыть окно двойным кликом по шапке. */
@@ -552,6 +535,7 @@ menubarcrm.innerHTML =
         <span class="crm-label" title="Ссылка входа для тестового пользователя копируется в буфер">Логинер</span>
         <button type="button" class="crm-btn crm-btn-sm" id="testuchenik" title="Скопировать ссылку входа тестового ученика">Тест У</button>
         <button type="button" class="crm-btn crm-btn-sm" id="testprepod" title="Скопировать ссылку входа тестового преподавателя">Тест П</button>
+        <span class="crm-menu-ver" title="Версия CRMHelper">v${chrome.runtime.getManifest().version}</span>
      </div>`;
 document.body.append(menubarcrm);
 
@@ -698,7 +682,6 @@ if (CRM_IS_CRM) {
  * ============================================================ */
 
 const CRM_DEFAULT_SOUND = 'https://dimentorexpo.github.io/Sounds/msg.mp3';
-var soundsconteinerCRM;            // список звуков (заполняет SettingsApp.js)
 let soundintervalsetCRM = null;    // true — разовый звук проигран; число — id интервала повтора
 let audioCRM = new Audio(localStorage.getItem('sound_strCRM') || CRM_DEFAULT_SOUND);
 audioCRM.volume = Math.min(1, Math.max(0, parseFloat(localStorage.getItem('audioCRMvol') ?? '1') || 0));
@@ -887,23 +870,20 @@ if (CRM_IS_CRM) setInterval(checkforsoundplay, 1000);
         ui.style.right = '12px';
     }
 
-    let drag = null;
-    header.addEventListener('mousedown', (e) => {
+    // Позиция может быть задана через right — до перетаскивания переводим её в left/top,
+    // которые и двигает crmDraggable.
+    header.addEventListener('mousedown', () => {
         const rect = ui.getBoundingClientRect();
-        drag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
-        e.preventDefault();
-    });
-    document.addEventListener('mousemove', (e) => {
-        if (!drag) return;
-        ui.style.left = `${e.clientX - drag.dx}px`;
-        ui.style.top = `${e.clientY - drag.dy}px`;
+        ui.style.left = `${Math.round(rect.left)}px`;
+        ui.style.top = `${Math.round(rect.top)}px`;
         ui.style.right = 'auto';
     });
-    document.addEventListener('mouseup', () => {
-        if (!drag) return;
-        drag = null;
-        const rect = ui.getBoundingClientRect();
-        localStorage.setItem(UI_POS_KEY, JSON.stringify({ top: Math.round(rect.top), left: Math.round(rect.left) }));
+    crmDraggable(header, ui, {
+        freeArea: () => true,
+        onEnd: () => {
+            const rect = ui.getBoundingClientRect();
+            localStorage.setItem(UI_POS_KEY, JSON.stringify({ top: Math.round(rect.top), left: Math.round(rect.left) }));
+        }
     });
 
     document.body.appendChild(ui);

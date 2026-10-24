@@ -1,200 +1,293 @@
 /**
- * AlarmClock.js — модуль «Напоминания»: два независимых напоминания на время ЧЧ:ММ.
+ * AlarmClock.js — модуль «Напоминания»: список напоминаний на время ЧЧ:ММ,
+ * у каждого — опция повтора «каждый день».
  *
- * Хранение (ключи прежние, чтобы не потерять уже поставленные напоминания):
- *   remindertextCRM{n}  — текст;
- *   setchasCRM{n} / setminutaCRM{n} — время, для отображения;
- *   chronostamp{n}      — момент срабатывания (мс с 1970 г.).
- * Раньше в chronostamp лежала относительная задержка — такие значения
- * переводятся в абсолютное время при загрузке.
+ * Хранение: ключ crm_reminders_v2 — JSON-массив
+ *   [{ id, text, time: "ЧЧ:ММ", next: <мс с 1970>, daily: true|false }]
+ * next — момент следующего срабатывания (абсолютное время).
+ *
+ * Миграция из старого формата (два слота remindertextCRM{n} / chronostamp{n})
+ * выполняется один раз при загрузке: старые напоминания переезжают в новый
+ * список, прежние ключи удаляются.
  */
 (function () {
     'use strict';
 
-    const SLOTS = ['', '1'];          // суффиксы ключей: напоминание 1 и 2
-    const timers = { '': null, '1': null };
+    const LS_KEY = 'crm_reminders_v2';
+    const timers = new Map();       // id → setTimeout
+    const cards = new Map();        // id → корневой элемент карточки
 
-    const slotHtml = (n, idx) => `
-        <div class="ac-card" data-slot="${idx}">
-            <div class="ac-card-head">
-                <span class="crm-section-title">Напоминание ${n}</span>
-                <span class="crm-pill ac-count" id="clock_reminCRM${idx}" title="Осталось до срабатывания. Двойной клик — удалить">—</span>
-            </div>
-            <input class="crm-input" id="remindertextCRM${idx}" placeholder="О чём напомнить" autocomplete="off" maxlength="300">
-            <div class="crm-row" style="margin-top:8px">
-                <input class="crm-input is-center" id="ac_time${idx}" type="time" step="60" style="width:110px" title="Время срабатывания">
-                <button type="button" class="crm-btn crm-btn-primary crm-grow" id="setreminderCRM${idx}">Поставить</button>
-                <button type="button" class="crm-icon-btn is-boxed" id="ac_remove${idx}" title="Удалить напоминание" aria-label="Удалить напоминание">${crmIcon('trash')}</button>
-            </div>
-        </div>`;
+    const pad2 = (n) => String(n).padStart(2, '0');
 
-    const html = `
+    /* ---------- Хранилище ---------- */
+
+    let reminders = loadReminders();
+    const save = () => localStorage.setItem(LS_KEY, JSON.stringify(reminders));
+
+    function loadReminders() {
+        // Миграция старых двух слотов.
+        const legacy = [];
+        for (const idx of ['', '1']) {
+            const next = Number(localStorage.getItem('chronostamp' + idx));
+            if (next > 1e12) {
+                legacy.push({
+                    id: `r${Date.now()}${idx ? '2' : '1'}`,
+                    text: localStorage.getItem('remindertextCRM' + idx) || '',
+                    time: null, // восстановим из next
+                    next,
+                    daily: false
+                });
+            }
+            ['chronostamp', 'remindertextCRM', 'setchasCRM', 'setminutaCRM'].forEach((k) => localStorage.removeItem(k + idx));
+            localStorage.removeItem(idx === '' ? 'chronostamp2' : 'chronostamp22'); // наследные служебные ключи
+        }
+
+        let list = [];
+        try {
+            const parsed = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+            if (Array.isArray(parsed)) {
+                list = parsed.filter((r) => r && typeof r.id === 'string');
+            }
+        } catch (_) { /* битый JSON — начинаем с пустого списка */ }
+
+        if (legacy.length && !list.length) {
+            list = legacy;
+            setTimeout(() => localStorage.setItem(LS_KEY, JSON.stringify(list)), 0);
+        }
+
+        // Восстанавливаем поле time из абсолютного момента (для карточек старой миграции).
+        const now = Date.now();
+        for (const r of list) {
+            if (!r.time && r.next > 1e12) {
+                const d = new Date(r.next);
+                r.time = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+            }
+            if (typeof r.daily !== 'boolean') r.daily = false;
+            if (!r.text) r.text = '';
+            // Просроченное ежедневное напоминание (вкладка была закрыта) — просто переносим вперёд.
+            if (r.daily && r.next && r.next <= now) r.next = nextOccurrenceFrom(r.time, now);
+        }
+        return list;
+    }
+
+    /** Ближайший момент «сегодня в ЧЧ:ММ», а если уже прошёл — завтра. */
+    function nextOccurrenceFrom(time, fromNow = Date.now()) {
+        const [h, m] = String(time).split(':').map(Number);
+        const target = new Date(fromNow);
+        target.setHours(h || 0, m || 0, 0, 0);
+        if (target.getTime() <= fromNow) target.setDate(target.getDate() + 1);
+        return target.getTime();
+    }
+
+    /* ---------- Меню и окно ---------- */
+
+    createWindowCRM('winAlarmclock', 'winTopAlarmclock', 'winLeftAlarmclock', `
         ${crmWinHeader({
             icon: '⏰',
             title: 'Напоминания',
             tools: '<span class="ac-clock" id="clock_jsCRM" title="Текущее время"></span>',
             closeId: 'hideAlarmclock'
         })}
-        <div id="AlarmclockCRM">${slotHtml(1, '')}${slotHtml(2, '1')}</div>`;
+        <div id="AlarmclockCRM" class="ac-list"></div>
+        <div style="padding: 10px 14px 14px">
+            <button type="button" class="crm-btn crm-btn-block" id="ac_add">${crmIcon('plus', 15)} Добавить напоминание</button>
+        </div>`, { className: 'ac-window' });
 
-    createWindowCRM('winAlarmclock', 'winTopAlarmclock', 'winLeftAlarmclock', html, { className: 'ac-window' });
-    document.getElementById('winAlarmclock').style.width = '340px';
+    const win = document.getElementById('winAlarmclock');
+    win.style.width = '360px';
     hideWindowOnDoubleClick('winAlarmclock');
     hideWindowOnClick('winAlarmclock', 'hideAlarmclock');
 
     document.getElementById('btnAlarmclock').onclick = () => crmToggleWindow('winAlarmclock');
 
-    const pad2 = (n) => String(n).padStart(2, '0');
-
-    /** Ближайший момент HH:MM (сегодня, а если уже прошло — завтра). */
-    function nextOccurrence(hours, minutes) {
-        const target = new Date();
-        target.setHours(hours, minutes, 0, 0);
-        if (target.getTime() <= Date.now()) target.setDate(target.getDate() + 1);
-        return target.getTime();
-    }
-
-    /** Момент срабатывания из хранилища (с переводом старого формата). */
-    function readTarget(idx) {
-        const raw = Number(localStorage.getItem('chronostamp' + idx));
-        if (!raw) return 0;
-        if (raw > 1e12) return raw;
-
-        // Старый формат: относительная задержка. Берём сохранённое время на сегодня.
-        const h = parseInt(localStorage.getItem('setchasCRM' + idx), 10);
-        const m = parseInt(localStorage.getItem('setminutaCRM' + idx), 10);
-        if (Number.isNaN(h) || Number.isNaN(m)) return 0;
-        const today = new Date();
-        today.setHours(h, m, 0, 0);
-        localStorage.setItem('chronostamp' + idx, String(today.getTime()));
-        return today.getTime();
-    }
-
-    function clearSlotStorage(idx) {
-        ['chronostamp', 'remindertextCRM', 'setchasCRM', 'setminutaCRM'].forEach((k) => localStorage.removeItem(k + idx));
-        localStorage.removeItem(idx === '' ? 'chronostamp2' : 'chronostamp22'); // наследные служебные ключи
-    }
+    const listEl = document.getElementById('AlarmclockCRM');
 
     function refreshMenuIcon() {
-        const active = SLOTS.some((idx) => readTarget(idx) > 0);
-        crmSetMenuIcon('btnAlarmclock', active ? '🔔' : '🔕');
+        crmSetMenuIcon('btnAlarmclock', reminders.length ? '🔔' : '🔕');
     }
 
-    function fillSlotFields(idx) {
-        const target = readTarget(idx);
-        document.getElementById('remindertextCRM' + idx).value = localStorage.getItem('remindertextCRM' + idx) || '';
-        document.getElementById('ac_time' + idx).value = target
-            ? `${pad2(new Date(target).getHours())}:${pad2(new Date(target).getMinutes())}`
-            : '';
+    /* ---------- Планировщик ---------- */
+
+    function schedule(r) {
+        clearTimeout(timers.get(r.id));
+        timers.delete(r.id);
+        if (!r.next || r.next <= Date.now()) return;
+        timers.set(r.id, setTimeout(() => fire(r.id), r.next - Date.now()));
     }
 
-    /** Срабатывание. Проверяем, что напоминание ещё актуально: его могла снять другая вкладка. */
-    function fire(idx, expectedTarget) {
-        timers[idx] = null;
-        if (readTarget(idx) !== expectedTarget) return;
+    function scheduleAll() {
+        reminders.forEach(schedule);
+    }
 
-        const text = localStorage.getItem('remindertextCRM' + idx) || 'Время напоминания наступило';
-        clearSlotStorage(idx);
-        fillSlotFields(idx);
+    /** Срабатывание. Проверяем, что напоминание ещё актуально: его могла изменить другая вкладка. */
+    function fire(id) {
+        timers.delete(id);
+        const r = reminders.find((x) => x.id === id);
+        if (!r || !r.next || r.next > Date.now() + 1500) return;
+
+        const text = r.text || 'Время напоминания наступило';
+        const pill = cards.get(id)?.querySelector('.ac-count');
+
+        if (r.daily) {
+            r.next = nextOccurrenceFrom(r.time, Date.now() + 60000); // строго следующий день
+            schedule(r);
+            save();
+            if (pill) pill.dataset.tone = 'info';
+        } else {
+            reminders = reminders.filter((x) => x.id !== id);
+            save();
+            cards.get(id)?.remove();
+            cards.delete(id);
+            if (!reminders.length) render(); // вернуть заглушку «Напоминаний нет»
+        }
         refreshMenuIcon();
 
-        crmToast(text, 'warning', { title: `⏰ Напоминание ${idx === '' ? 1 : 2}`, sticky: true });
+        crmToast(text, 'warning', { title: '⏰ Напоминание', sticky: true });
         if (typeof crmPlaySound === 'function') crmPlaySound();
     }
 
-    /** Планирует таймер по сохранённому моменту. Просроченное (пока вкладка была закрыта) срабатывает сразу. */
-    function schedule(idx) {
-        clearTimeout(timers[idx]);
-        timers[idx] = null;
-        const target = readTarget(idx);
-        if (!target) return;
-        // setTimeout ограничен ~24,8 суток — нам достаточно, напоминание не дальше суток.
-        timers[idx] = setTimeout(() => fire(idx, target), Math.max(0, target - Date.now()));
+    /* ---------- Карточки ---------- */
+
+    function cardHtml(r) {
+        return `
+            <div class="ac-card" data-id="${crmEsc(r.id)}">
+                <div class="ac-card-head">
+                    <input class="crm-input ac-text" placeholder="О чём напомнить" autocomplete="off" maxlength="300" value="${crmEsc(r.text)}">
+                    <button type="button" class="crm-icon-btn is-boxed ac-del" title="Удалить напоминание" aria-label="Удалить напоминание">${crmIcon('trash')}</button>
+                </div>
+                <div class="crm-row" style="margin-top:8px">
+                    <input class="crm-input is-center ac-time" type="time" step="60" style="width:104px" title="Время срабатывания" value="${r.time || ''}">
+                    <label class="crm-switch" title="Повторять каждый день в это время">
+                        <input type="checkbox" class="ac-daily"${r.daily ? ' checked' : ''}><span class="crm-switch-track"></span><span>Каждый день</span>
+                    </label>
+                    <span class="crm-grow"></span>
+                    <span class="crm-pill ac-count" title="Осталось до срабатывания. Двойной клик — удалить">—</span>
+                </div>
+            </div>`;
     }
 
-    function setupReminder(idx) {
-        const timeValue = document.getElementById('ac_time' + idx).value;
-        const text = document.getElementById('remindertextCRM' + idx).value.trim();
-        const timeInput = document.getElementById('ac_time' + idx);
+    function bindCard(root, r) {
+        const textEl = root.querySelector('.ac-text');
+        const timeEl = root.querySelector('.ac-time');
+        const dailyEl = root.querySelector('.ac-daily');
 
-        if (!/^\d{2}:\d{2}$/.test(timeValue)) {
-            timeInput.classList.add('is-invalid');
-            crmToast('Укажите время срабатывания', 'warning');
+        const applyTime = () => {
+            const value = timeEl.value;
+            if (!/^\d{2}:\d{2}$/.test(value)) {
+                timeEl.classList.add('is-invalid');
+                return;
+            }
+            timeEl.classList.remove('is-invalid');
+            r.time = value;
+            r.next = nextOccurrenceFrom(value);
+            schedule(r);
+            save();
+            refreshMenuIcon();
+            const when = new Date(r.next);
+            const isTomorrow = when.getDate() !== new Date().getDate();
+            crmToast(`Сработает ${isTomorrow ? 'завтра' : 'сегодня'} в ${r.time}${r.daily ? ', повтор каждый день' : ''}`, 'success', { title: 'Напоминание поставлено', duration: 2500 });
+        };
+
+        textEl.addEventListener('input', () => { r.text = textEl.value; save(); });
+        textEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyTime(); });
+        timeEl.addEventListener('change', applyTime);
+        dailyEl.addEventListener('change', () => {
+            r.daily = dailyEl.checked;
+            if (r.daily && (!r.next || r.next <= Date.now())) {
+                if (!r.time) { crmToast('Сначала укажите время', 'warning'); dailyEl.checked = false; return; }
+                r.next = nextOccurrenceFrom(r.time);
+                schedule(r);
+            }
+            save();
+            renderCountdown(r);
+        });
+        root.querySelector('.ac-del').onclick = () => removeReminder(r.id);
+    }
+
+    function render() {
+        listEl.textContent = '';
+        cards.clear();
+        if (!reminders.length) {
+            listEl.innerHTML = '<div class="crm-empty">Напоминаний нет. Добавьте первое — сработает, пока открыта вкладка CRM.</div>';
             return;
         }
-        timeInput.classList.remove('is-invalid');
-
-        const [h, m] = timeValue.split(':').map(Number);
-        const target = nextOccurrence(h, m);
-
-        localStorage.setItem('remindertextCRM' + idx, text);
-        localStorage.setItem('setchasCRM' + idx, String(h));
-        localStorage.setItem('setminutaCRM' + idx, String(m));
-        localStorage.setItem('chronostamp' + idx, String(target));
-
-        schedule(idx);
-        refreshMenuIcon();
-
-        const when = new Date(target);
-        const isTomorrow = when.getDate() !== new Date().getDate();
-        crmToast(`Сработает ${isTomorrow ? 'завтра' : 'сегодня'} в ${pad2(h)}:${pad2(m)}`, 'success', { title: 'Напоминание поставлено' });
+        for (const r of reminders) {
+            const root = document.createElement('div');
+            root.innerHTML = cardHtml(r);
+            const card = root.firstElementChild;
+            listEl.appendChild(card);
+            cards.set(r.id, card);
+            bindCard(card, r);
+            renderCountdown(r);
+        }
     }
 
-    function removeAlarm(idx) {
-        if (!readTarget(idx)) return;
-        clearTimeout(timers[idx]);
-        timers[idx] = null;
-        clearSlotStorage(idx);
-        fillSlotFields(idx);
+    function removeReminder(id) {
+        clearTimeout(timers.get(id));
+        timers.delete(id);
+        reminders = reminders.filter((x) => x.id !== id);
+        save();
+        cards.get(id)?.remove();
+        cards.delete(id);
+        if (!reminders.length) render();
         refreshMenuIcon();
         crmToast('Напоминание удалено', 'info', { duration: 2000 });
     }
 
-    function renderCountdown(idx) {
-        const el = document.getElementById('clock_reminCRM' + idx);
-        const target = readTarget(idx);
-        if (!target) {
+    function renderCountdown(r) {
+        const el = cards.get(r.id)?.querySelector('.ac-count');
+        if (!el) return;
+        if (!r.next || r.next <= Date.now()) {
             el.textContent = '—';
             el.dataset.tone = '';
             return;
         }
-        let left = Math.max(0, Math.round((target - Date.now()) / 1000));
+        let left = Math.max(0, Math.round((r.next - Date.now()) / 1000));
+        const d = Math.floor(left / 86400);
+        left %= 86400;
         const h = Math.floor(left / 3600);
         left %= 3600;
-        el.textContent = `${pad2(h)}:${pad2(Math.floor(left / 60))}:${pad2(left % 60)}`;
+        el.textContent = (d ? `${d} д ` : '') + `${pad2(h)}:${pad2(Math.floor(left / 60))}:${pad2(left % 60)}`;
         el.dataset.tone = 'info';
     }
 
-    SLOTS.forEach((idx) => {
-        document.getElementById('setreminderCRM' + idx).onclick = () => setupReminder(idx);
-        document.getElementById('ac_remove' + idx).onclick = () => removeAlarm(idx);
-        document.getElementById('clock_reminCRM' + idx).ondblclick = () => removeAlarm(idx);
-        document.getElementById('remindertextCRM' + idx).addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') setupReminder(idx);
-        });
-        fillSlotFields(idx);
-        schedule(idx);
+    document.getElementById('ac_add').onclick = () => {
+        const r = { id: `r${Date.now()}${Math.floor(Math.random() * 100)}`, text: '', time: '', next: 0, daily: false };
+        reminders.push(r);
+        save();
+        render();
+        refreshMenuIcon();
+        cards.get(r.id)?.querySelector('.ac-text').focus();
+    };
+
+    // Счётчик двойного клика по «осталось» — удалить (как раньше).
+    listEl.addEventListener('dblclick', (e) => {
+        const pill = e.target.closest('.ac-count');
+        if (pill) removeReminder(pill.closest('.ac-card').dataset.id);
     });
 
-    // Напоминание поставили или сняли в другой вкладке CRM — синхронизируемся.
+    // Напоминания поставили или сняли в другой вкладке CRM — синхронизируемся.
     window.addEventListener('storage', (e) => {
-        const idx = SLOTS.find((s) => e.key === 'chronostamp' + s);
-        if (idx === undefined) return;
-        schedule(idx);
-        fillSlotFields(idx);
+        if (e.key !== LS_KEY) return;
+        reminders = loadReminders();
+        timers.forEach((t) => clearTimeout(t));
+        timers.clear();
+        scheduleAll();
+        render();
         refreshMenuIcon();
     });
 
+    scheduleAll();
+    render();
     refreshMenuIcon();
 
     // Часы и обратный отсчёт обновляем только когда окно открыто.
-    const win = document.getElementById('winAlarmclock');
     const tick = () => {
         if (win.style.display === 'none') return;
         const now = new Date();
         document.getElementById('clock_jsCRM').textContent =
             `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
-        SLOTS.forEach(renderCountdown);
+        reminders.forEach(renderCountdown);
     };
     win.addEventListener('crm:shown', tick);
     setInterval(tick, 1000);

@@ -4,7 +4,8 @@
  *  2. тёмная/светлая тема страницы (переключатель в окне «Настройки», chrome.storage: tsDarkTheme);
  *  3. аналитика под графиками «Статистики» (RTT, потери, джиттер…);
  *  4. кнопка 🔍 «Диагностика WebRTC» с разбором журнала комнаты и сессий устройств.
- * Скрипт загружается отдельно от content.js — все утилиты внутри файла.
+ * Запросы к CRM идут через crmRequest из content.js: по манифесту оба скрипта
+ * живут в одном изолированном мире и content.js загружается первым.
  */
 
 // ============================================================
@@ -113,52 +114,28 @@ function getUserInfo(userid) {
     return Promise.reject(new Error('недавний запрос не удался, повтор позже'));
   }
 
-  const fetchURL = `https://backend.skyeng.ru/api/persons/${userid}?crm2=true&debugParam=person-page`;
+  const request = crmRequest(`https://backend.skyeng.ru/api/persons/${userid}?crm2=true&debugParam=person-page`, { method: 'GET' })
+    .then((text) => {
+      let data;
+      try {
+        data = JSON.parse(text)?.data;
+      } catch (e) {
+        throw new Error('CRM вернула не JSON (возможно, нужно войти в CRM)');
+      }
+      if (!data) throw new Error('в ответе CRM нет данных пользователя');
 
-  const request = new Promise((resolve, reject) => {
-    try {
-      chrome.runtime.sendMessage(
-        { action: 'getFetchRequest', fetchURL, requestOptions: { method: 'GET' } },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            reject(new Error(chrome.runtime.lastError.message));
-            return;
-          }
-          if (!response?.success) {
-            reject(new Error(response?.error || 'пустой ответ расширения'));
-            return;
-          }
+      const info = {
+        nameofuser: [data.name, data.surname].filter(Boolean).join(' '),
+        flagusertype: data.type
+      };
 
-          let data;
-          try {
-            data = JSON.parse(response.fetchansver)?.data;
-          } catch (e) {
-            reject(new Error('CRM вернула не JSON (возможно, нужно войти в CRM)'));
-            return;
-          }
-          if (!data) {
-            reject(new Error('в ответе CRM нет данных пользователя'));
-            return;
-          }
-
-          const info = {
-            nameofuser: [data.name, data.surname].filter(Boolean).join(' '),
-            flagusertype: data.type
-          };
-
-          if (processedUserIds.size >= PROCESSED_CACHE_MAX) {
-            processedUserIds.delete(processedUserIds.keys().next().value);
-          }
-          processedUserIds.set(userid, info);
-          failedUserRequests.delete(userid);
-          resolve(info);
-        }
-      );
-    } catch (e) {
-      // Extension context invalidated: расширение обновили, страница старая
-      reject(e);
-    }
-  })
+      if (processedUserIds.size >= PROCESSED_CACHE_MAX) {
+        processedUserIds.delete(processedUserIds.keys().next().value);
+      }
+      processedUserIds.set(userid, info);
+      failedUserRequests.delete(userid);
+      return info;
+    })
     .catch((error) => {
       failedUserRequests.set(userid, Date.now());
       console.warn(`[CRMHelper:TS] Не удалось получить данные пользователя ${userid}:`, error.message);
@@ -231,7 +208,7 @@ function addinginfo(pageelement, userid, elemtype, info = processedUserIds.get(u
         const id = pageelement.dataset.chmafUid;
         if (!id) return;
         event.preventDefault();
-        // Скрипт живёт изолированно — copyToClipboard недоступен
+        // Скрипт живёт изолированно — буфер обмена только через navigator.clipboard
         navigator.clipboard?.writeText(id).then(() => {
           const badge = pageelement.querySelector(`:scope > .${BADGE_CLASS}`);
           if (!badge) return;

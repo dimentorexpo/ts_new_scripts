@@ -653,6 +653,50 @@
 #testuchenik.successbtn, #testprepod.successbtn { color: var(--crm-ok); border-color: rgba(95, 207, 152, .5); background: var(--crm-ok-soft); }
 #testuchenik.errorbtn,   #testprepod.errorbtn   { color: var(--crm-bad); border-color: rgba(240, 122, 126, .5); background: var(--crm-bad-soft); }
 
+/* Версия расширения в подвале меню */
+.crm-menu-ver {
+    margin-left: auto;
+    font-family: var(--crm-mono);
+    font-size: 10.5px;
+    color: var(--crm-text-3);
+    white-space: nowrap;
+}
+
+/* История поисковых запросов (Jira, Mattermost) */
+.crm-recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.crm-recent-label {
+    flex: none;
+    font-size: 11.5px;
+    color: var(--crm-text-3);
+}
+
+.crm-recent-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    max-width: 180px;
+    padding: 0 9px;
+    font: 500 11.5px var(--crm-font);
+    color: var(--crm-text-2);
+    background: var(--crm-bg-3);
+    border: 1px solid var(--crm-line);
+    border-radius: 999px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background .12s ease, color .12s ease, border-color .12s ease;
+}
+
+.crm-recent-chip:hover { color: var(--crm-accent-ink); background: var(--crm-accent-soft); border-color: var(--crm-accent-line); }
+
 /* ==========================================================================
    Уведомления (тосты)
    ========================================================================== */
@@ -1144,6 +1188,7 @@ a.crm-screenshot-link:hover img { box-shadow: 0 0 0 2px #2f6db3; }
 .ac-card:first-child { border-top: 0; }
 .ac-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .ac-card-head .crm-section-title { margin: 0; }
+.ac-card .ac-text { flex: 1 1 auto; min-width: 0; width: auto; }
 .ac-count { margin-left: auto; font-family: var(--crm-mono); }
 .ac-clock { font-family: var(--crm-mono); font-size: 12.5px; color: var(--crm-text-2); }
 

@@ -647,33 +647,6 @@
     return false;
   }
 
-  async function copyTextToClipboard(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch (_) {}
-
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'fixed';
-    textarea.style.top = '-1000px';
-    textarea.style.opacity = '0';
-
-    document.body.appendChild(textarea);
-    textarea.select();
-
-    let ok = false;
-
-    try {
-      ok = document.execCommand('copy');
-    } catch (_) {}
-
-    textarea.remove();
-
-    return ok;
-  }
-
   async function copyCurrent() {
     const text = els.textarea.value;
 
@@ -682,7 +655,7 @@
       return;
     }
 
-    const ok = await copyTextToClipboard(text);
+    const ok = await crmCopy(text);
 
     if (ok) {
       setPreviewStatus('Скопировано в буфер обмена');
@@ -702,7 +675,7 @@
     const target = getInsertTarget();
 
     if (!target) {
-      const ok = await copyTextToClipboard(text);
+      const ok = await crmCopy(text);
       setPreviewStatus(ok ? 'Активное поле не найдено — текст скопирован в буфер' : 'Активное поле не найдено, копирование не удалось', !ok);
       return;
     }
@@ -712,7 +685,7 @@
     if (inserted) {
       setPreviewStatus('Вставлено в поле');
     } else {
-      const ok = await copyTextToClipboard(text);
+      const ok = await crmCopy(text);
       setPreviewStatus(ok ? 'Не удалось вставить — текст скопирован в буфер' : 'Не удалось вставить или скопировать', !ok);
     }
   }
