@@ -121,6 +121,26 @@ function resetVocabularyState() {
     updateSelectionInfo();
 }
 
+/* ---------- Пул конкурентных задач ---------- */
+
+async function runConcurrentPool({ items, limit = 6, taskId, worker }) {
+    if (!items.length) return;
+    let nextIndex = 0;
+    const workerCount = Math.min(limit, items.length);
+
+    const workers = Array.from({ length: workerCount }, async () => {
+        while (nextIndex < items.length) {
+            while (isTaskPaused && !isTaskStale(taskId)) await sleep(200);
+            if (isTaskStale(taskId)) return;
+
+            const currentIndex = nextIndex++;
+            await worker(items[currentIndex], currentIndex);
+        }
+    });
+
+    await Promise.all(workers);
+}
+
 /* ---------- Универсальный батч-раннер ---------- */
 
 async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, successMessage, request }) {
@@ -147,27 +167,41 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
 
     const studentId = vocabStudentId;
     let failed = 0;
-    const taskId = startTask(tone, `0 / ${targetIds.length}`);
+    let completed = 0;
+    const total = targetIds.length;
+    const taskId = startTask(tone, `0 / ${total}`);
 
-    for (let i = 0; i < targetIds.length; i++) {
-        while (isTaskPaused && !isTaskStale(taskId)) await sleep(300);
-        if (isTaskStale(taskId)) return false;
+    await runConcurrentPool({
+        items: targetIds,
+        limit: 6,
+        taskId,
+        worker: async (wordId) => {
+            try {
+                let res = await request(wordId, studentId);
+                // Если сервер вернул 429 (Too Many Requests), делаем короткую паузу и одну повторную попытку
+                if (res.status === 429) {
+                    await sleep(600);
+                    if (isTaskStale(taskId)) return;
+                    res = await request(wordId, studentId);
+                }
+                if (!res.ok) failed++;
+            } catch (err) {
+                failed++;
+                console.error(`[TSM Словарь] Ошибка операции над словом ${wordId}:`, err);
+            }
 
-        try {
-            const res = await request(targetIds[i], studentId);
-            if (!res.ok) failed++;
-        } catch (err) {
-            failed++;
-            console.error(`[TSM Словарь] Ошибка операции над словом ${targetIds[i]}:`, err);
+            completed++;
+            if (!isTaskStale(taskId)) {
+                const percent = Math.round((completed / total) * 100);
+                setProgress(percent, `${completed} / ${total}${failed ? ` · ошибок: ${failed}` : ""}`);
+            }
         }
+    });
 
-        const percent = Math.round(((i + 1) / targetIds.length) * 100);
-        setProgress(percent, `${i + 1} / ${targetIds.length}${failed ? ` · ошибок: ${failed}` : ""}`);
-        await sleep(150);
-    }
+    if (isTaskStale(taskId)) return false;
 
     finishTask(failed ? `${doneLabel}, ошибок: ${failed}` : doneLabel);
-    createNotify(failed ? `${successMessage}, но ${failed} из ${targetIds.length} не обработаны` : successMessage, failed ? "error" : "message");
+    createNotify(failed ? `${successMessage}, но ${failed} из ${total} не обработаны` : successMessage, failed ? "error" : "message");
     selectedWordIds.clear();
     await getwordsets(studentId);
     return true;
@@ -289,52 +323,88 @@ async function getwordsets(studentId) {
         return;
     }
 
-    for (let i = 0; i < sets.length; i++) {
-        while (isTaskPaused && !isTaskStale(taskId)) await sleep(300);
-        if (isTaskStale(taskId)) return;
+    const loadedSets = new Array(sets.length);
+    const meaningsCache = new Map();
+    let completedSets = 0;
+    let loadedWordsCount = 0;
 
-        const wordset = sets[i];
-        try {
-            const setWords = await fetch(
-                `https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`,
-                { headers: WORDS_API_HEADERS() }
-            ).then((r) => {
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return r.json();
-            });
-            const words = setWords?.data || [];
+    await runConcurrentPool({
+        items: sets,
+        limit: 4,
+        taskId,
+        worker: async (wordset, index) => {
+            try {
+                const setWords = await fetch(
+                    `https://api-words.skyeng.ru/api/v1/wordsets/${wordset.id}/words.json?wordsetId=${wordset.id}&studentId=${studentId}&page=1&pageSize=500`,
+                    { headers: WORDS_API_HEADERS() }
+                ).then((r) => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                });
+                const words = setWords?.data || [];
 
-            let meaningsById = new Map();
-            if (words.length) {
-                const ids = words.map((w) => w.meaningId).join(",");
-                const meanings = await fetch(`https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=${ids}&acceptLanguage=ru`, { headers: WORDS_API_HEADERS() })
-                    .then((r) => (r.ok ? r.json() : []));
-                /* FIX: сопоставление шло по индексу массива — если словарь возвращал значения
-                   в другом порядке или без части ID, слова получали чужие названия */
-                meaningsById = new Map((Array.isArray(meanings) ? meanings : []).map((m) => [String(m.id), m]));
+                if (words.length) {
+                    const missingIds = words
+                        .map((w) => String(w.meaningId))
+                        .filter((id) => id && !meaningsCache.has(id));
+
+                    if (missingIds.length) {
+                        const CHUNK_SIZE = 60;
+                        const chunks = [];
+                        for (let i = 0; i < missingIds.length; i += CHUNK_SIZE) {
+                            chunks.push(missingIds.slice(i, i + CHUNK_SIZE));
+                        }
+                        await Promise.all(chunks.map(async (chunk) => {
+                            try {
+                                const idsParam = chunk.join(",");
+                                const meanings = await fetch(`https://dictionary.skyeng.ru/api/for-services/v2/meanings?ids=${idsParam}&acceptLanguage=ru`, {
+                                    headers: WORDS_API_HEADERS()
+                                }).then((r) => (r.ok ? r.json() : []));
+
+                                if (Array.isArray(meanings)) {
+                                    for (const m of meanings) {
+                                        if (m && m.id) meaningsCache.set(String(m.id), m);
+                                    }
+                                }
+                            } catch (mErr) {
+                                console.warn("[TSM Словарь] Не удалось получить перевод части слов:", mErr);
+                            }
+                        }));
+                    }
+                }
+
+                if (isTaskStale(taskId)) return;
+
+                const wordSetData = {
+                    title: wordset.title,
+                    words: words.map((w) => ({
+                        text: meaningsCache.get(String(w.meaningId))?.text || `#${w.meaningId}`,
+                        isLearned: w.isLearned,
+                        progress: w.progress ?? 0,
+                        meaningId: w.meaningId
+                    }))
+                };
+
+                loadedSets[index] = wordSetData;
+                loadedWordsCount += wordSetData.words.length;
+            } catch (err) {
+                console.error("[TSM Словарь] Ошибка загрузки набора " + wordset.title, err);
             }
 
-            const wordSetData = {
-                title: wordset.title,
-                words: words.map((w) => ({
-                    text: meaningsById.get(String(w.meaningId))?.text || `#${w.meaningId}`,
-                    isLearned: w.isLearned,
-                    progress: w.progress ?? 0,
-                    meaningId: w.meaningId
-                }))
-            };
-            if (isTaskStale(taskId)) return;
-            globalWordsCounter += wordSetData.words.length;
-            allWordSets.push(wordSetData);
-        } catch (err) {
-            console.error("[TSM Словарь] Ошибка загрузки набора " + wordset.title, err);
+            completedSets++;
+            if (!isTaskStale(taskId)) {
+                setProgress(
+                    Math.round((completedSets / sets.length) * 100),
+                    `Наборы ${completedSets}/${sets.length} · слов: ${loadedWordsCount}`
+                );
+            }
         }
-
-        setProgress(Math.round(((i + 1) / sets.length) * 100), `Наборы ${i + 1}/${sets.length} · слов: ${globalWordsCounter}`);
-        await sleep(120);
-    }
+    });
 
     if (isTaskStale(taskId)) return;
+
+    allWordSets = loadedSets.filter(Boolean);
+    globalWordsCounter = allWordSets.reduce((acc, s) => acc + s.words.length, 0);
     renderWordSets(allWordSets, false);
     document.getElementById("searchwordinput").style.display = "";
     finishTask(`Найдено слов: ${globalWordsCounter} в ${allWordSets.length} наборах`);
@@ -492,7 +562,7 @@ document.getElementById("learncheckedwords").onclick = learnSelectedWords;
 document.getElementById("unlearnallwords").onclick = resetProgressForSelectedWords;
 document.getElementById("deleteallwords").onclick = deleteSelectedWords;
 
-document.getElementById("VocabularyMenu").onclick = async () => {
+async function OpenVocabularyMenu() {
     if (!toggleTSMWindow(wintVocabulary)) return;
     const idField = document.getElementById("iduserwords");
     if (idField.value.trim()) return;
@@ -503,4 +573,4 @@ document.getElementById("VocabularyMenu").onclick = async () => {
     } else {
         idField.focus();
     }
-};
+}

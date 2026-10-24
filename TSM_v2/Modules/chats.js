@@ -72,16 +72,29 @@ function showChatStatus(text, kind) {
     }, 4000);
 }
 
-function sendRuntimeMessage(message) {
-    return new Promise((resolve) => {
-        try {
-            chrome.runtime.sendMessage(message, (response) => {
-                resolve(chrome.runtime.lastError ? { success: false, error: chrome.runtime.lastError.message } : response);
-            });
-        } catch (err) {
-            resolve({ success: false, error: "Расширение было перезагружено — обновите страницу (F5)" });
+function checkChatResponseError(text) {
+    if (!text) return null;
+    try {
+        const json = JSON.parse(text);
+        if (json.success === false) return json.error || json.message || "Ошибка операции";
+        if (json.error) return typeof json.error === "string" ? json.error : (json.error.message || JSON.stringify(json.error));
+        if (json.status && json.status !== "success" && json.status !== "ok") {
+            return json.message || json.error || `Статус: ${json.status}`;
         }
-    });
+        if (json.message && /не найден|ошибка|error|fail/i.test(json.message)) {
+            return json.message;
+        }
+    } catch {
+        if (/не найден|ошибка|error|not found|пользовател[ья]/i.test(text)) {
+            const doc = new DOMParser().parseFromString(text, "text/html");
+            const errEl = doc.querySelector(".error, .alert, .message, .text-danger, p, body");
+            const extracted = errEl?.textContent?.trim() || text.trim();
+            if (/не найден|ошибка|error|not found/i.test(extracted)) {
+                return extracted.slice(0, 150);
+            }
+        }
+    }
+    return null;
 }
 
 async function manageChat(action, button) {
@@ -105,12 +118,15 @@ async function manageChat(action, button) {
     });
     setBusy(button, false);
 
-    if (response?.success) {
+    const backendError = response?.success ? checkChatResponseError(response.fetchAnswer || response.fetchansver) : null;
+
+    if (response?.success && !backendError) {
         showChatStatus(action === "add" ? "Чат добавлен" : "Чат удалён", action === "add" ? "ok" : "warn");
     } else {
         const verb = action === "add" ? "добавить" : "удалить";
-        showChatStatus(`Не удалось ${verb} чат: ${response?.error || "нет ответа"}`, "error");
-        console.error("[TSM Чаты]", response);
+        const errorMsg = backendError || response?.error || "нет ответа";
+        showChatStatus(`Не удалось ${verb} чат: ${errorMsg}`, "error");
+        console.error("[TSM Чаты]", response, backendError);
     }
 }
 

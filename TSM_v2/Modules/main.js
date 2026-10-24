@@ -57,7 +57,14 @@ const win_addMenu = `
 const wintAddMenu = createTSMWindow("AFMS_addMenu", "winTopAddMenu", "winLeftAddMenu", win_addMenu);
 wintAddMenu.className = "tsm-window tsm-window-main";
 
-const MENU_EXCLUDED_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT", "BUTTON", "A", "H1", "H2", "H3", "UL", "LI", "VIM-WORD", "P", "SPAN", "TD", "TR", "TBODY", "THEAD"]);
+const MENU_EXCLUDED_TAGS = new Set([
+    "INPUT", "TEXTAREA", "SELECT", "BUTTON", "A", "LABEL", "OPTION",
+    "H1", "H2", "H3", "H4", "H5", "H6", "UL", "OL", "LI",
+    "P", "SPAN", "TD", "TR", "TH", "TBODY", "THEAD", "TABLE",
+    "B", "STRONG", "I", "EM", "CODE", "PRE", "MARK", "SMALL", "SVG", "IMG",
+    "PATH", "U", "S", "STRIKE", "SUB", "SUP", "TIME", "ABBR", "BLOCKQUOTE",
+    "Q", "CITE", "VIM-WORD"
+]);
 
 function showMainMenuSection(sectionId) {
     document.getElementById("mainmenu").style.display = sectionId === "mainmenu" ? "" : "none";
@@ -83,7 +90,9 @@ function closeMainMenu() {
 
 document.body.addEventListener("dblclick", (event) => {
     if (MENU_EXCLUDED_TAGS.has(event.target.tagName)) return;
-    if (event.target.closest(".tsm-window, .tsm-dialog-overlay, [contenteditable]")) return;
+    if (event.target.closest(".tsm-window, .tsm-dialog-overlay, [contenteditable], button, a, input, textarea, select, label")) return;
+    if (event.target.closest("b, strong, i, em, code, pre, mark, small, p, span, td, th, li, h1, h2, h3, h4, h5, h6, vim-word, svg, img")) return;
+    if (window.getSelection()?.toString().trim()) return;
     openMainMenu(event.clientX, event.clientY);
 });
 
@@ -96,8 +105,6 @@ document.addEventListener("keydown", (event) => {
         event.preventDefault();
         if (wintAddMenu.style.display === "none") openMainMenu();
         else closeMainMenu();
-    } else if (event.key === "Escape" && wintAddMenu.style.display !== "none" && !document.querySelector(".tsm-dialog-overlay")) {
-        closeMainMenu();
     }
 });
 
@@ -108,7 +115,9 @@ document.getElementById("backmainmenufromexercises").onclick = () => showMainMen
 /* Обработчики из других модулей привязываем лениво: main.js грузится первым,
    и функции модулей объявляются позже */
 document.getElementById("openchataddmenu").onclick = () => OpenAddChatMenu();
-document.getElementById("openlesinfomenu").onclick = () => OpenLessonmInfoMenu();
+document.getElementById("openlesinfomenu").onclick = () => (typeof OpenLessonInfoMenu === "function" ? OpenLessonInfoMenu() : OpenLessonmInfoMenu());
+document.getElementById("openstudentsmenu").onclick = () => OpenStudentsMenu();
+document.getElementById("VocabularyMenu").onclick = () => OpenVocabularyMenu();
 document.getElementById("exercisekysmart").onclick = () => OpenExercisesSmartroom();
 document.getElementById("exercisesttc").onclick = () => OpenExercisesTTC();
 document.getElementById("exercisesComplect").onclick = () => OpenExercisesComplect();

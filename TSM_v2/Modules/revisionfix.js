@@ -325,7 +325,7 @@ function revfixRowFailed(r) {
 
 function revfixRenderResults() {
     const box = document.getElementById("revfixResults");
-    const results = revfixState.results;
+    const results = revfixState.results.filter(Boolean);
     if (!results.length) {
         box.innerHTML = "";
         return;
@@ -349,6 +349,7 @@ function revfixRenderResults() {
             <span class="tsm-toolbar-spacer"></span>
             ${failed && !revfixState.running ? '<button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixRetry">Повторить ошибки</button>' : ""}
             <button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixCopyReport">Отчёт в буфер</button>
+            <button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixDownloadCsv">Скачать CSV</button>
         </div>
         <div class="tsm-table-wrapper tsm-fix-results-table">
             <table class="tsm-table">
@@ -366,7 +367,7 @@ async function revfixRun(pairs, ops) {
     revfixState.running = true;
     revfixState.stopRequested = false;
     revfixState.ops = ops;
-    revfixState.results = [];
+    revfixState.results = new Array(pairs.length);
     document.getElementById("revfixProgressBox").style.display = "";
     document.getElementById("revfixProgressWrap").classList.add("is-running");
     revfixUpdateControls();
@@ -387,40 +388,51 @@ async function revfixRun(pairs, ops) {
         }
     }
 
-    /* 2. Основной проход: для каждой пары ученик × слайд — load-step, затем delete */
+    /* 2. Основной проход: конкурентный пул воркеров (лимит 3-4 одновременных запроса) */
+    const CONCURRENCY = 4;
+    let nextIndex = 0;
+    let completed = 0;
     let failed = 0;
-    for (let i = 0; i < pairs.length && !revfixState.stopRequested; i++) {
-        const { studentId, slide } = pairs[i];
-        const row = { studentId, slide, load: null, del: null };
 
-        if (ops.load) {
-            try {
-                row.load = await revfixLoadStep(studentId, slide);
-            } catch (err) {
-                row.load = { status: "сеть", ok: false, error: err.message };
-            }
-            if (ops.delete) await revfixSleep(REVFIX_OP_DELAY_MS);
-        }
+    const workers = Array.from({ length: Math.min(CONCURRENCY, pairs.length) }, async () => {
+        while (nextIndex < pairs.length && !revfixState.stopRequested) {
+            const currentIndex = nextIndex++;
+            const { studentId, slide } = pairs[currentIndex];
+            const row = { studentId, slide, load: null, del: null };
 
-        if (ops.delete && !revfixState.stopRequested) {
-            const cgId = cgIds.get(slide.stepUuid);
-            if (!cgId) {
-                row.del = { ok: false, error: cgErrors.get(slide.stepUuid) || "нет contentGroupId" };
-            } else {
+            if (ops.load && !revfixState.stopRequested) {
                 try {
-                    row.del = { ...(await revfixDeleteBlocks(studentId, cgId)), cgId };
+                    row.load = await revfixLoadStep(studentId, slide);
                 } catch (err) {
-                    row.del = { status: "сеть", ok: false, error: err.message, cgId };
+                    row.load = { status: "сеть", ok: false, error: err.message };
+                }
+                if (ops.delete && !revfixState.stopRequested) await revfixSleep(REVFIX_OP_DELAY_MS);
+            }
+
+            if (ops.delete && !revfixState.stopRequested) {
+                const cgId = cgIds.get(slide.stepUuid);
+                if (!cgId) {
+                    row.del = { ok: false, error: cgErrors.get(slide.stepUuid) || "нет contentGroupId" };
+                } else {
+                    try {
+                        row.del = { ...(await revfixDeleteBlocks(studentId, cgId)), cgId };
+                    } catch (err) {
+                        row.del = { status: "сеть", ok: false, error: err.message, cgId };
+                    }
                 }
             }
-        }
 
-        if (revfixRowFailed(row)) failed++;
-        revfixState.results.push(row);
-        revfixSetProgress(i + 1, pairs.length, failed);
-        revfixRenderResults();
-        await revfixSleep(REVFIX_DELAY_MS);
-    }
+            if (revfixRowFailed(row)) failed++;
+            revfixState.results[currentIndex] = row;
+            completed++;
+            revfixSetProgress(completed, pairs.length, failed);
+            revfixRenderResults();
+            await revfixSleep(REVFIX_DELAY_MS);
+        }
+    });
+
+    await Promise.all(workers);
+    revfixState.results = revfixState.results.filter(Boolean);
 
     const stopped = revfixState.stopRequested;
     revfixState.running = false;
@@ -532,6 +544,38 @@ document.getElementById("revfixResults").addEventListener("click", async (event)
                 r.del?.cgId ?? ""
             ].join("\t")));
         await copyWithNotify(lines.join("\n"), "Отчёт скопирован — можно вставить в таблицу");
+    } else if (event.target.id === "revfixDownloadCsv") {
+        const results = revfixState.results.filter(Boolean);
+        const escapeCsv = (val) => {
+            const s = String(val ?? "");
+            if (/[";,\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+            return s;
+        };
+        const headers = ["studentId", "slide", "stepUuid", "loadStatus", "revisionId", "deleteStatus", "contentGroupId"];
+        const rows = results.map((r) => [
+            r.studentId,
+            r.slide.name,
+            r.slide.stepUuid,
+            r.load ? (r.load.ok ? r.load.status : r.load.error) : "",
+            r.load?.id ?? "",
+            r.del ? (r.del.ok ? r.del.status : r.del.error) : "",
+            r.del?.cgId ?? ""
+        ]);
+        const csvContent = "\uFEFF" + [headers.map(escapeCsv).join(";")]
+            .concat(rows.map((row) => row.map(escapeCsv).join(";")))
+            .join("\r\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+        link.href = url;
+        link.download = `tsm-revfix-report-${timestamp}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        createNotify("CSV-отчёт скачан");
     } else if (event.target.id === "revfixRetry") {
         const failedRows = revfixState.results.filter(revfixRowFailed);
         if (!failedRows.length) return;

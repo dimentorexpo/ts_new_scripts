@@ -332,12 +332,56 @@ function keepInViewport(win) {
     win.style.top = `${tsmClamp(win.offsetTop, 8, maxTop)}px`;
 }
 
+/* Синхронизация расположения окон через chrome.storage.local (с памятью и fallback в localStorage) */
+const tsmWindowPositionsCache = {};
+
+if (chrome?.storage?.local) {
+    chrome.storage.local.get(null, (items) => {
+        if (!chrome.runtime.lastError && items) {
+            Object.assign(tsmWindowPositionsCache, items);
+            document.querySelectorAll(".tsm-window").forEach((win) => {
+                if (win._tsmTopKey && win._tsmLeftKey) {
+                    const top = parseInt(tsmWindowPositionsCache[win._tsmTopKey], 10);
+                    const left = parseInt(tsmWindowPositionsCache[win._tsmLeftKey], 10);
+                    if (Number.isFinite(top) && Number.isFinite(left)) {
+                        win.style.top = `${top}px`;
+                        win.style.left = `${left}px`;
+                        keepInViewport(win);
+                    }
+                }
+            });
+        }
+    });
+}
+
+function getWindowCoord(key, defaultVal) {
+    if (key in tsmWindowPositionsCache) {
+        const val = parseInt(tsmWindowPositionsCache[key], 10);
+        if (Number.isFinite(val)) return val;
+    }
+    try {
+        const localVal = parseInt(localStorage.getItem(key), 10);
+        if (Number.isFinite(localVal)) return localVal;
+    } catch {}
+    return defaultVal;
+}
+
+function setWindowCoord(key, val) {
+    tsmWindowPositionsCache[key] = val;
+    try {
+        localStorage.setItem(key, String(val));
+    } catch {}
+    if (chrome?.storage?.local) {
+        chrome.storage.local.set({ [key]: val }, () => void chrome.runtime.lastError);
+    }
+}
+
 function createTSMWindow(id, topKey, leftKey, content) {
     const windowElement = document.createElement("div");
-    const storedTop = parseInt(localStorage.getItem(topKey), 10);
-    const storedLeft = parseInt(localStorage.getItem(leftKey), 10);
-    const top = Number.isFinite(storedTop) ? storedTop : 118;
-    const left = Number.isFinite(storedLeft) ? storedLeft : 407;
+    windowElement._tsmTopKey = topKey;
+    windowElement._tsmLeftKey = leftKey;
+    const top = getWindowCoord(topKey, 118);
+    const left = getWindowCoord(leftKey, 407);
 
     windowElement.style.cssText = `display:none; top:${top}px; left:${left}px;`;
     windowElement.id = id;
@@ -379,8 +423,8 @@ function createTSMWindow(id, topKey, leftKey, content) {
             document.removeEventListener("mousemove", onMouseMove);
             document.removeEventListener("mouseup", onMouseUp);
             windowElement.classList.remove("tsm-dragging");
-            localStorage.setItem(topKey, String(windowElement.offsetTop));
-            localStorage.setItem(leftKey, String(windowElement.offsetLeft));
+            setWindowCoord(topKey, windowElement.offsetTop);
+            setWindowCoord(leftKey, windowElement.offsetLeft);
         };
 
         document.addEventListener("mousemove", onMouseMove);
@@ -407,6 +451,78 @@ function setBusy(button, busy) {
     button.classList.toggle("is-loading", busy);
     button.disabled = busy;
 }
+
+/* Общий хелпер отправки сообщений в background */
+function sendRuntimeMessage(message) {
+    return new Promise((resolve) => {
+        try {
+            chrome.runtime.sendMessage(message, (response) => {
+                resolve(chrome.runtime.lastError ? { success: false, error: chrome.runtime.lastError.message } : response);
+            });
+        } catch (err) {
+            resolve({ success: false, error: "Расширение было перезагружено — обновите страницу (F5)" });
+        }
+    });
+}
+
+/* Перетаскивание окон за любой handleEl (окно position: fixed или absolute) */
+function makeDraggable(windowEl, handleEl = windowEl) {
+    if (!windowEl || !handleEl || windowEl._tsmDragInitialized) return;
+    windowEl._tsmDragInitialized = true;
+
+    handleEl.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || e.target.closest(TSM_NO_DRAG_SELECTOR)) return;
+        e.preventDefault();
+        bringToFront(windowEl);
+        const rect = windowEl.getBoundingClientRect();
+        const startX = e.clientX;
+        const startY = e.clientY;
+
+        const onMouseMove = (ev) => {
+            windowEl.style.left = `${tsmClamp(rect.left + ev.clientX - startX, 8, window.innerWidth - rect.width - 8)}px`;
+            windowEl.style.top = `${tsmClamp(rect.top + ev.clientY - startY, 8, window.innerHeight - 60)}px`;
+        };
+        const onMouseUp = () => {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+        };
+        document.addEventListener("mousemove", onMouseMove);
+        document.addEventListener("mouseup", onMouseUp);
+    });
+}
+
+/* Закрытие верхнего активного окна TSM по Escape */
+function closeTopTSMWindow() {
+    if (document.querySelector(".tsm-dialog-overlay")) return false;
+
+    const visibleWindows = Array.from(document.querySelectorAll(".tsm-window"))
+        .filter((win) => win.style.display !== "none" && (win.offsetWidth > 0 || win.offsetHeight > 0));
+
+    if (!visibleWindows.length) return false;
+
+    visibleWindows.sort((a, b) => {
+        const za = parseInt(window.getComputedStyle(a).zIndex, 10) || 0;
+        const zb = parseInt(window.getComputedStyle(b).zIndex, 10) || 0;
+        return zb - za;
+    });
+
+    const topWin = visibleWindows[0];
+    const closeBtn = topWin.querySelector(".tsm-btn-hide, .tsm-close-modal, [id^='hide']");
+    if (closeBtn) {
+        closeBtn.click();
+    } else {
+        topWin.style.display = "none";
+    }
+    return true;
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !document.querySelector(".tsm-dialog-overlay")) {
+        if (closeTopTSMWindow()) {
+            event.stopPropagation();
+        }
+    }
+});
 
 /* ---------- Логирование сетевых запросов ---------- */
 
@@ -565,7 +681,14 @@ function setSelectionListener(doc) {
     doc.addEventListener("selectionchange", () => {
         const selectedText = doc.getSelection()?.toString().trim();
         if (!selectedText) {
-            lastSentSelectionType = null;
+            if (lastSentSelectionType !== null) {
+                lastSentSelectionType = null;
+                try {
+                    chrome.runtime.sendMessage({ type: "OTHER_SELECTION" });
+                } catch {
+                    /* контекст расширения перезагружен — страницу нужно обновить */
+                }
+            }
             return;
         }
         const type = detectSelectionType(selectedText);

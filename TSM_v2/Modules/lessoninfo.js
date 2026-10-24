@@ -6,7 +6,9 @@ const ORIGIN_VIMBOX = "https://vimbox.skyeng.ru";
 
 const SUBJECTS = new Set([
     "english", "math", "computer-science", "geography", "chess", "social-science",
-    "history", "biology", "physics", "literature", "chemistry", "russian", "preschool"
+    "history", "biology", "physics", "literature", "chemistry", "russian", "preschool",
+    "it", "programming", "spanish", "german", "french", "chinese", "gaming", "olymp",
+    "pre-school", "music", "art"
 ]);
 
 const CREATION_TYPES = { auto: "Автоматически", manually: "Вручную" };
@@ -87,6 +89,18 @@ let currentLessonRoom = null;
 function subjectFromPath(pathname) {
     /* /kids/<subject>/room/<hash> или /<subject>/room/<hash> */
     const parts = pathname.split("/").filter(Boolean);
+    const kidsIdx = parts.indexOf("kids");
+    if (kidsIdx >= 0 && parts[kidsIdx + 1] && parts[kidsIdx + 2] === "room") {
+        const subj = parts[kidsIdx + 1];
+        SUBJECTS.add(subj);
+        return subj;
+    }
+    const roomIdx = parts.indexOf("room");
+    if (roomIdx > 0 && parts[roomIdx - 1] !== "kids") {
+        const subj = parts[roomIdx - 1];
+        SUBJECTS.add(subj);
+        return subj;
+    }
     return parts.find((part) => SUBJECTS.has(part)) || "";
 }
 
@@ -112,7 +126,9 @@ function parseRoomURL(rawUrl = location.href) {
 }
 
 function getApiEndpoint(subjectName, version) {
-    if (!SUBJECTS.has(subjectName)) throw new Error(`Предмет «${subjectName}» не поддерживается`);
+    if (!subjectName || !/^[a-z0-9-]+$/i.test(subjectName)) {
+        throw new Error(`Некорректный предмет «${subjectName}»`);
+    }
     return `https://api-${subjectName}.skyeng.ru/api/v${version}/rooms/`;
 }
 
@@ -235,32 +251,6 @@ function toggleParticipantsModal() {
     document.getElementById("searchForParticipant").focus();
 }
 
-/* Перетаскивание окна участников за заголовок (окно position: fixed) */
-function makeDraggable(windowEl, handleEl) {
-    if (!windowEl || !handleEl || windowEl._tsmDragInitialized) return;
-    windowEl._tsmDragInitialized = true;
-
-    handleEl.addEventListener("mousedown", (e) => {
-        if (e.button !== 0 || e.target.closest("button, a, input")) return;
-        e.preventDefault();
-        bringToFront(windowEl);
-        const rect = windowEl.getBoundingClientRect();
-        const startX = e.clientX;
-        const startY = e.clientY;
-
-        const onMouseMove = (ev) => {
-            windowEl.style.left = `${tsmClamp(rect.left + ev.clientX - startX, 8, window.innerWidth - rect.width - 8)}px`;
-            windowEl.style.top = `${tsmClamp(rect.top + ev.clientY - startY, 8, window.innerHeight - 60)}px`;
-        };
-        const onMouseUp = () => {
-            document.removeEventListener("mousemove", onMouseMove);
-            document.removeEventListener("mouseup", onMouseUp);
-        };
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
-    });
-}
-
 async function changeRoomStatus(status, button) {
     if (!currentLessonRoom) {
         createNotify("Сначала загрузите комнату", "error");
@@ -329,6 +319,7 @@ document.getElementById("searchForParticipant").addEventListener("input", functi
     filterParticipants(this.value.trim());
 });
 
-function OpenLessonmInfoMenu() {
+function OpenLessonInfoMenu() {
     if (toggleTSMWindow(wintLessonInfo)) openMenu(false, document.getElementById("RefreshInfo"));
 }
+const OpenLessonmInfoMenu = OpenLessonInfoMenu;

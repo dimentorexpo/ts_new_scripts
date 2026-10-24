@@ -10,6 +10,7 @@ const identityStripHTML = (suffix) => `
 <div class="tsm-info-panel">
     <div class="tsm-info-row tsm-info-row-inline">
         <span class="tsm-chip tsm-chip-person" id="studname${suffix}"></span>
+        <select class="tsm-select tsm-select-student" id="studselect${suffix}" style="display:none; max-width:180px; margin-right:4px;" title="Выбор ученика"></select>
         <span class="tsm-chip" id="studserviceid${suffix}" title="ID услуги"></span>
         <span class="tsm-chip" id="studid${suffix}" title="ID ученика"></span>
         ${suffix ? `<span class="tsm-chip" id="groupid${suffix}" title="ID группы"></span>` : ""}
@@ -180,8 +181,29 @@ function setChip(elementId, label, value, copyable = true) {
     if (copyable) markCopyable(el, String(value));
 }
 
-function renderIdentity(suffix, student, teacher, extra = {}) {
-    setChip(`studname${suffix}`, "👨‍🎓", student?.name, false);
+function renderIdentity(suffix, student, teacher, extra = {}, students = [], onSelectStudent = null) {
+    const nameChip = document.getElementById(`studname${suffix}`);
+    const select = document.getElementById(`studselect${suffix}`);
+
+    if (students && students.length > 1) {
+        if (nameChip) nameChip.style.display = "none";
+        if (select) {
+            select.style.display = "";
+            select.innerHTML = students.map((s) =>
+                `<option value="${escapeHTML(s.userId)}" ${String(s.userId) === String(student?.userId) ? "selected" : ""}>👨‍🎓 ${escapeHTML(s.name || s.userId)}</option>`
+            ).join("");
+            select.onchange = (e) => {
+                onSelectStudent?.(e.target.value);
+            };
+        }
+    } else {
+        if (select) select.style.display = "none";
+        if (nameChip) {
+            nameChip.style.display = "";
+            setChip(`studname${suffix}`, "👨‍🎓", student?.name, false);
+        }
+    }
+
     setChip(`studserviceid${suffix}`, "услуга", student?.educationServiceId);
     setChip(`studid${suffix}`, "ID", student?.userId);
     setChip(`teachname${suffix}`, "👽", teacher?.name, false);
@@ -190,9 +212,9 @@ function renderIdentity(suffix, student, teacher, extra = {}) {
 }
 
 function splitParticipants(participants = []) {
-    const student = participants.find((p) => p.role === "student") || null;
+    const students = participants.filter((p) => p.role === "student");
     const teacher = participants.find((p) => p.role !== "student") || null;
-    return { student, teacher };
+    return { students, student: students[0] || null, teacher };
 }
 
 async function fetchJson(url, options = {}) {
@@ -205,7 +227,7 @@ async function fetchJson(url, options = {}) {
    Smartroom
    ========================================================= */
 
-const smartroomState = { data: null, room: null };
+const smartroomState = { data: null, room: null, selectedStudentId: null };
 
 const hideNullCardsCheckbox = document.getElementById("hideNullCards");
 hideNullCardsCheckbox.checked = localStorage.getItem("Nullcards") !== "0";
@@ -287,10 +309,16 @@ function smartroomCategoryHTML(title, block, subject, isHomework) {
 function renderSmartroom() {
     const { data, room } = smartroomState;
     const container = document.getElementById("exercisebarskysmart");
-    const { student, teacher } = splitParticipants(data.participants);
-    const index = student ? (data.lessonCards || []).findIndex((c) => c.userId === student.userId) : -1;
+    const { students, teacher } = splitParticipants(data.participants);
+    const activeStudent = students.find((s) => String(s.userId) === String(smartroomState.selectedStudentId)) || students[0] || null;
+    if (activeStudent) smartroomState.selectedStudentId = String(activeStudent.userId);
 
-    renderIdentity("", student, teacher);
+    const index = activeStudent ? (data.lessonCards || []).findIndex((c) => String(c.userId) === String(activeStudent.userId)) : -1;
+
+    renderIdentity("", activeStudent, teacher, {}, students, (newStudentId) => {
+        smartroomState.selectedStudentId = newStudentId;
+        renderSmartroom();
+    });
     document.getElementById("identityKids").style.display = "";
 
     if (index < 0) {
@@ -318,6 +346,7 @@ async function loadSmartroom() {
     try {
         smartroomState.data = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}`);
         smartroomState.room = room;
+        smartroomState.selectedStudentId = null;
         renderSmartroom();
     } catch (err) {
         console.error("[TSM Smartroom]", err);
@@ -333,8 +362,9 @@ bindExerciseContainer(document.getElementById("exercisebarskysmart"), {
         if (await copyWithNotify(link, el.dataset.stepid ? "Ссылка на слайд в CMS скопирована" : "Ссылка на урок в CMS скопирована")) flashButton(el, "✓");
     },
     "reset-progress": async (el) => {
-        const { room, data } = smartroomState;
-        const student = splitParticipants(data?.participants).student;
+        const { room, data, selectedStudentId } = smartroomState;
+        const { students } = splitParticipants(data?.participants);
+        const student = students.find((s) => String(s.userId) === String(selectedStudentId)) || students[0] || null;
         if (!room || !student) return;
 
         const confirmed = await tsmConfirm({
@@ -479,7 +509,7 @@ function OpenExercisesTTC() {
    Комплектации
    ========================================================= */
 
-const complectState = { room: null, studentId: "" };
+const complectState = { room: null, studentId: "", data: null, selectedStudentId: null };
 
 function complectTableHTML(themes, subject, variantId) {
     let rows = "";
@@ -517,6 +547,40 @@ function blockVariantId(block) {
     return block?.themes?.[0]?.variantId || block?.variantId || "";
 }
 
+function renderComplect() {
+    const { data, room } = complectState;
+    const container = document.getElementById("exercisebarComplect");
+    const { students, teacher } = splitParticipants(data.participants);
+    const activeStudent = students.find((s) => String(s.userId) === String(complectState.selectedStudentId)) || students[0] || null;
+    if (activeStudent) complectState.selectedStudentId = String(activeStudent.userId);
+
+    const index = activeStudent ? (data.lessonCards || []).findIndex((c) => String(c.userId) === String(activeStudent.userId)) : -1;
+
+    renderIdentity("Complect", activeStudent, teacher, { groupId: data.groupInfo?.externalGroupId }, students, (newStudentId) => {
+        complectState.selectedStudentId = newStudentId;
+        renderComplect();
+    });
+    renderComplectStatus(data.status, blockVariantId(data.homeworkCards?.[index]));
+    document.getElementById("identityComplect").style.display = "";
+
+    complectState.studentId = String(activeStudent?.userId ?? "");
+
+    if (index < 0) {
+        container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
+        return;
+    }
+
+    const lesson = data.lessonCards[index];
+    const homework = data.homeworkCards?.[index];
+    const diagnostic = data.diagnosticsCards?.[index];
+    const hasDiagnostic = Array.isArray(diagnostic?.themes) && diagnostic.themes.some((t) => (t.cards || []).length > 0);
+
+    container.innerHTML =
+        collapsibleHTML("🎓 План урока", lesson?.cardsCount, categoryStatsHTML(lesson) + complectTableHTML(lesson?.themes, room.subject, blockVariantId(lesson))) +
+        (homework ? collapsibleHTML("💼 План домашки", homework.cardsCount, categoryStatsHTML(homework) + complectTableHTML(homework.themes, room.subject, blockVariantId(homework))) : "") +
+        (hasDiagnostic ? collapsibleHTML("🧪 Diagnostic", diagnostic.cardsCount, categoryStatsHTML(diagnostic) + complectTableHTML(diagnostic.themes, room.subject, "")) : "");
+}
+
 async function loadComplect() {
     const button = document.getElementById("getroomdataComplect");
     const container = document.getElementById("exercisebarComplect");
@@ -540,30 +604,10 @@ async function loadComplect() {
             body: room.isTest ? null : JSON.stringify({ roomHash: rawLink })
         });
 
-        const { student, teacher } = splitParticipants(data.participants);
-        const index = student ? (data.lessonCards || []).findIndex((c) => c.userId === student.userId) : -1;
-
-        renderIdentity("Complect", student, teacher, { groupId: data.groupInfo?.externalGroupId });
-        renderComplectStatus(data.status, blockVariantId(data.homeworkCards?.[index]));
-        document.getElementById("identityComplect").style.display = "";
-
+        complectState.data = data;
         complectState.room = room;
-        complectState.studentId = String(student?.userId ?? "");
-
-        if (index < 0) {
-            container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
-            return;
-        }
-
-        const lesson = data.lessonCards[index];
-        const homework = data.homeworkCards?.[index];
-        const diagnostic = data.diagnosticsCards?.[index];
-        const hasDiagnostic = Array.isArray(diagnostic?.themes) && diagnostic.themes.some((t) => (t.cards || []).length > 0);
-
-        container.innerHTML =
-            collapsibleHTML("🎓 План урока", lesson?.cardsCount, categoryStatsHTML(lesson) + complectTableHTML(lesson?.themes, room.subject, blockVariantId(lesson))) +
-            (homework ? collapsibleHTML("💼 План домашки", homework.cardsCount, categoryStatsHTML(homework) + complectTableHTML(homework.themes, room.subject, blockVariantId(homework))) : "") +
-            (hasDiagnostic ? collapsibleHTML("🧪 Diagnostic", diagnostic.cardsCount, categoryStatsHTML(diagnostic) + complectTableHTML(diagnostic.themes, room.subject, "")) : "");
+        complectState.selectedStudentId = null;
+        renderComplect();
     } catch (err) {
         console.error("[TSM Комплектации]", err);
         container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;

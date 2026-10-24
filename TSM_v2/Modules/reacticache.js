@@ -31,12 +31,17 @@ function createReactCacheButton() {
     button.onmousedown = (event) => event.stopPropagation();
     button.onclick = (event) => {
         event.stopPropagation();
-        ClearReactCashe();
+        ClearReactCache();
     };
     return button;
 }
 
-function addbuttonhesh() {
+function addButtonHash() {
+    const existingButton = document.getElementById(REACTICACHE_BTN_ID);
+    if (existingButton && existingButton.isConnected && existingButton.parentElement && headerHasLessonTitle(existingButton.parentElement)) {
+        return;
+    }
+
     const buttons = document.querySelectorAll(`#${REACTICACHE_BTN_ID}`);
     buttons.forEach((button, index) => { if (index > 0) button.remove(); });
 
@@ -46,43 +51,36 @@ function addbuttonhesh() {
     const button = buttons[0] || createReactCacheButton();
     if (button.parentNode !== headarea) headarea.appendChild(button);
 }
+const addbuttonhesh = addButtonHash;
 
 function reactiCacheNotify(text, type = "sucsbtnok") {
-    if (typeof createToast === "function") {
-        createToast(text, type, true, REACTICACHE_TOAST_TTL);
-        return;
-    }
-    console.log("[TSM ReactiCache]", text.replace(/<[^>]+>/g, " "));
+    createToast(text, type, true, REACTICACHE_TOAST_TTL);
 }
 
 let reactiCacheScheduled = false;
 const reactiCacheObserver = new MutationObserver(() => {
+    const existingButton = document.getElementById(REACTICACHE_BTN_ID);
+    if (existingButton && existingButton.isConnected && existingButton.parentElement) return;
     if (reactiCacheScheduled) return;
     reactiCacheScheduled = true;
     requestAnimationFrame(() => {
         reactiCacheScheduled = false;
-        addbuttonhesh();
+        addButtonHash();
     });
 });
 reactiCacheObserver.observe(document.body, { childList: true, subtree: true });
-addbuttonhesh();
+addButtonHash();
 
-function getTeachToken() {
-    const tokenPrefix = "token_global=";
-    return document.cookie.split(";")
-        .map((cookie) => cookie.trim())
-        .find((cookie) => cookie.startsWith(tokenPrefix))
-        ?.substring(tokenPrefix.length);
-}
+const getTeachToken = getGlobalToken;
 
 /* FIX: раздел раньше брался строго из 8-го сегмента URL и ломался при любом изменении пути */
 function currentReactiCacheSection() {
     return location.pathname.split("/").find((part) => REACTICACHE_SECTIONS.includes(part)) || "";
 }
 
-async function ClearReactCashe() {
+async function ClearReactCache() {
     const button = document.getElementById(REACTICACHE_BTN_ID);
-    const myToken = getTeachToken();
+    const myToken = getGlobalToken();
     if (!myToken) {
         reactiCacheNotify("<b>Токен не найден.</b> Войдите в личный кабинет и повторите", "sucsbtnnotok");
         return;
@@ -120,3 +118,4 @@ async function ClearReactCashe() {
         }
     }
 }
+const ClearReactCashe = ClearReactCache;

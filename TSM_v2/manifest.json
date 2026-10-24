@@ -60,7 +60,8 @@
     {
       "js": ["/Modules/reacticache.js"],
       "matches": [
-        "*://vimbox.skyeng.ru/kids/english/teacher/multi-classroom/*"
+        "*://vimbox.skyeng.ru/kids/*/teacher/multi-classroom/*",
+        "*://vimbox.skyeng.ru/*/teacher/multi-classroom/*"
       ],
       "run_at": "document_idle"
     }

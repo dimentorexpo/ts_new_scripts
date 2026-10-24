@@ -235,7 +235,7 @@ document.getElementById("usersearchskysmart").addEventListener("input", renderSt
 document.getElementById("listofsubjects").addEventListener("change", renderStudentsView);
 document.getElementById("actualizestudreportkids").addEventListener("click", function () { actualizeReports(this); });
 
-document.getElementById("openstudentsmenu").onclick = () => {
+function OpenStudentsMenu() {
     if (!toggleTSMWindow(wintStudSkysmart)) {
         restoreMainMenu();
         return;
@@ -245,4 +245,4 @@ document.getElementById("openstudentsmenu").onclick = () => {
     if (mainWin) mainWin.style.display = "none";
     document.getElementById("usersearchskysmart").value = "";
     loadStudents();
-};
+}
