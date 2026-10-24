@@ -2,7 +2,7 @@
    TSM Exercises — Smartroom, TTC, Комплектации
    ========================================================= */
 
-const EMPHASIS_ICONS = { writing: "✏", pronunciation: "🎧", speaking: "🎙" };
+const EMPHASIS_ICONS = { writing: tsmIcon("pencil", 12), pronunciation: tsmIcon("headphones", 12), speaking: tsmIcon("mic", 12) };
 
 /* ---------- Разметка окон ---------- */
 
@@ -10,7 +10,7 @@ const identityStripHTML = (suffix) => `
 <div class="tsm-info-panel">
     <div class="tsm-info-row">
         <span class="tsm-chip tsm-chip-person" id="studname${suffix}"></span>
-        <select class="tsm-select tsm-select-student" id="studselect${suffix}" style="display:none; max-width:180px; margin-right:4px;" title="Выбор ученика"></select>
+        <select class="tsm-select tsm-select-student tsm-hidden" id="studselect${suffix}" title="Выбор ученика"></select>
         <span class="tsm-chip" id="studserviceid${suffix}" title="ID услуги"></span>
         <span class="tsm-chip" id="studid${suffix}" title="ID ученика"></span>
         ${suffix ? `<span class="tsm-chip" id="groupid${suffix}" title="ID группы"></span>` : ""}
@@ -18,36 +18,36 @@ const identityStripHTML = (suffix) => `
         <span class="tsm-chip tsm-chip-person tsm-chip-teacher" id="teachname${suffix}"></span>
         <span class="tsm-chip" id="teachdid${suffix}" title="ID преподавателя"></span>
         ${suffix ? `<span class="tsm-chip tsm-chip-status" id="RoomStatus"></span>
-        <span class="tsm-chip tsm-chip-violet" id="variantIdComplectChip" style="display:none;">variantId <span id="variantIdValue"></span></span>` : ""}
+        <span class="tsm-chip tsm-chip-violet tsm-hidden" id="variantIdComplectChip">variantId <span id="variantIdValue"></span></span>` : ""}
     </div>
 </div>`;
 
 const win_kidsExercises = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">🎓 Smartroom</span>
+        <span class="tsm-window-title">${tsmIcon("monitor", 15)} Smartroom</span>
         <label class="tsm-checkbox-label" title="Не показывать темы без карточек">
             <input type="checkbox" id="hideNullCards">Скрыть пустые темы
         </label>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseKids" title="Подставить ссылку текущей страницы">♻</button>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesSkysmartMenu">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseKids" title="Подставить ссылку текущей страницы" aria-label="Подставить ссылку текущей страницы">${tsmIcon("refresh")}</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesSkysmartMenu">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-input-group">
         <input id="roomhashhwkids" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату или домашку">
         <button type="button" class="tsm-btn" id="getroomdatakids">Загрузить</button>
     </div>
-    <div id="identityKids" style="display:none;">${identityStripHTML("")}</div>
+    <div id="identityKids" class="tsm-hidden">${identityStripHTML("")}</div>
     <div id="exercisebarskysmart" class="tsm-exercise-bar"></div>
 </div>`;
 
 const win_TTCExercises = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">👽 TTC</span>
+        <span class="tsm-window-title">${tsmIcon("layers", 15)} TTC</span>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseTTC" title="Подставить хеш текущей страницы">♻</button>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesTTCMenu">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseTTC" title="Подставить хеш текущей страницы" aria-label="Подставить хеш текущей страницы">${tsmIcon("refresh")}</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideExercisesTTCMenu">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-input-group">
         <input id="roomhashttc" class="tsm-input" autocomplete="off" placeholder="Хеш комнаты TTC">
@@ -59,16 +59,16 @@ const win_TTCExercises = `
 const win_complectationExercises = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">🛍 Комплектации</span>
+        <span class="tsm-window-title">${tsmIcon("package", 15)} Комплектации</span>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseComplect" title="Подставить ссылку текущей страницы">♻</button>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hideExercisesComplectMenu" title="Скрыть" aria-label="Скрыть">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshInfoExerciseComplect" title="Подставить ссылку текущей страницы" aria-label="Подставить ссылку текущей страницы">${tsmIcon("refresh")}</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hideExercisesComplectMenu" title="Скрыть" aria-label="Скрыть">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-input-group">
         <input id="roomhashhwComplect" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату">
         <button type="button" class="tsm-btn" id="getroomdataComplect">Загрузить</button>
     </div>
-    <div id="identityComplect" style="display:none;">${identityStripHTML("Complect")}</div>
+    <div id="identityComplect" class="tsm-hidden">${identityStripHTML("Complect")}</div>
     <div id="exercisebarComplect" class="tsm-exercise-bar"></div>
 </div>`;
 
@@ -83,7 +83,7 @@ wintComplect.className = "tsm-window tsm-window-exercises";
 
 /* ---------- Общие помощники ---------- */
 
-const EMPTY_ROOM_HINT = '<div class="tsm-empty">Откройте комнату ученика или вставьте ссылку на неё и нажмите «Загрузить»</div>';
+const EMPTY_ROOM_HINT = tsmEmptyState("monitor", "Комната не открыта", "Откройте комнату ученика или вставьте ссылку на неё и нажмите «Загрузить»");
 
 /* Разбор ссылки вида https://vimbox.skyeng.ru/kids/<subject>/room/<hash>
    (и /kids/<subject>/room/test/<hash> для тестовых комнат) */
@@ -139,15 +139,15 @@ function collapsibleHTML(title, count, inner, open = false) {
     return `<div class="tsm-collapsible${open ? " active" : ""}" role="button" tabindex="0" aria-expanded="${open}">
         <span>${escapeHTML(title)}</span>${count != null ? `<span class="tsm-collapsible-count">${count}</span>` : ""}
     </div>
-    <div class="tsm-slide-box" style="${open ? "" : "display:none"}">${inner}</div>`;
+    <div class="tsm-slide-box${open ? "" : " tsm-hidden"}">${inner}</div>`;
 }
 
 /* Один обработчик на контейнер: раскрытие секций + действия по data-action */
 function bindExerciseContainer(container, actions) {
     const toggle = (head) => {
         const box = head.nextElementSibling;
-        const open = box.style.display === "none";
-        box.style.display = open ? "" : "none";
+        const open = box.classList.contains("tsm-hidden");
+        box.classList.toggle("tsm-hidden", !open);
         head.classList.toggle("active", open);
         head.setAttribute("aria-expanded", String(open));
     };
@@ -173,10 +173,10 @@ function setChip(elementId, label, value, copyable = true) {
     const el = document.getElementById(elementId);
     if (!el) return;
     if (value == null || value === "") {
-        el.style.display = "none";
+        el.classList.add("tsm-hidden");
         return;
     }
-    el.style.display = "";
+    el.classList.remove("tsm-hidden");
     el.innerHTML = `<span class="tsm-chip-label">${escapeHTML(label)}</span>${escapeHTML(value)}`;
     if (copyable) markCopyable(el, String(value));
 }
@@ -186,27 +186,25 @@ function renderIdentity(suffix, student, teacher, extra = {}, students = [], onS
     const select = document.getElementById(`studselect${suffix}`);
 
     if (students && students.length > 1) {
-        if (nameChip) nameChip.style.display = "none";
+        nameChip?.classList.add("tsm-hidden");
+        select?.classList.remove("tsm-hidden");
         if (select) {
-            select.style.display = "";
             select.innerHTML = students.map((s) =>
-                `<option value="${escapeHTML(s.userId)}" ${String(s.userId) === String(student?.userId) ? "selected" : ""}>👨‍🎓 ${escapeHTML(s.name || s.userId)}</option>`
+                `<option value="${escapeHTML(s.userId)}" ${String(s.userId) === String(student?.userId) ? "selected" : ""}>${escapeHTML(s.name || s.userId)}</option>`
             ).join("");
             select.onchange = (e) => {
                 onSelectStudent?.(e.target.value);
             };
         }
     } else {
-        if (select) select.style.display = "none";
-        if (nameChip) {
-            nameChip.style.display = "";
-            setChip(`studname${suffix}`, "👨‍🎓", student?.name, false);
-        }
+        select?.classList.add("tsm-hidden");
+        nameChip?.classList.remove("tsm-hidden");
+        setChip(`studname${suffix}`, "ученик", student?.name, false);
     }
 
     setChip(`studserviceid${suffix}`, "услуга", student?.educationServiceId);
     setChip(`studid${suffix}`, "ID", student?.userId);
-    setChip(`teachname${suffix}`, "👽", teacher?.name, false);
+    setChip(`teachname${suffix}`, "преподаватель", teacher?.name, false);
     setChip(`teachdid${suffix}`, "ID", teacher?.userId);
     if (suffix) setChip(`groupid${suffix}`, "группа", extra.groupId);
 }
@@ -274,7 +272,7 @@ function smartroomCategoryHTML(title, block, subject, isHomework) {
         const lessonId = escapeHTML(theme.meta?.contentLessonId);
         rows += `<tr class="tsm-theme-row"><td colspan="${isHomework ? 8 : 7}">
             <div class="tsm-theme-title">
-                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS">💾</button>
+                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS" aria-label="Скопировать ссылку на урок в CMS">${tsmIcon("link", 14)}</button>
                 <span class="tsm-theme-name" title="${escapeHTML(theme.name)}">${escapeHTML(theme.name)}</span>
             </div>
         </td></tr>`;
@@ -287,10 +285,10 @@ function smartroomCategoryHTML(title, block, subject, isHomework) {
                 <td class="tsm-card-name">${cardDisplayName(card)}</td>
                 <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
                 <td class="tsm-table-cell-center ${cellClass}">${escapeHTML(completeness)}</td>
-                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS">💾</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS" aria-label="Скопировать ссылку на слайд в CMS">${tsmIcon("link", 14)}</button></td>
                 <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.sentAt)}</td>
                 <td class="tsm-table-cell-center tsm-text-xs">${toMoscowTime(card.scoreUpdatedAt)}</td>
-                ${isHomework ? `<td class="tsm-table-cell-center"><button type="button" class="tsm-btn-reset" data-action="reset-progress" data-stepuuid="${escapeHTML(card.stepUuid)}" data-cardname="${escapeHTML(card.name)}" title="Сбросить прогресс ученика по слайду">↻</button></td>` : ""}
+                ${isHomework ? `<td class="tsm-table-cell-center"><button type="button" class="tsm-btn-reset" data-action="reset-progress" data-stepuuid="${escapeHTML(card.stepUuid)}" data-cardname="${escapeHTML(card.name)}" title="Сбросить прогресс ученика по слайду" aria-label="Сбросить прогресс ученика по слайду">${tsmIcon("reset", 14)}</button></td>` : ""}
             </tr>`;
         });
     });
@@ -319,10 +317,10 @@ function renderSmartroom() {
         smartroomState.selectedStudentId = newStudentId;
         renderSmartroom();
     });
-    document.getElementById("identityKids").style.display = "";
+    document.getElementById("identityKids").classList.remove("tsm-hidden");
 
     if (index < 0) {
-        container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
+        container.innerHTML = tsmEmptyState("monitor", "В комнате не найден план ученика");
         return;
     }
     container.innerHTML =
@@ -341,7 +339,7 @@ async function loadSmartroom() {
         return;
     }
 
-    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем данные комнаты…</div>';
+    container.innerHTML = tsmSkeleton(6);
     setBusy(button, true);
     try {
         smartroomState.data = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}`);
@@ -350,7 +348,8 @@ async function loadSmartroom() {
         renderSmartroom();
     } catch (err) {
         console.error("[TSM Smartroom]", err);
-        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;
+        container.innerHTML = tsmEmptyState("alert", "Не удалось загрузить комнату", `Проверьте ссылку и авторизацию (${err.message})`, tsmRetryButton());
+        container.querySelector(".tsm-empty-retry")?.addEventListener("click", loadSmartroom);
     } finally {
         setBusy(button, false);
     }
@@ -402,6 +401,7 @@ document.getElementById("hideExercisesSkysmartMenu").onclick = () => { wintExerc
 function OpenExercisesSmartroom() {
     if (!toggleTSMWindow(wintExercSkysmart)) return;
     wintExercTTC.style.display = "none";
+    wintComplect.style.display = "none";
     const input = document.getElementById("roomhashhwkids");
     if (looksLikeKidsRoom(document.URL)) {
         input.value = document.URL;
@@ -429,7 +429,7 @@ async function getTTCData() {
         return;
     }
 
-    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем курс…</div>';
+    container.innerHTML = tsmSkeleton(6);
     setBusy(button, true);
     try {
         /* FIX: тело запроса собиралось конкатенацией строк — кавычка в хеше ломала JSON */
@@ -447,7 +447,7 @@ async function getTTCData() {
             <span class="tsm-cell-num">${i + 1}</span>
             <span class="tsm-ttc-title" title="${escapeHTML(step.title)}">${escapeHTML(step.title)}</span>
             <span class="tsm-ttc-step-id">${escapeHTML(step.stepId)}</span>
-            <button type="button" class="tsm-btn-save-ttc" data-action="copy-ttc" data-stepid="${escapeHTML(step.stepId)}" title="Скопировать ссылку на слайд в CMS">💾</button>
+            <button type="button" class="tsm-btn-save-ttc" data-action="copy-ttc" data-stepid="${escapeHTML(step.stepId)}" title="Скопировать ссылку на слайд в CMS" aria-label="Скопировать ссылку на слайд в CMS">${tsmIcon("link", 14)}</button>
             <span class="tsm-ttc-num ${(step.completeness ?? 0) >= 100 ? "tsm-text-ok" : ""}">${escapeHTML(step.completeness ?? 0)}%</span>
             <span class="tsm-ttc-num">${escapeHTML((step.score ?? 0) / 10)}</span>
         </div>`).join("");
@@ -462,10 +462,11 @@ async function getTTCData() {
                 </div>
             </div>
             <div class="tsm-ttc-header-row"><span>#</span><span>Слайд</span><span>ID</span><span>CMS</span><span>%</span><span>Балл</span></div>
-            ${items || '<div class="tsm-empty">В уроке нет слайдов</div>'}`;
+            ${items || tsmEmptyState("layers", "В уроке нет слайдов")}`;
     } catch (err) {
         console.error("[TSM TTC]", err);
-        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить курс (${escapeHTML(err.message)})</div>`;
+        container.innerHTML = tsmEmptyState("alert", "Не удалось загрузить курс", err.message, tsmRetryButton());
+        container.querySelector(".tsm-empty-retry")?.addEventListener("click", () => getTTCData());
     } finally {
         setBusy(button, false);
     }
@@ -493,6 +494,7 @@ document.getElementById("RefreshInfoExerciseTTC").onclick = () => {
 function OpenExercisesTTC() {
     if (!toggleTSMWindow(wintExercTTC)) return;
     wintExercSkysmart.style.display = "none";
+    wintComplect.style.display = "none";
     const hash = currentTTCHash();
     const input = document.getElementById("roomhashttc");
     if (hash) {
@@ -500,7 +502,7 @@ function OpenExercisesTTC() {
         getTTCData();
     } else {
         /* FIX: подсказка раньше записывалась в value поля и уходила в запрос как хеш */
-        document.getElementById("exercisebarttc").innerHTML = '<div class="tsm-empty">Откройте курс TTC или введите хеш комнаты</div>';
+        document.getElementById("exercisebarttc").innerHTML = tsmEmptyState("layers", "Курс не открыт", "Откройте курс TTC или введите хеш комнаты");
         input.focus();
     }
 }
@@ -517,7 +519,7 @@ function complectTableHTML(themes, subject, variantId) {
         const lessonId = escapeHTML(theme.meta?.contentLessonId);
         rows += `<tr class="tsm-theme-row"><td colspan="7">
             <div class="tsm-theme-title">
-                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS">💾</button>
+                <button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" title="Скопировать ссылку на урок в CMS" aria-label="Скопировать ссылку на урок в CMS">${tsmIcon("link", 14)}</button>
                 <span class="tsm-theme-name" title="${escapeHTML(theme.name)}">${escapeHTML(theme.name)}</span>
             </div>
         </td></tr>`;
@@ -530,9 +532,9 @@ function complectTableHTML(themes, subject, variantId) {
                 <td class="tsm-card-name">${cardDisplayName(card)}</td>
                 <td class="tsm-table-cell-center">${escapeHTML(score)}</td>
                 <td class="tsm-table-cell-center ${empty ? "" : (done ? "tsm-cell-success" : "tsm-cell-warn")}">${escapeHTML(completeness)}</td>
-                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS">💾</button></td>
-                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-step" data-action="copy-uuid" data-stepuuid="${uuid}" title="Скопировать stepUuid">📋</button></td>
-                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save-revision" data-action="reset-revision" data-stepuuid="${uuid}" data-variantid="${escapeHTML(variantId || "")}" data-cardname="${escapeHTML(card.name)}" ${variantId ? "" : "disabled"} title="${variantId ? "Сбросить ревизию слайда" : "Сброс недоступен: у комплекта нет variantId"}">↺</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS" aria-label="Скопировать ссылку на слайд в CMS">${tsmIcon("link", 14)}</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-step" data-action="copy-uuid" data-stepuuid="${uuid}" title="Скопировать stepUuid" aria-label="Скопировать stepUuid">${tsmIcon("copy", 14)}</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save-revision" data-action="reset-revision" data-stepuuid="${uuid}" data-variantid="${escapeHTML(variantId || "")}" data-cardname="${escapeHTML(card.name)}" ${variantId ? "" : "disabled"} title="${variantId ? "Сбросить ревизию слайда" : "Сброс недоступен: у комплекта нет variantId"}" aria-label="Сбросить ревизию слайда">${tsmIcon("reset", 14)}</button></td>
             </tr>`;
         });
     });
@@ -561,12 +563,12 @@ function renderComplect() {
         renderComplect();
     });
     renderComplectStatus(data.status, blockVariantId(data.homeworkCards?.[index]));
-    document.getElementById("identityComplect").style.display = "";
+    document.getElementById("identityComplect").classList.remove("tsm-hidden");
 
     complectState.studentId = String(activeStudent?.userId ?? "");
 
     if (index < 0) {
-        container.innerHTML = '<div class="tsm-empty">В комнате не найден план ученика</div>';
+        container.innerHTML = tsmEmptyState("package", "В комнате не найден план ученика");
         return;
     }
 
@@ -593,7 +595,7 @@ async function loadComplect() {
         return;
     }
 
-    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем комплектации…</div>';
+    container.innerHTML = tsmSkeleton(6);
     setBusy(button, true);
     try {
         const url = `https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}${room.isTest ? "" : "?verbosity=only_mine_participants"}`;
@@ -610,7 +612,8 @@ async function loadComplect() {
         renderComplect();
     } catch (err) {
         console.error("[TSM Комплектации]", err);
-        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;
+        container.innerHTML = tsmEmptyState("alert", "Не удалось загрузить комнату", `Проверьте ссылку и авторизацию (${err.message})`, tsmRetryButton());
+        container.querySelector(".tsm-empty-retry")?.addEventListener("click", loadComplect);
     } finally {
         setBusy(button, false);
     }
@@ -625,10 +628,10 @@ function renderComplectStatus(status, variantId) {
     const variantValue = document.getElementById("variantIdValue");
     if (variantId) {
         variantValue.textContent = variantId;
-        variantChip.style.display = "";
+        variantChip.classList.remove("tsm-hidden");
         markCopyable(variantChip, String(variantId));
     } else {
-        variantChip.style.display = "none";
+        variantChip.classList.add("tsm-hidden");
     }
 }
 

@@ -52,6 +52,25 @@
   --tsm-r-control: 9px;
   --tsm-r-chip: 7px;
   --tsm-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.35);
+  --tsm-shadow-drag: 0 36px 72px -12px rgba(0, 0, 0, 0.68), 0 0 0 1px rgba(0, 0, 0, 0.4);
+
+  /* Типографика */
+  --tsm-fs-xs: 11px;
+  --tsm-fs-sm: 12px;
+  --tsm-fs-md: 13px;
+  --tsm-fs-lg: 14px;
+  --tsm-fs-xl: 17px;
+
+  /* Отступы */
+  --tsm-sp-1: 4px;
+  --tsm-sp-2: 8px;
+  --tsm-sp-3: 12px;
+  --tsm-sp-4: 16px;
+
+  /* Слои: окна ниже диалогов, диалоги ниже тостов */
+  --tsm-z-window: 1000000;
+  --tsm-z-dialog: 2147483000;
+  --tsm-z-toast: 2147483600;
 
   /* Шрифты: системные гротески без загрузки — быстро и без конфликтов с CSP страницы */
   --tsm-font: "Segoe UI Variable Text", "Segoe UI", -apple-system, "SF Pro Text", "Inter", system-ui, sans-serif;
@@ -62,7 +81,7 @@
 /* ─── Окна ─── */
 .tsm-window {
   position: fixed !important;
-  z-index: 1000000 !important;
+  z-index: var(--tsm-z-window) !important;
   box-sizing: border-box;
   min-width: 260px;
   max-width: calc(100vw - 16px);
@@ -70,7 +89,7 @@
   padding: 14px;
   overflow: auto;
   font-family: var(--tsm-font);
-  font-size: 13px;
+  font-size: var(--tsm-fs-md);
   line-height: 1.45;
   font-variant-numeric: tabular-nums;
   color: var(--tsm-text);
@@ -84,14 +103,20 @@
   animation: tsm-window-in 180ms var(--tsm-ease);
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  transition: box-shadow 160ms var(--tsm-ease);
 }
 .tsm-window *,
 .tsm-window *::before,
 .tsm-window *::after { box-sizing: border-box; }
-.tsm-window.tsm-dragging { cursor: grabbing; user-select: none; }
+.tsm-window.tsm-dragging { box-shadow: var(--tsm-shadow-drag); cursor: grabbing; user-select: none; }
 
 @keyframes tsm-window-in {
   from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes tsm-card-in {
+  from { opacity: 0; transform: translateY(5px); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -114,12 +139,16 @@
   flex-wrap: wrap;
 }
 .tsm-window-title {
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--tsm-fs-lg);
   font-weight: 650;
   letter-spacing: -0.01em;
   color: var(--tsm-text);
   white-space: nowrap;
 }
+.tsm-window-title .tsm-icon { color: var(--tsm-accent); }
 .tsm-toolbar {
   display: flex;
   align-items: center;
@@ -169,7 +198,7 @@
   padding: 0 12px;
   margin: 0;
   font-family: var(--tsm-font);
-  font-size: 13px;
+  font-size: var(--tsm-fs-md);
   font-weight: 550;
   line-height: 1;
   white-space: nowrap;
@@ -178,10 +207,12 @@
   border: 1px solid var(--tsm-line-strong);
   border-radius: var(--tsm-r-control);
   cursor: pointer;
-  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease);
+  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease), transform 100ms var(--tsm-ease);
 }
 .tsm-btn:hover { background: var(--tsm-surface-hover); border-color: var(--tsm-accent-line); }
 .tsm-btn:active { background: var(--tsm-surface-sunken); }
+.tsm-btn:active:not(:disabled),
+.tsm-btn-hide:active { transform: scale(0.96); }
 
 .tsm-btn-icon { width: 32px; padding: 0; font-size: 14px; }
 
@@ -410,11 +441,14 @@
 }
 .tsm-menu-back {
   appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   align-self: flex-start;
   margin: 0 0 4px;
   padding: 4px 8px;
   font-family: var(--tsm-font);
-  font-size: 12px;
+  font-size: var(--tsm-fs-sm);
   font-weight: 600;
   color: var(--tsm-text-2);
   background: transparent;
@@ -452,8 +486,10 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
-  font-size: 12px;
+  font-size: var(--tsm-fs-xs);
   font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--tsm-text-2);
 }
 .tsm-field {
@@ -529,7 +565,7 @@
   overflow: hidden;
 }
 .tsm-stat { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; background: #161b28; }
-.tsm-stat-value { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; color: var(--tsm-text); }
+.tsm-stat-value { font-size: var(--tsm-fs-xl); font-weight: 650; letter-spacing: -0.01em; color: var(--tsm-text); }
 .tsm-stat-of { font-size: 13px; font-weight: 500; color: var(--tsm-text-3); }
 .tsm-stat-label { font-size: 11px; color: var(--tsm-text-2); }
 
@@ -580,6 +616,12 @@
   border: 1px solid var(--tsm-line);
   border-top: 0;
   border-radius: 0 0 10px 10px;
+  animation: tsm-reveal 200ms var(--tsm-ease);
+}
+
+@keyframes tsm-reveal {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* ─── Таблицы ─── */
@@ -733,7 +775,14 @@
   border: 1px solid var(--tsm-line);
   border-radius: 11px;
   transition: border-color 120ms var(--tsm-ease);
+  animation: tsm-card-in 220ms var(--tsm-ease) backwards;
 }
+.tsm-info-bar-kids > *:nth-child(2) { animation-delay: 20ms; }
+.tsm-info-bar-kids > *:nth-child(3) { animation-delay: 40ms; }
+.tsm-info-bar-kids > *:nth-child(4) { animation-delay: 60ms; }
+.tsm-info-bar-kids > *:nth-child(5) { animation-delay: 80ms; }
+.tsm-info-bar-kids > *:nth-child(6) { animation-delay: 100ms; }
+.tsm-info-bar-kids > *:nth-child(n+7) { animation-delay: 120ms; }
 .tsm-kid-card:hover { border-color: var(--tsm-line-strong); }
 .tsm-kid-card.sleep { border-left: 3px solid var(--tsm-text-3); }
 .tsm-kid-card.vacation { border-left: 3px solid var(--tsm-warn); }
@@ -787,11 +836,15 @@
   cursor: pointer;
   transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease);
 }
-.tsm-btn-vertical .emoji { font-size: 16px; line-height: 1; }
+.tsm-btn-vertical .tsm-btn-vertical-icon { display: inline-flex; color: var(--tsm-text-2); transition: color 120ms var(--tsm-ease); }
+.tsm-btn-vertical:hover .tsm-btn-vertical-icon { color: var(--tsm-accent); }
 .tsm-btn-vertical:hover { background: var(--tsm-surface-hover); border-color: var(--tsm-accent-line); }
 .tsm-btn-vertical.tsm-tone-ok:hover { border-color: rgba(98, 210, 157, 0.5); background: var(--tsm-ok-soft); }
+.tsm-btn-vertical.tsm-tone-ok:hover .tsm-btn-vertical-icon { color: var(--tsm-ok); }
 .tsm-btn-vertical.tsm-tone-warn:hover { border-color: rgba(241, 184, 79, 0.5); background: var(--tsm-warn-soft); }
+.tsm-btn-vertical.tsm-tone-warn:hover .tsm-btn-vertical-icon { color: var(--tsm-warn); }
 .tsm-btn-vertical.tsm-tone-bad:hover { border-color: rgba(240, 122, 126, 0.5); background: var(--tsm-bad-soft); }
+.tsm-btn-vertical.tsm-tone-bad:hover .tsm-btn-vertical-icon { color: var(--tsm-bad); }
 
 .tsm-selection-info { min-height: 0; font-size: 12px; color: var(--tsm-accent); margin: 6px 0 0; }
 .tsm-selection-info:empty { display: none; }
@@ -817,7 +870,7 @@
 .tsm-wordset-title.active { border-radius: 10px 10px 0 0; }
 .tsm-wordset-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsm-wordset-count { flex: 0 0 auto; font-size: 12px; font-weight: 500; color: var(--tsm-text-3); }
-.tsm-words-box { border: 1px solid var(--tsm-line); border-top: 0; border-radius: 0 0 10px 10px; overflow: hidden; }
+.tsm-words-box { border: 1px solid var(--tsm-line); border-top: 0; border-radius: 0 0 10px 10px; overflow: hidden; animation: tsm-reveal 200ms var(--tsm-ease); }
 
 .tsm-word-row {
   display: grid;
@@ -942,7 +995,7 @@
   cursor: grab;
   user-select: none;
 }
-.tsm-modal-title { font-size: 14px; font-weight: 650; }
+.tsm-modal-title { display: inline-flex; align-items: center; gap: 7px; font-size: var(--tsm-fs-lg); font-weight: 650; }
 .tsm-close-modal {
   appearance: none;
   display: inline-grid;
@@ -963,28 +1016,34 @@
 #allParticipants .tsm-table th:nth-child(2) { width: 100px; }
 #allParticipants .tsm-table th:nth-child(4) { width: 150px; }
 
-/* ─── Пустые состояния ─── */
+/* ─── Пустые состояния и загрузка ─── */
 .tsm-empty {
   grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 32px 16px;
-  font-size: 13px;
+  padding: 28px 16px;
+  font-size: var(--tsm-fs-md);
   color: var(--tsm-text-2);
   text-align: center;
 }
 .tsm-empty .tsm-text-xs { color: var(--tsm-text-3); }
-.tsm-empty-loading::before {
-  content: "";
-  width: 16px;
-  height: 16px;
-  margin-bottom: 6px;
-  border: 2px solid var(--tsm-accent);
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: tsm-spin 700ms linear infinite;
+.tsm-empty-icon { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 6px; color: var(--tsm-text-3); background: var(--tsm-surface-raised); border: 1px solid var(--tsm-line); border-radius: 12px; }
+.tsm-empty-title { font-weight: 550; color: var(--tsm-text); }
+.tsm-empty-retry { margin-top: 10px; }
+
+.tsm-skeleton-stack { display: flex; flex-direction: column; gap: 8px; padding: 6px 2px; }
+.tsm-skeleton {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.045) 25%, rgba(255, 255, 255, 0.09) 37%, rgba(255, 255, 255, 0.045) 63%);
+  background-size: 400% 100%;
+  animation: tsm-shimmer 1.4s ease infinite;
+}
+@keyframes tsm-shimmer {
+  from { background-position: 100% 0; }
+  to   { background-position: -100% 0; }
 }
 
 /* ─── Утилиты ─── */
@@ -995,12 +1054,21 @@
 .tsm-user-select-none { user-select: none; }
 .tsm-hidden { display: none !important; }
 
+/* ─── Иконки ─── */
+.tsm-icon { display: block; flex: 0 0 auto; }
+.tsm-emphasis .tsm-icon { display: inline-block; vertical-align: -3px; color: var(--tsm-text-2); }
+.tsm-icon.tsm-flash-ok { color: var(--tsm-ok); }
+.tsm-icon.tsm-flash-bad { color: var(--tsm-bad); }
+
+/* Выбор ученика в строке участников */
+.tsm-select-student { max-width: 180px; }
+
 /* ─── Уведомления ─── */
 .tsm-toast-stack {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  z-index: 2147483600;
+  z-index: var(--tsm-z-toast);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1010,10 +1078,13 @@
 }
 .tsm-toast {
   position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
   max-width: min(420px, calc(100vw - 40px));
-  padding: 11px 14px 13px 16px;
+  padding: 11px 10px 13px 14px;
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--tsm-fs-md);
   font-weight: 500;
   line-height: 1.45;
   color: var(--tsm-text);
@@ -1026,7 +1097,30 @@
   cursor: pointer;
   animation: tsm-toast-in 220ms var(--tsm-ease);
 }
-.tsm-toast.sucsbtnnotok { border-left-color: var(--tsm-bad); }
+.tsm-toast--error { border-left-color: var(--tsm-bad); }
+.tsm-toast--info { border-left-color: var(--tsm-accent); }
+.tsm-toast-icon { flex: 0 0 auto; margin-top: 2px; color: var(--tsm-ok); }
+.tsm-toast--error .tsm-toast-icon { color: var(--tsm-bad); }
+.tsm-toast--info .tsm-toast-icon { color: var(--tsm-accent); }
+.tsm-toast-body { flex: 1 1 auto; min-width: 0; }
+.tsm-toast-close {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin: -1px -3px 0 0;
+  padding: 0;
+  font-family: inherit;
+  color: var(--tsm-text-3);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: color 120ms var(--tsm-ease), background-color 120ms var(--tsm-ease);
+}
+.tsm-toast-close:hover { color: var(--tsm-text); background: rgba(255, 255, 255, 0.08); }
 .tsm-toast a { color: var(--tsm-accent); text-underline-offset: 3px; }
 .tsm-toast b { font-weight: 650; }
 .tsm-toast-leaving { opacity: 0; transform: translateX(12px); transition: opacity 200ms var(--tsm-ease), transform 200ms var(--tsm-ease); }
@@ -1048,7 +1142,7 @@
 .tsm-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2147483000;
+  z-index: var(--tsm-z-dialog);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1122,12 +1216,13 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
   padding: 0 16px;
   display: inline-flex;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--tsm-fs-md);
   font-weight: 600;
   border-radius: var(--tsm-r-control);
   cursor: pointer;
-  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease);
+  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease), transform 100ms var(--tsm-ease);
 }
+.tsm-dialog-btn:active { transform: scale(0.96); }
 .tsm-dialog-btn-cancel { color: var(--tsm-text); border: 1px solid var(--tsm-line-strong); }
 .tsm-dialog-btn-cancel:hover { background: var(--tsm-surface-hover); }
 .tsm-dialog-btn-ok { color: #0d1a29; background: var(--tsm-accent); }

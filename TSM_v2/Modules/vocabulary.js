@@ -26,10 +26,10 @@ function WORDS_API_HEADERS() {
 const win_Vocabulary = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">📚 Словарь</span>
+        <span class="tsm-window-title">${tsmIcon("book", 15)} Словарь</span>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-icon" id="ClearVocabulary" title="Очистить и остановить операции">🧹</button>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideVocabularyMenu">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="ClearVocabulary" title="Очистить и остановить операции" aria-label="Очистить и остановить операции">${tsmIcon("trash")}</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideVocabularyMenu">${tsmIcon("close")}</button>
     </div>
     <div id="vocabularbar">
         <div id="searchtoolswords" class="tsm-input-group">
@@ -41,27 +41,27 @@ const win_Vocabulary = `
                 <div id="dynamicProgressBar" class="tsm-progress-base" style="width:0%;"></div>
                 <span id="tsm-progress-label" class="tsm-progress-label">Введите ID ученика</span>
             </div>
-            <button type="button" class="tsm-btn-pause" id="btnPause" title="Пауза" style="display:none;">⏸</button>
-            <button type="button" class="tsm-btn-resume" id="btnResume" title="Продолжить" style="display:none;">▶</button>
+            <button type="button" class="tsm-btn-pause tsm-hidden" id="btnPause" title="Пауза" aria-label="Пауза">${tsmIcon("pause", 13)}</button>
+            <button type="button" class="tsm-btn-resume tsm-hidden" id="btnResume" title="Продолжить" aria-label="Продолжить">${tsmIcon("play", 13)}</button>
         </div>
         <div class="tsm-vocab-tools">
             <button type="button" class="tsm-btn-vertical" id="selectallwords" title="Выделить / снять выделение со всех слов">
-                <span class="emoji">☑</span><span class="label">Выбрать все</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("check-square", 18)}</span><span class="label">Выбрать все</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-ok" id="learncheckedwords" title="Отметить выбранные слова выученными">
-                <span class="emoji">✅</span><span class="label">Выучить</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("check-circle", 18)}</span><span class="label">Выучить</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-warn" id="unlearnallwords" title="Сбросить прогресс выбранных (или всех) слов">
-                <span class="emoji">⭕</span><span class="label">Сброс прогресса</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("reset", 18)}</span><span class="label">Сброс прогресса</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-bad" id="delunlearnallwords" title="Удалить все выученные слова">
-                <span class="emoji">⛔</span><span class="label">Удалить выученные</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("trash", 18)}</span><span class="label">Удалить выученные</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-bad" id="deleteallwords" title="Удалить выбранные слова (если ничего не выбрано — все)">
-                <span class="emoji">❌</span><span class="label">Удалить</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("x-circle", 18)}</span><span class="label">Удалить</span>
             </button>
         </div>
-        <input id="searchwordinput" class="tsm-input" style="display:none;" autocomplete="off" placeholder="Поиск по слову">
+        <input id="searchwordinput" class="tsm-input tsm-hidden" autocomplete="off" placeholder="Поиск по слову">
         <div id="vocabSelectionInfo" class="tsm-selection-info"></div>
     </div>
     <div id="wordsout" class="tsm-words-out"></div>
@@ -80,8 +80,8 @@ function setProgress(percent, label, tone) {
 }
 
 function setPauseControls(running) {
-    document.getElementById("btnPause").style.display = running && !isTaskPaused ? "inline-flex" : "none";
-    document.getElementById("btnResume").style.display = running && isTaskPaused ? "inline-flex" : "none";
+    document.getElementById("btnPause").classList.toggle("tsm-hidden", !(running && !isTaskPaused));
+    document.getElementById("btnResume").classList.toggle("tsm-hidden", !(running && isTaskPaused));
     const wrapper = document.getElementById("tsm-progress-container");
     wrapper.classList.toggle("is-running", running);
     wrapper.classList.toggle("is-paused", running && isTaskPaused);
@@ -115,7 +115,7 @@ function resetVocabularyState() {
     document.getElementById("iduserwords").value = "";
     const search = document.getElementById("searchwordinput");
     search.value = "";
-    search.style.display = "none";
+    search.classList.add("tsm-hidden");
     setProgress(0, "Введите ID ученика", "");
     setPauseControls(false);
     updateSelectionInfo();
@@ -297,8 +297,9 @@ async function getwordsets(studentId) {
     globalWordsCounter = 0;
     const out = document.getElementById("wordsout");
     out.innerHTML = "";
-    document.getElementById("searchwordinput").style.display = "none";
+    document.getElementById("searchwordinput").classList.add("tsm-hidden");
     const taskId = startTask("search", "Загружаем наборы слов…");
+    out.innerHTML = tsmSkeleton(6);
 
     let wordsetsResponse;
     try {
@@ -311,7 +312,8 @@ async function getwordsets(studentId) {
         if (isTaskStale(taskId)) return;
         console.error("[TSM Словарь] Ошибка загрузки:", err);
         finishTask("Ошибка загрузки");
-        out.innerHTML = `<div class="tsm-empty">Не удалось загрузить словарь (${escapeHTML(err.message)}). Проверьте ID ученика и авторизацию.</div>`;
+        out.innerHTML = tsmEmptyState("alert", "Не удалось загрузить словарь", `Проверьте ID ученика и авторизацию (${err.message})`, tsmRetryButton());
+        document.querySelector("#wordsout .tsm-empty-retry")?.addEventListener("click", () => getwordsets(studentId));
         return;
     }
 
@@ -319,7 +321,7 @@ async function getwordsets(studentId) {
     const sets = wordsetsResponse?.data || [];
     if (!sets.length) {
         finishTask("Словарь пуст");
-        out.innerHTML = '<div class="tsm-empty">У ученика нет слов в словаре</div>';
+        out.innerHTML = tsmEmptyState("book", "У ученика нет слов в словаре");
         return;
     }
 
@@ -406,7 +408,7 @@ async function getwordsets(studentId) {
     allWordSets = loadedSets.filter(Boolean);
     globalWordsCounter = allWordSets.reduce((acc, s) => acc + s.words.length, 0);
     renderWordSets(allWordSets, false);
-    document.getElementById("searchwordinput").style.display = "";
+    document.getElementById("searchwordinput").classList.remove("tsm-hidden");
     finishTask(`Найдено слов: ${globalWordsCounter} в ${allWordSets.length} наборах`);
 }
 
@@ -423,7 +425,7 @@ function renderWordSets(wordSets, isSearch = false) {
                     <span class="tsm-checkmark"></span>
                 </label>
                 <div class="tsm-word-text" title="${escapeHTML(word.text)}">${escapeHTML(word.text)}</div>
-                <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS">💾</button>
+                <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS" aria-label="Скопировать ссылку в CMS">${tsmIcon("link", 14)}</button>
                 <div class="tsm-word-id tsm-word-stat">${id}</div>
                 <div class="tsm-word-stat">${escapeHTML(word.progress)}%</div>
                 <div class="tsm-learned-status" title="${word.isLearned ? "Выучено" : "Не выучено"}">${word.isLearned ? "✓" : "·"}</div>
@@ -435,7 +437,7 @@ function renderWordSets(wordSets, isSearch = false) {
                 <span class="tsm-wordset-name">${escapeHTML(wordSet.title)}</span>
                 <span class="tsm-wordset-count" title="Выучено / всего">${learned}/${wordSet.words.length}</span>
             </div>
-            <div class="tsm-words-box" style="display:${isSearch ? "block" : "none"};">
+            <div class="tsm-words-box${isSearch ? "" : " tsm-hidden"}">
                 <div class="tsm-word-row tsm-word-row-header">
                     <label class="tsm-custom-checkbox" title="Выбрать весь набор">
                         <input type="checkbox" name="selectwordsinonelesson" class="tsm-checkbox-all">
@@ -448,7 +450,7 @@ function renderWordSets(wordSets, isSearch = false) {
         </div>`;
     }).join("");
 
-    document.getElementById("wordsout").innerHTML = html || '<div class="tsm-empty">Ничего не найдено</div>';
+    document.getElementById("wordsout").innerHTML = html || tsmEmptyState("book", "Ничего не найдено", "Измените поисковый запрос");
     document.querySelectorAll("#wordsout .tsm-words-box").forEach(syncGroupToggle);
     updateSelectionInfo();
 }
@@ -494,8 +496,8 @@ wordsOut.addEventListener("click", async (event) => {
     const title = event.target.closest(".tsm-wordset-title");
     if (title) {
         const box = title.nextElementSibling;
-        box.style.display = box.style.display === "block" ? "none" : "block";
-        title.classList.toggle("active", box.style.display === "block");
+        const open = !box.classList.toggle("tsm-hidden");
+        title.classList.toggle("active", open);
         return;
     }
     const copyBtn = event.target.closest('[data-action="copy-word"]');

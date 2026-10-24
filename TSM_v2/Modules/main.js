@@ -9,46 +9,46 @@ const win_addMenu = `
             <span class="tsm-menu-logo">TSM</span>
             <span class="tsm-menu-hotkey" title="Открыть/закрыть меню">Alt + 0</span>
         </div>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hidemainmenu" title="Скрыть меню" aria-label="Скрыть меню">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hidemainmenu" title="Скрыть меню" aria-label="Скрыть меню">${tsmIcon("close")}</button>
     </div>
     <div id="mainmenu" class="tsm-menu">
         <button type="button" id="openchataddmenu" class="tsm-menu-item">
-            <span class="tsm-menu-icon">💬</span>
+            <span class="tsm-menu-icon">${tsmIcon("chat")}</span>
             <span class="tsm-menu-text">Меню чата</span>
         </button>
         <button type="button" id="openlesinfomenu" class="tsm-menu-item">
-            <span class="tsm-menu-icon">ℹ️</span>
+            <span class="tsm-menu-icon">${tsmIcon("info")}</span>
             <span class="tsm-menu-text">Инфо комнаты</span>
         </button>
         <button type="button" id="openstudentsmenu" class="tsm-menu-item">
-            <span class="tsm-menu-icon">👨‍🎓</span>
+            <span class="tsm-menu-icon">${tsmIcon("user")}</span>
             <span class="tsm-menu-text">Ученики (в ЛКП)</span>
         </button>
         <button type="button" id="openexercisesmenu" class="tsm-menu-item tsm-menu-item-sub">
-            <span class="tsm-menu-icon">🎯</span>
+            <span class="tsm-menu-icon">${tsmIcon("target")}</span>
             <span class="tsm-menu-text">Упражнения</span>
         </button>
         <button type="button" id="VocabularyMenu" class="tsm-menu-item" title="Работа со словарём ученика">
-            <span class="tsm-menu-icon">📚</span>
+            <span class="tsm-menu-icon">${tsmIcon("book")}</span>
             <span class="tsm-menu-text">Словарь</span>
         </button>
     </div>
-    <div id="exercisesmenu" class="tsm-menu" style="display:none;">
-        <button type="button" id="backmainmenufromexercises" class="tsm-menu-back">← Упражнения</button>
+    <div id="exercisesmenu" class="tsm-menu tsm-hidden">
+        <button type="button" id="backmainmenufromexercises" class="tsm-menu-back">${tsmIcon("arrow-left", 13)} Упражнения</button>
         <button type="button" id="exercisekysmart" class="tsm-menu-item">
-            <span class="tsm-menu-icon">🎓</span>
+            <span class="tsm-menu-icon">${tsmIcon("monitor")}</span>
             <span class="tsm-menu-text">Smartroom</span>
         </button>
         <button type="button" id="exercisesttc" class="tsm-menu-item">
-            <span class="tsm-menu-icon">👽</span>
+            <span class="tsm-menu-icon">${tsmIcon("layers")}</span>
             <span class="tsm-menu-text">TTC</span>
         </button>
         <button type="button" id="exercisesComplect" class="tsm-menu-item">
-            <span class="tsm-menu-icon">🛍</span>
+            <span class="tsm-menu-icon">${tsmIcon("package")}</span>
             <span class="tsm-menu-text">Комплектации</span>
         </button>
         <button type="button" id="exercisesRevisionFix" class="tsm-menu-item" title="Обновить ревизию слайдов сразу у списка учеников">
-            <span class="tsm-menu-icon">🛠</span>
+            <span class="tsm-menu-icon">${tsmIcon("tool")}</span>
             <span class="tsm-menu-text">Масс-фикс ревизий</span>
         </button>
     </div>
@@ -67,8 +67,8 @@ const MENU_EXCLUDED_TAGS = new Set([
 ]);
 
 function showMainMenuSection(sectionId) {
-    document.getElementById("mainmenu").style.display = sectionId === "mainmenu" ? "" : "none";
-    document.getElementById("exercisesmenu").style.display = sectionId === "exercisesmenu" ? "" : "none";
+    document.getElementById("mainmenu").classList.toggle("tsm-hidden", sectionId !== "mainmenu");
+    document.getElementById("exercisesmenu").classList.toggle("tsm-hidden", sectionId !== "exercisesmenu");
 }
 
 function openMainMenu(x, y) {
@@ -137,6 +137,7 @@ function getUserId() {
     if (!tsmUserIdPromise) {
         tsmUserIdPromise = (async () => {
             try {
+                /* Прямой запрос из контент-скрипта — работает, пока API отдаёт CORS-заголовки для origin страницы */
                 const response = await fetch("https://rooms-vimbox.skyeng.ru/users/api/v2/auth/config", {
                     credentials: "include",
                     method: "POST"

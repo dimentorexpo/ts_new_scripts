@@ -13,10 +13,10 @@ const REVFIX_RESET_WORD = "СБРОС";
 const win_revisionFix = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">🛠 Масс-фикс ревизий</span>
+        <span class="tsm-window-title">${tsmIcon("tool", 15)} Масс-фикс ревизий</span>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshRevisionFix" title="Подставить ссылку текущей страницы">♻</button>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hideRevisionFix" title="Скрыть" aria-label="Скрыть">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-icon" id="RefreshRevisionFix" title="Подставить ссылку текущей страницы" aria-label="Подставить ссылку текущей страницы">${tsmIcon("refresh")}</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" id="hideRevisionFix" title="Скрыть" aria-label="Скрыть">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-input-group">
         <input id="revfixRoomLink" class="tsm-input" autocomplete="off" placeholder="Ссылка на комнату">
@@ -59,7 +59,7 @@ const win_revisionFix = `
             <button type="button" class="tsm-btn tsm-btn-primary tsm-fix-run" id="revfixRun" disabled>Выберите слайды</button>
         </section>
     </div>
-    <div id="revfixProgressBox" class="tsm-fix-progress" style="display:none;">
+    <div id="revfixProgressBox" class="tsm-fix-progress tsm-hidden">
         <div class="tsm-progress-wrapper" id="revfixProgressWrap">
             <div id="revfixProgressBar" class="tsm-progress-base" style="width:0%;"></div>
             <span id="revfixProgressLabel" class="tsm-progress-label"></span>
@@ -200,7 +200,7 @@ function revfixRenderSlides() {
         </div>`;
     }).join("");
 
-    container.innerHTML = html || '<div class="tsm-empty">В комнате нет слайдов</div>';
+    container.innerHTML = html || tsmEmptyState("tool", "В комнате нет слайдов");
     revfixUpdateControls();
 }
 
@@ -219,7 +219,7 @@ async function revfixLoadRoom() {
         return;
     }
 
-    container.innerHTML = '<div class="tsm-empty tsm-empty-loading">Загружаем слайды…</div>';
+    container.innerHTML = tsmSkeleton(7);
     setBusy(button, true);
     try {
         const data = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}`);
@@ -244,7 +244,8 @@ async function revfixLoadRoom() {
     } catch (err) {
         console.error("[TSM Масс-фикс]", err);
         revfixState.slides = [];
-        container.innerHTML = `<div class="tsm-empty">Не удалось загрузить комнату (${escapeHTML(err.message)}). Проверьте ссылку и авторизацию.</div>`;
+        container.innerHTML = tsmEmptyState("alert", "Не удалось загрузить комнату", `Проверьте ссылку и авторизацию (${err.message})`, tsmRetryButton());
+        container.querySelector(".tsm-empty-retry")?.addEventListener("click", revfixLoadRoom);
         revfixUpdateControls();
     } finally {
         setBusy(button, false);
@@ -368,7 +369,7 @@ async function revfixRun(pairs, ops) {
     revfixState.stopRequested = false;
     revfixState.ops = ops;
     revfixState.results = new Array(pairs.length);
-    document.getElementById("revfixProgressBox").style.display = "";
+    document.getElementById("revfixProgressBox").classList.remove("tsm-hidden");
     document.getElementById("revfixProgressWrap").classList.add("is-running");
     revfixUpdateControls();
 
@@ -532,7 +533,6 @@ document.getElementById("RefreshRevisionFix").onclick = () => {
     revfixLoadRoom();
 };
 document.getElementById("hideRevisionFix").onclick = () => { wintRevisionFix.style.display = "none"; };
-
 document.getElementById("revfixResults").addEventListener("click", async (event) => {
     if (event.target.id === "revfixCopyReport") {
         const lines = ["studentId\tslide\tstepUuid\tloadStatus\trevisionId\tdeleteStatus\tcontentGroupId"]
@@ -599,7 +599,7 @@ function OpenRevisionFix() {
         input.value = document.URL;
         revfixLoadRoom();
     } else if (!revfixState.slides.length) {
-        revfixSlidesEl.innerHTML = '<div class="tsm-empty">Откройте комнату или вставьте ссылку на неё и нажмите «Загрузить»</div>';
+        revfixSlidesEl.innerHTML = tsmEmptyState("tool", "Комната не выбрана", "Откройте комнату или вставьте ссылку на неё и нажмите «Загрузить»");
         revfixUpdateControls();
         input.focus();
     }

@@ -5,15 +5,15 @@
 const win_studentsSkysmart = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">👨‍🎓 Ученики</span>
+        <span class="tsm-window-title">${tsmIcon("user", 15)} Ученики</span>
         <span id="studentsCounter" class="tsm-counter"></span>
         <span class="tsm-toolbar-spacer"></span>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hidestudentsSkysmartMenu">✕</button>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hidestudentsSkysmartMenu">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-toolbar">
         <input id="usersearchskysmart" class="tsm-input" autocomplete="off" placeholder="Поиск по имени или ID">
         <select id="listofsubjects" class="tsm-select" title="Раздел"><option value="all">Все разделы</option></select>
-        <button type="button" class="tsm-btn" id="actualizestudreportkids" title="Заполняет отчёт каждого показанного ученика символами «--»">📝 Актуализировать отчёты</button>
+        <button type="button" class="tsm-btn" id="actualizestudreportkids" title="Заполняет отчёт каждого показанного ученика символами «--»">${tsmIcon("clipboard", 14)} Актуализировать отчёты</button>
     </div>
     <div id="infobarskysmart" class="tsm-info-bar-kids"></div>
 </div>`;
@@ -100,9 +100,9 @@ function buildKidCardHTML(kid) {
             <span class="tsm-lang-badge" title="Язык обслуживания">${kid.serviceLocale ? escapeHTML(kid.serviceLocale) : "язык не указан"}</span>
         </div>
         <div class="tsm-kid-actions">
-            <button type="button" data-link="mvurkidseport" class="tsm-btn-report" title="Отчёт МВУ">📋</button>
-            <button type="button" data-link="openkidsprofile" class="tsm-btn-profile" title="Полный профиль ученика">🕵️‍♂️</button>
-            <button type="button" data-link="openpaymentkidsshistory" class="tsm-btn-payment" title="История оплат и занятий">💰</button>
+            <button type="button" data-link="mvurkidseport" class="tsm-btn-report" title="Отчёт МВУ" aria-label="Отчёт МВУ">${tsmIcon("file-text", 14)}</button>
+            <button type="button" data-link="openkidsprofile" class="tsm-btn-profile" title="Полный профиль ученика" aria-label="Полный профиль ученика">${tsmIcon("eye", 14)}</button>
+            <button type="button" data-link="openpaymentkidsshistory" class="tsm-btn-payment" title="История оплат и занятий" aria-label="История оплат и занятий">${tsmIcon("credit-card", 14)}</button>
         </div>
     </div>`;
 }
@@ -144,19 +144,20 @@ function renderStudentsView() {
     if (sections.length) {
         renderKids(sections.map(([key, kids]) => buildSectionHTML(key, kids)).join(""));
     } else if (query) {
-        renderKids(`<div class="tsm-empty">По запросу «${escapeHTML(query)}» никого не найдено</div>`);
+        renderKids(tsmEmptyState("user", `По запросу «${query}» никого не найдено`, "Измените запрос или раздел"));
     } else {
-        renderKids('<div class="tsm-empty">В этом разделе учеников нет</div>');
+        renderKids(tsmEmptyState("user", "В этом разделе учеников нет"));
     }
 }
 
 async function loadStudents() {
-    renderKids('<div class="tsm-empty tsm-empty-loading">Загружаем учеников…</div>');
+    renderKids(tsmSkeleton(8));
     const select = document.getElementById("listofsubjects");
     select.length = 1;
     select.value = "all";
 
     try {
+        /* Запрос идёт напрямую из контент-скрипта — работает, пока API отдаёт CORS-заголовки для origin страницы */
         const response = await fetch("https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/personal", {
             method: "POST",
             credentials: "include",
@@ -176,11 +177,12 @@ async function loadStudents() {
         } else {
             const keys = raw && typeof raw === "object" ? Object.keys(raw).join(", ") : typeof raw;
             console.log("[TSM Ученики] ответ API без учеников:", raw);
-            renderKids(`<div class="tsm-empty">Учеников не найдено.<span class="tsm-text-xs">Ключи ответа API: ${escapeHTML(keys)}</span></div>`);
+            renderKids(tsmEmptyState("user", "Учеников не найдено", `Ключи ответа API: ${keys}`));
         }
     } catch (err) {
         console.error("[TSM Ученики] ошибка загрузки:", err);
-        renderKids(`<div class="tsm-empty">Не удалось загрузить учеников (${escapeHTML(err.message)}).<span class="tsm-text-xs">Проверьте, что вы вошли в ЛКП, и откройте окно заново</span></div>`);
+        renderKids(tsmEmptyState("alert", "Не удалось загрузить учеников", `Проверьте, что вы вошли в ЛКП (${err.message})`, tsmRetryButton()));
+        document.querySelector("#infobarskysmart .tsm-empty-retry")?.addEventListener("click", loadStudents);
     }
 }
 

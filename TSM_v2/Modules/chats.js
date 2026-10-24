@@ -5,8 +5,8 @@
 const win_addChatMenu = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">💬 Чат между пользователями</span>
-        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideMeAddChatMenu">✕</button>
+        <span class="tsm-window-title">${tsmIcon("chat", 15)} Чат между пользователями</span>
+        <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideMeAddChatMenu">${tsmIcon("close")}</button>
     </div>
     <div class="tsm-chat-grid">
         <label class="tsm-field-stack">

@@ -15,11 +15,11 @@ const CREATION_TYPES = { auto: "Автоматически", manually: "Вруч
 
 const win_getLessonInfo = `
 <div class="tsm-window-header">
-    <span class="tsm-window-title">ℹ️ Комната</span>
+    <span class="tsm-window-title">${tsmIcon("info", 15)} Комната</span>
     <span class="tsm-toolbar-spacer"></span>
-    <button type="button" id="RefreshInfo" class="tsm-btn tsm-btn-icon" title="Обновить по текущей странице">♻</button>
-    <button type="button" id="ClearInfo" class="tsm-btn tsm-btn-icon" title="Очистить поля">🧹</button>
-    <button type="button" id="hideMeLessonInfo" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть">✕</button>
+    <button type="button" id="RefreshInfo" class="tsm-btn tsm-btn-icon" title="Обновить по текущей странице" aria-label="Обновить по текущей странице">${tsmIcon("refresh")}</button>
+    <button type="button" id="ClearInfo" class="tsm-btn tsm-btn-icon" title="Очистить поля" aria-label="Очистить поля">${tsmIcon("trash")}</button>
+    <button type="button" id="hideMeLessonInfo" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть">${tsmIcon("close")}</button>
 </div>
 
 <div class="tsm-input-group">
@@ -54,8 +54,8 @@ const win_getLessonInfo = `
 <!-- Окно переносится в body при первом открытии -->
 <div id="allParticipants" class="tsm-window tsm-window-participants" style="display:none;">
     <div class="tsm-modal-header" id="participantsDragHandle">
-        <span class="tsm-modal-title">👥 Участники комнаты</span>
-        <button type="button" class="tsm-close-modal" id="closeParticipantsBtn" title="Закрыть" aria-label="Закрыть">✕</button>
+        <span class="tsm-modal-title">${tsmIcon("users", 15)} Участники комнаты</span>
+        <button type="button" class="tsm-close-modal" id="closeParticipantsBtn" title="Закрыть" aria-label="Закрыть">${tsmIcon("close")}</button>
     </div>
     <input id="searchForParticipant" class="tsm-input" autocomplete="off" placeholder="Поиск по ID или имени">
     <div class="tsm-table-wrapper">

@@ -26,7 +26,7 @@ function createReactCacheButton() {
     const button = document.createElement("button");
     button.type = "button";
     button.id = REACTICACHE_BTN_ID;
-    button.innerHTML = '<span class="tsm-reactcache-icon">↻</span><span class="tsm-reactcache-label">Сбросить кэш учеников</span>';
+    button.innerHTML = `<span class="tsm-reactcache-icon">${tsmIcon("refresh", 15)}</span><span class="tsm-reactcache-label">Сбросить кэш учеников</span>`;
     button.title = "TSM: очищает реактивный кэш, чтобы обновить список учеников выбранного типа уроков. После очистки обновите страницу (F5).";
     button.onmousedown = (event) => event.stopPropagation();
     button.onclick = (event) => {
@@ -52,7 +52,7 @@ function addButtonHash() {
     if (button.parentNode !== headarea) headarea.appendChild(button);
 }
 
-function reactiCacheNotify(text, type = "sucsbtnok") {
+function reactiCacheNotify(text, type = "ok") {
     createToast(text, type, true, REACTICACHE_TOAST_TTL);
 }
 
@@ -79,13 +79,13 @@ async function ClearReactCache() {
     const button = document.getElementById(REACTICACHE_BTN_ID);
     const myToken = getGlobalToken();
     if (!myToken) {
-        reactiCacheNotify("<b>Токен не найден.</b> Войдите в личный кабинет и повторите", "sucsbtnnotok");
+        reactiCacheNotify("<b>Токен не найден.</b> Войдите в личный кабинет и повторите", "error");
         return;
     }
 
     const section = currentReactiCacheSection();
     if (!section) {
-        reactiCacheNotify("<b>Раздел не поддерживается.</b> Кэш сбрасывается на вкладках «Индивидуальные», «Параллельные», «Групповые» и «Вебинары»", "sucsbtnnotok");
+        reactiCacheNotify("<b>Раздел не поддерживается.</b> Кэш сбрасывается на вкладках «Индивидуальные», «Параллельные», «Групповые» и «Вебинары»", "error");
         return;
     }
 
@@ -94,6 +94,7 @@ async function ClearReactCache() {
         button.disabled = true;
     }
     try {
+        /* Прямой запрос из контент-скрипта — работает, пока API отдаёт CORS-заголовки для origin страницы */
         const response = await fetch(`https://academic-gateway.skyeng.ru/academic/api/teacher-classroom/get-data/${section}`, {
             method: "POST",
             headers: {
@@ -104,10 +105,10 @@ async function ClearReactCache() {
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         await response.json().catch(() => null);
-        reactiCacheNotify("<b>Кэш учеников очищен.</b> Обновите страницу (F5), чтобы увидеть актуальный список", "sucsbtnok");
+        reactiCacheNotify("<b>Кэш учеников очищен.</b> Обновите страницу (F5), чтобы увидеть актуальный список", "ok");
     } catch (error) {
         console.error("[TSM ReactiCache]", error);
-        reactiCacheNotify(`<b>Не удалось очистить кэш</b> (${escapeHTML(error.message)}). Повторите или обновите страницу`, "sucsbtnnotok");
+        reactiCacheNotify(`<b>Не удалось очистить кэш</b> (${escapeHTML(error.message)}). Повторите или обновите страницу`, "error");
     } finally {
         if (button) {
             button.classList.remove("tsm-reactcache-busy");
