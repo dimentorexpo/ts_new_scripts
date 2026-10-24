@@ -113,15 +113,23 @@ document.getElementById("openexercisesmenu").onclick = () => showMainMenuSection
 document.getElementById("backmainmenufromexercises").onclick = () => showMainMenuSection("mainmenu");
 
 /* Обработчики из других модулей привязываем лениво: main.js грузится первым,
-   и функции модулей объявляются позже */
-document.getElementById("openchataddmenu").onclick = () => OpenAddChatMenu();
-document.getElementById("openlesinfomenu").onclick = () => (typeof OpenLessonInfoMenu === "function" ? OpenLessonInfoMenu() : OpenLessonmInfoMenu());
-document.getElementById("openstudentsmenu").onclick = () => OpenStudentsMenu();
-document.getElementById("VocabularyMenu").onclick = () => OpenVocabularyMenu();
-document.getElementById("exercisekysmart").onclick = () => OpenExercisesSmartroom();
-document.getElementById("exercisesttc").onclick = () => OpenExercisesTTC();
-document.getElementById("exercisesComplect").onclick = () => OpenExercisesComplect();
-document.getElementById("exercisesRevisionFix").onclick = () => OpenRevisionFix();
+   и функции модулей объявляются позже. Если модуль не загрузился (упал при
+   выполнении), клик не бросает ReferenceError, а показывает подсказку. */
+function safeMenuCall(fnName) {
+    return () => {
+        if (typeof window[fnName] === "function") window[fnName]();
+        else createNotify(`Модуль «${fnName}» не загрузился — обновите страницу (F5)`, "error");
+    };
+}
+
+document.getElementById("openchataddmenu").onclick = safeMenuCall("OpenAddChatMenu");
+document.getElementById("openlesinfomenu").onclick = safeMenuCall("OpenLessonInfoMenu");
+document.getElementById("openstudentsmenu").onclick = safeMenuCall("OpenStudentsMenu");
+document.getElementById("VocabularyMenu").onclick = safeMenuCall("OpenVocabularyMenu");
+document.getElementById("exercisekysmart").onclick = safeMenuCall("OpenExercisesSmartroom");
+document.getElementById("exercisesttc").onclick = safeMenuCall("OpenExercisesTTC");
+document.getElementById("exercisesComplect").onclick = safeMenuCall("OpenExercisesComplect");
+document.getElementById("exercisesRevisionFix").onclick = safeMenuCall("OpenRevisionFix");
 
 /* ID текущего пользователя (кэшируется на время жизни страницы) */
 let tsmUserIdPromise = null;

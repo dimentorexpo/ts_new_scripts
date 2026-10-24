@@ -273,7 +273,6 @@ async function postToMessenger(message, channelId, rootId = "") {
 }
 
 async function sendToSupportChannel(message, tabId) {
-    await sessionSet("lastMessage", message);
     try {
         const post = await postToMessenger(message, CHANNEL_SUPPORT);
         if (post?.id) await transferToTSM(post.id, tabId);
@@ -489,8 +488,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     throw new Error(`HTTP ${response.status}${response.statusText ? " " + response.statusText : ""} — проверьте авторизацию и повторите`);
                 }
                 const fetchAnswer = await readResponseTextBounded(response);
-                /* fetchansver оставлен для обратной совместимости со старым кодом */
-                sendResponse({ success: true, fetchAnswer, fetchansver: fetchAnswer });
+                sendResponse({ success: true, fetchAnswer });
             } catch (error) {
                 sendResponse({ success: false, error: error.message });
             }

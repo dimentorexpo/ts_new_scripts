@@ -225,7 +225,7 @@ async function revfixLoadRoom() {
         const data = await fetchJson(`https://api-${room.subject}.skyeng.ru/api/v2/rooms/${room.hash}`);
         const participants = data.participants || [];
         const firstStudent = participants.find((p) => p.role === "student");
-        let index = firstStudent ? (data.lessonCards || []).findIndex((c) => c.userId === firstStudent.userId) : -1;
+        let index = firstStudent ? (data.lessonCards || []).findIndex((c) => String(c.userId) === String(firstStudent.userId)) : -1;
         if (index < 0) index = 0;
 
         revfixState.room = room;

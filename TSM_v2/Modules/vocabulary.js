@@ -31,7 +31,7 @@ const win_Vocabulary = `
         <button type="button" class="tsm-btn tsm-btn-icon" id="ClearVocabulary" title="Очистить и остановить операции">🧹</button>
         <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideVocabularyMenu">✕</button>
     </div>
-    <div id="vocabularbar" class="tsm-vocab-bar">
+    <div id="vocabularbar">
         <div id="searchtoolswords" class="tsm-input-group">
             <input id="iduserwords" class="tsm-input" inputmode="numeric" autocomplete="off" placeholder="ID ученика">
             <button type="button" id="findwords" class="tsm-btn">Загрузить</button>
@@ -443,7 +443,7 @@ function renderWordSets(wordSets, isSearch = false) {
                     </label>
                     <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">%</div><div class="tsm-text-center">✓</div>
                 </div>
-                <div class="tsm-words-grid-body">${rows}</div>
+                <div>${rows}</div>
             </div>
         </div>`;
     }).join("");
@@ -544,6 +544,10 @@ document.getElementById("btnResume").onclick = () => {
 };
 
 function startWordSearch() {
+    if (isTaskRunning) {
+        createNotify("Дождитесь окончания текущей операции или нажмите «Очистить»", "error");
+        return;
+    }
     document.getElementById("searchwordinput").value = "";
     selectedWordIds.clear();
     getwordsets(document.getElementById("iduserwords").value.trim());

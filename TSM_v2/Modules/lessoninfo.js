@@ -27,7 +27,7 @@ const win_getLessonInfo = `
     <button type="button" id="searchHash" class="tsm-btn" title="Найти комнату">Найти</button>
 </div>
 
-<div id="lessonInfoBody" class="tsm-lesson-body">
+<div id="lessonInfoBody">
     <div class="tsm-card">
         <div class="tsm-card-title">Занятие</div>
         <div class="tsm-field"><span class="tsm-field-label">Предмет</span><span id="subjectnamefield" class="tsm-field-value"></span></div>
@@ -322,4 +322,3 @@ document.getElementById("searchForParticipant").addEventListener("input", functi
 function OpenLessonInfoMenu() {
     if (toggleTSMWindow(wintLessonInfo)) openMenu(false, document.getElementById("RefreshInfo"));
 }
-const OpenLessonmInfoMenu = OpenLessonInfoMenu;

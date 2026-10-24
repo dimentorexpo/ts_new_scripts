@@ -21,7 +21,7 @@
   /* Текст */
   --tsm-text: #e7ecf3;
   --tsm-text-2: #9ba7b9;
-  --tsm-text-3: #6d798c;
+  --tsm-text-3: #8a95a8;
 
   /* Акцент и статусы */
   --tsm-accent: #7cc4ff;
@@ -738,6 +738,7 @@
 .tsm-kid-card.sleep { border-left: 3px solid var(--tsm-text-3); }
 .tsm-kid-card.vacation { border-left: 3px solid var(--tsm-warn); }
 .tsm-student-name-kid { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; min-width: 0; }
+.tsm-kid-status { flex: 0 0 auto; font-size: 13px; line-height: 1; cursor: help; }
 .tsm-kid-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsm-kid-meta { display: flex; flex-wrap: wrap; gap: 5px; }
 .tsm-id-badge,
@@ -1062,8 +1063,11 @@
 .tsm-dialog-overlay.tsm-dialog-visible { opacity: 1; }
 .tsm-dialog {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   width: 460px;
   max-width: calc(100vw - 32px);
+  max-height: min(82vh, 720px);
   padding: 20px;
   color: var(--tsm-text);
   background: var(--tsm-surface);
@@ -1075,7 +1079,18 @@
 }
 .tsm-dialog-visible .tsm-dialog { transform: none; }
 .tsm-dialog-title { margin-bottom: 6px; font-size: 15px; font-weight: 650; }
-.tsm-dialog-message { margin-bottom: 16px; font-size: 13px; line-height: 1.55; color: var(--tsm-text-2); white-space: pre-line; overflow-wrap: anywhere; }
+.tsm-dialog-message {
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--tsm-text-2);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
 .tsm-dialog-input {
   all: unset;
   display: block;
@@ -1093,11 +1108,13 @@
   border-radius: var(--tsm-r-control);
   white-space: pre-wrap;
   resize: vertical;
+  max-height: 40vh;
+  flex-shrink: 0;
 }
 .tsm-dialog-input:focus { border-color: var(--tsm-accent); box-shadow: 0 0 0 3px rgba(124, 196, 255, 0.16); }
-.tsm-dialog-hint { margin-bottom: 14px; font-size: 11px; color: var(--tsm-text-3); }
+.tsm-dialog-hint { margin-bottom: 14px; font-size: 11px; color: var(--tsm-text-3); flex-shrink: 0; }
 input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
-.tsm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.tsm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
 .tsm-dialog-btn {
   all: unset;
   box-sizing: border-box;

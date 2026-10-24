@@ -118,7 +118,7 @@ async function manageChat(action, button) {
     });
     setBusy(button, false);
 
-    const backendError = response?.success ? checkChatResponseError(response.fetchAnswer || response.fetchansver) : null;
+    const backendError = response?.success ? checkChatResponseError(response.fetchAnswer) : null;
 
     if (response?.success && !backendError) {
         showChatStatus(action === "add" ? "Чат добавлен" : "Чат удалён", action === "add" ? "ok" : "warn");

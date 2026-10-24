@@ -8,7 +8,7 @@ const EMPHASIS_ICONS = { writing: "✏", pronunciation: "🎧", speaking: "🎙"
 
 const identityStripHTML = (suffix) => `
 <div class="tsm-info-panel">
-    <div class="tsm-info-row tsm-info-row-inline">
+    <div class="tsm-info-row">
         <span class="tsm-chip tsm-chip-person" id="studname${suffix}"></span>
         <select class="tsm-select tsm-select-student" id="studselect${suffix}" style="display:none; max-width:180px; margin-right:4px;" title="Выбор ученика"></select>
         <span class="tsm-chip" id="studserviceid${suffix}" title="ID услуги"></span>
@@ -295,7 +295,7 @@ function smartroomCategoryHTML(title, block, subject, isHomework) {
         });
     });
 
-    const table = `<div class="tsm-table-scroll"><table class="tsm-slide-table${isHomework ? "" : " tsm-slide-table-lesson"}">
+    const table = `<div class="tsm-table-scroll"><table class="tsm-slide-table">
         <thead><tr class="tsm-table-header">
             <th>#</th><th>Слайд</th><th>Балл</th><th>%</th><th>CMS</th><th>Задано</th><th>Скор обновлён</th>
             ${isHomework ? "<th>Сброс</th>" : ""}
@@ -532,7 +532,7 @@ function complectTableHTML(themes, subject, variantId) {
                 <td class="tsm-table-cell-center ${empty ? "" : (done ? "tsm-cell-success" : "tsm-cell-warn")}">${escapeHTML(completeness)}</td>
                 <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save" data-action="copy-cms" data-subtype="${escapeHTML(subject)}" data-lessonid="${lessonId}" data-stepid="${escapeHTML(card.id)}" title="Скопировать ссылку на слайд в CMS">💾</button></td>
                 <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-step" data-action="copy-uuid" data-stepuuid="${uuid}" title="Скопировать stepUuid">📋</button></td>
-                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save-revision" data-action="reset-revision" data-stepuuid="${uuid}" data-variantid="${escapeHTML(variantId || "")}" data-cardname="${escapeHTML(card.name)}" title="Сбросить ревизию слайда">↺</button></td>
+                <td class="tsm-table-cell-center"><button type="button" class="tsm-btn-save-revision" data-action="reset-revision" data-stepuuid="${uuid}" data-variantid="${escapeHTML(variantId || "")}" data-cardname="${escapeHTML(card.name)}" ${variantId ? "" : "disabled"} title="${variantId ? "Сбросить ревизию слайда" : "Сброс недоступен: у комплекта нет variantId"}">↺</button></td>
             </tr>`;
         });
     });
@@ -638,6 +638,11 @@ async function resetRevision(el) {
     const variantId = el.dataset.variantid;
     if (!room || !stepUuid) {
         createNotify("У слайда нет stepUuid", "error");
+        return;
+    }
+    /* Без variantId сервер не соберёт contentGroupId — сброс не сработает или заденет чужую группу */
+    if (!variantId) {
+        createNotify("У слайда нет variantId — сброс ответов недоступен", "error");
         return;
     }
 

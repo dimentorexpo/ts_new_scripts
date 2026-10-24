@@ -51,7 +51,6 @@ function addButtonHash() {
     const button = buttons[0] || createReactCacheButton();
     if (button.parentNode !== headarea) headarea.appendChild(button);
 }
-const addbuttonhesh = addButtonHash;
 
 function reactiCacheNotify(text, type = "sucsbtnok") {
     createToast(text, type, true, REACTICACHE_TOAST_TTL);
@@ -70,8 +69,6 @@ const reactiCacheObserver = new MutationObserver(() => {
 });
 reactiCacheObserver.observe(document.body, { childList: true, subtree: true });
 addButtonHash();
-
-const getTeachToken = getGlobalToken;
 
 /* FIX: раздел раньше брался строго из 8-го сегмента URL и ломался при любом изменении пути */
 function currentReactiCacheSection() {
@@ -118,4 +115,3 @@ async function ClearReactCache() {
         }
     }
 }
-const ClearReactCashe = ClearReactCache;
