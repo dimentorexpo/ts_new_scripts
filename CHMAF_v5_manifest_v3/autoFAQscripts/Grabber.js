@@ -298,7 +298,7 @@
         0 26px 70px rgba(3, 9, 22, .52),
         inset 0 1px rgba(255, 255, 255, .06) !important;
     position: relative;
-    z-index: 1000003;
+    z-index: var(--z-window-raised, 1000100);
 }
 
 #AF_Grabber .ag button,
@@ -775,7 +775,7 @@
 /* Выпадающие списки и поповеры колонок */
 #ag-column-popover {
     position: fixed;
-    z-index: 2147483002;
+    z-index: calc(var(--z-popover, 2147483000) + 2);
     width: min(300px, calc(100vw - 20px));
     max-height: 380px;
     overflow: auto;
@@ -892,7 +892,7 @@
     position: fixed;
     top: 45px;
     left: max(12px, calc((100vw - 980px) / 2));
-    z-index: 2147483000;
+    z-index: var(--z-popover, 2147483000);
     width: min(980px, calc(100vw - 24px));
     max-height: calc(100vh - 24px);
     overflow: hidden;
@@ -1053,7 +1053,7 @@
 
 #ag-tooltip {
     position: fixed;
-    z-index: 2147483001;
+    z-index: calc(var(--z-popover, 2147483000) + 1);
     max-width: min(330px, calc(100vw - 20px));
     padding: 9px 12px;
     border: 1px solid #3c4d68;

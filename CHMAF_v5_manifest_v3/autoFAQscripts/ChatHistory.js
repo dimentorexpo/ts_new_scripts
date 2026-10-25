@@ -1017,7 +1017,7 @@
             position: fixed;
             top: 0;
             right: 0;
-            z-index: 1000000;
+            z-index: var(--z-window, 1000000);
             display: none;
             flex-direction: column;
             width: min(480px, 100vw);
@@ -1855,7 +1855,7 @@
         .afg-gallery {
             position: fixed;
             inset: 0;
-            z-index: 10000001;
+            z-index: var(--z-popout, 1001000);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1912,7 +1912,7 @@
             position: fixed;
             right: 18px;
             bottom: 18px;
-            z-index: 10000010;
+            z-index: var(--z-popout, 1001000);
             max-width: 340px;
             padding: 11px 15px;
             color: #fff;
@@ -3478,7 +3478,13 @@
         return;
       }
 
-      if (!confirm("Вернуть чат в очередь и забрать его на себя?")) {
+      if (
+        !(await chmafDialog.confirm({
+          title: "Возврат в очередь",
+          message: "Вернуть чат в очередь и забрать его на себя?",
+          okText: "Вернуть и забрать",
+        }))
+      ) {
         return;
       }
 

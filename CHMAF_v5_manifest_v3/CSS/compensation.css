@@ -16,7 +16,7 @@
   --comp-r: var(--radius-md, 8px);
 
   width: min(560px, calc(100vw - 16px));
-  z-index: 1100000;
+  z-index: var(--z-modal);
 }
 
 #AF_Compensation .comp-panel {

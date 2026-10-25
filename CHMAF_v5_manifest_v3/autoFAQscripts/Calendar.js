@@ -1654,15 +1654,18 @@
         }
     }
 
-    function openSlot(button) {
+    async function openSlot(button) {
         if (
             state.dirty &&
             state.selectedElement !== button
         ) {
             if (
-                !confirm(
-                    'Отменить несохранённые изменения?'
-                )
+                !(await chmafDialog.confirm({
+                    title: 'Несохранённые изменения',
+                    message: 'Отменить несохранённые изменения?',
+                    okText: 'Не сохранять',
+                    danger: true
+                }))
             ) {
                 return;
             }
@@ -2062,11 +2065,21 @@
 
         if (state.mutationRunning) return;
 
-        if (!confirm('Удалить этот слот?')) return;
+        if (
+            !(await chmafDialog.confirm({
+                title: 'Удаление слота',
+                message: 'Удалить этот слот?',
+                okText: 'Удалить',
+                danger: true
+            }))
+        ) return;
 
-        const rawReason = prompt(
-            'Укажите причину удаления:'
-        );
+        const rawReason = await chmafDialog.prompt({
+            title: 'Причина удаления',
+            label: 'Укажите причину удаления:',
+            okText: 'Удалить',
+            placeholder: 'Например: слот создан по ошибке'
+        });
 
         if (rawReason === null) return;
 
@@ -2256,12 +2269,15 @@
         }
     );
 
-    ui.hideSlot.addEventListener('click', () => {
+    ui.hideSlot.addEventListener('click', async () => {
         if (
             state.dirty &&
-            !confirm(
-                'Отменить несохранённые изменения?'
-            )
+            !(await chmafDialog.confirm({
+                title: 'Несохранённые изменения',
+                message: 'Отменить несохранённые изменения?',
+                okText: 'Не сохранять',
+                danger: true
+            }))
         ) {
             return;
         }
@@ -2269,12 +2285,15 @@
         closeEditor();
     });
 
-    function changeDate(amount) {
+    async function changeDate(amount) {
         if (
             state.dirty &&
-            !confirm(
-                'Отменить несохранённые изменения?'
-            )
+            !(await chmafDialog.confirm({
+                title: 'Несохранённые изменения',
+                message: 'Отменить несохранённые изменения?',
+                okText: 'Не сохранять',
+                danger: true
+            }))
         ) {
             return;
         }
@@ -2290,12 +2309,15 @@
         void loadSlots();
     }
 
-    ui.date.addEventListener('change', () => {
+    ui.date.addEventListener('change', async () => {
         if (
             state.dirty &&
-            !confirm(
-                'Отменить несохранённые изменения?'
-            )
+            !(await chmafDialog.confirm({
+                title: 'Несохранённые изменения',
+                message: 'Отменить несохранённые изменения?',
+                okText: 'Не сохранять',
+                danger: true
+            }))
         ) {
             const selected = selectedSlot();
 
@@ -2322,12 +2344,15 @@
         () => changeDate(1)
     );
 
-    ui.today.addEventListener('click', () => {
+    ui.today.addEventListener('click', async () => {
         if (
             state.dirty &&
-            !confirm(
-                'Отменить несохранённые изменения?'
-            )
+            !(await chmafDialog.confirm({
+                title: 'Несохранённые изменения',
+                message: 'Отменить несохранённые изменения?',
+                okText: 'Не сохранять',
+                danger: true
+            }))
         ) {
             return;
         }
@@ -2366,12 +2391,15 @@
         hideCalendar
     );
 
-    ui.clear.addEventListener('click', () => {
+    ui.clear.addEventListener('click', async () => {
         if (
             state.dirty &&
-            !confirm(
-                'Очистить несохранённые изменения?'
-            )
+            !(await chmafDialog.confirm({
+                title: 'Несохранённые изменения',
+                message: 'Очистить несохранённые изменения?',
+                okText: 'Очистить',
+                danger: true
+            }))
         ) {
             return;
         }

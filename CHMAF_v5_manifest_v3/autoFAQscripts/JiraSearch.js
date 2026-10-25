@@ -1,7 +1,9 @@
 // Добавляем уникальные CSS-стили для эффекта Glassmorphism
 
 let requesttojiratext;
-let favissues = JSON.parse(localStorage.getItem('bugsarray') || '[]');
+// Топ-уровень модуля: битый JSON здесь валил бы весь JiraSearch,
+// поэтому только через защитный readJsonLocal (из utils.js)
+let favissues = readJsonLocal('bugsarray', []);
 
 // Добавляем уникальные CSS-стили
 const glassStylesJiraS = `
@@ -831,7 +833,8 @@ function switchJiraPages() {
     pageSwArr.forEach(page => {
         page.addEventListener('click', function () {
             if (!this.classList.contains('active')) {
-                document.getElementById('issuetable').innerHTML = '<span style="color:bisque; margin-left:5px;">Загрузка...</span>';
+                document.getElementById('issuetable').innerHTML =
+                    chmafSkeletons(6, { dot: true });
                 pageSwArr.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
 
@@ -976,14 +979,9 @@ function getJiraOpenFormPress() {
         checkJiraToken();
 
         if (localStorage.getItem('bugsarray')) {
-            try {
-                const parsedFavs = JSON.parse(localStorage.getItem('bugsarray'));
-                favissues = Array.isArray(parsedFavs) ? parsedFavs : [];
-            } catch (e) {
-                // Повреждённый кэш не должен ронять панель Jira
-                favissues = [];
-                localStorage.removeItem('bugsarray');
-            }
+            // Повреждённый кэш не должен ронять панель Jira
+            const parsedFavs = readJsonLocal('bugsarray', []);
+            favissues = Array.isArray(parsedFavs) ? parsedFavs : [];
 
             renderFavorites();
         }

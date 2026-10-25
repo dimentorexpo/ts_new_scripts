@@ -73,7 +73,7 @@
             color: var(--gls-text);
             text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
             position: fixed !important;
-            z-index: 999999 !important;
+            z-index: var(--z-window, 1000000) !important;
             width: 1120px;
             max-width: calc(100vw - 16px);
             background:
@@ -789,8 +789,15 @@
         $(`#${CONFIG.prefix}-date-to`).value = fmt(now);
     };
 
-    const clearAll = () => {
-        if (!confirm('Вы уверены, что хотите очистить все поля?')) return;
+    const clearAll = async () => {
+        if (
+            !(await chmafDialog.confirm({
+                title: 'Очистка полей',
+                message: 'Вы уверены, что хотите очистить все поля?',
+                okText: 'Очистить',
+                danger: true
+            }))
+        ) return;
 
         resetDates();
         state.lastClasses = null;
@@ -859,7 +866,7 @@
             state.windowRef.classList.add(`${CONFIG.prefix}-window`);
             state.windowRef.style.cssText += `
                 position: fixed;
-                z-index: 999999;
+                z-index: var(--z-window, 1000000);
                 border-radius: 18px;
                 overflow: hidden;
             `;

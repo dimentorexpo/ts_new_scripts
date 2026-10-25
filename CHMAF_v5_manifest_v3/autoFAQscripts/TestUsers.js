@@ -303,7 +303,7 @@
     border: 1px solid rgba(255,255,255,0.1);
     opacity: 0;
     pointer-events: none;
-    z-index: 9999999;
+    z-index: var(--z-popout, 1001000);
     transition: all 0.25s ease;
     box-shadow: 0 12px 32px rgba(0,0,0,0.5);
 }

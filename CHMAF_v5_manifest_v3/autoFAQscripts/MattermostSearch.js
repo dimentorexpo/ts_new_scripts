@@ -52,7 +52,7 @@
         if (typeof showCustomAlert === 'function') { showCustomAlert(msg, type); return; }
         try {
             const t = document.createElement('div');
-            t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999999;background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;font-size:13px;font-family:system-ui,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.1);max-width:420px;';
+            t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:var(--z-popout, 1001000);background:rgba(20,20,35,0.95);color:#f1f5f9;padding:12px 18px;border-radius:12px;font-size:13px;font-family:system-ui,sans-serif;box-shadow:0 8px 32px rgba(0,0,0,0.45);border:1px solid rgba(255,255,255,0.1);max-width:420px;';
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 5000);
@@ -89,10 +89,8 @@
     // ═══════════════════════════════════════════════════════
     let cache = { channels: {}, users: {} };
 
-    try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-        if (saved && saved.channels && saved.users) cache = saved;
-    } catch (e) { /* повреждённый кэш — работаем с пустым */ }
+    const saved = readJsonLocal(STORAGE_KEY, {});
+    if (saved && saved.channels && saved.users) cache = saved;
 
     const persistCache = () => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cache)); } catch (e) { /* переполнение — не критично */ }
@@ -1111,7 +1109,9 @@
         dom.channelBar.innerHTML = '';
         dom.searchBtn.disabled = true;
         dom.results.innerHTML =
-            '<div class="mms-loading"><div class="mms-spinner"></div>Поиск по Mattermost...</div>';
+            '<div style="padding:var(--space-md)">' +
+            chmafSkeletons(6, { dot: true }) +
+            '</div>';
 
         try {
             const res = await searchPosts(requestedTeamId, terms, 0);
@@ -1228,7 +1228,7 @@
             const div = document.createElement('div');
             div.id = WINDOW_ID;
             div.innerHTML = win_MMS;
-            div.style.cssText = 'position:fixed;top:15%;left:30%;z-index:1000001;display:none;';
+            div.style.cssText = 'position:fixed;top:15%;left:30%;z-index:var(--z-window-raised, 1000100);display:none;';
             document.body.appendChild(div);
             // main world: chrome.runtime и createWindow недоступны — свой мини-drag
             const header = div.querySelector('.mms-header');

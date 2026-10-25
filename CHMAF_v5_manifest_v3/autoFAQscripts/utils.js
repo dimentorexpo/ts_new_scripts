@@ -41,6 +41,25 @@ function writeLocalStorage(key, value) {
     }
 }
 
+/**
+ * JSON из localStorage с защитой от битых данных: невалидная запись
+ * удаляется (самолечение), модуль продолжает работать с fallback.
+ * Все JSON.parse(localStorage...) в модулях должны идти через него.
+ */
+function readJsonLocal(key, fallback) {
+    let raw = null;
+    try {
+        raw = localStorage.getItem(key);
+        if (raw === null) return fallback;
+        return JSON.parse(raw);
+    } catch (error) {
+        console.warn(`[ChMAF] Битый JSON в localStorage «${key}» — использую значение по умолчанию`, error);
+        try { localStorage.removeItem(key); } catch { /* приватный режим и т.п. */ }
+        return fallback;
+    }
+}
+window.readJsonLocal = readJsonLocal;
+
 let scriptAdr =
     readLocalStorage('scriptAdr') ||
     DEFAULT_SCRIPT_ADR;
@@ -699,7 +718,7 @@ function createWindow(id, topKey, leftKey, content) {
             'AF_SpecCommWindow'
         ].includes(id)
     ) {
-        windowElement.style.zIndex = '1100000';
+        windowElement.style.zIndex = 'var(--z-window-raised, 1000100)';
     }
 
     // Разметка content создаётся доверенными модулями
@@ -916,7 +935,7 @@ function injectFABStyles() {
     top: 50%;
     right: 16px;
     transform: translateY(-50%);
-    z-index: 2147483647;
+    z-index: var(--z-fab, 2147483400);
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1238,7 +1257,7 @@ function injectFABStyles() {
     bottom: auto;
     transform: none !important;
 
-    z-index: 2147483647;
+    z-index: var(--z-fab, 2147483400);
 
     box-sizing: border-box;
     display: flex;
@@ -1584,7 +1603,7 @@ function injectModuleMenuStyles() {
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    z-index: 2147483647 !important;
+    z-index: var(--z-fab, 2147483400) !important;
 
     box-sizing: border-box;
     width: min(420px, calc(100vw - 24px));
@@ -2726,17 +2745,25 @@ window.getText = getText;
 // УВЕДОМЛЕНИЯ
 // ================================================================
 
+// Единая точка входа для уведомлений. Легаси-API (showCustomAlert /
+// showToast / notify / createAndShowButton) теперь рисует премиальные
+// тосты из NotificationSystem.js (Shadow DOM, SVG-иконки, пауза по
+// hover). Откат: вернуть прежнюю реализацию этого блока из git.
 (() => {
-    const MAX_TOASTS = 5;
-    const activeToasts = [];
+    const DEFAULT_TITLES = {
+        success: 'Успешно',
+        error: 'Ошибка',
+        warning: 'Внимание',
+        info: 'Информация'
+    };
 
     window.showCustomAlert = (
         message,
         type = 'info',
         opts = {}
     ) => {
-        let normalizedType = type;
         const text = String(message ?? '');
+        let normalizedType = type;
 
         if (type === 'message') {
             if (/error|ошибка|fail/i.test(text)) {
@@ -2752,33 +2779,11 @@ window.getText = getText;
             }
         }
 
-        if (
-            ![
-                'success',
-                'error',
-                'warning',
-                'info'
-            ].includes(normalizedType)
-        ) {
+        if (!Object.hasOwn(DEFAULT_TITLES, normalizedType)) {
             normalizedType = 'info';
         }
 
-        let container = document.getElementById(
-            'chmaf-toast-container'
-        );
-
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'chmaf-toast-container';
-            document.body.appendChild(container);
-        }
-
-        while (activeToasts.length >= MAX_TOASTS) {
-            const oldest = activeToasts.shift();
-            oldest?.remove();
-        }
-
-        const requestedDuration = Number(opts.duration);
+        const requestedDuration = Number(opts?.duration);
 
         const duration =
             Number.isFinite(requestedDuration) &&
@@ -2788,158 +2793,259 @@ window.getText = getText;
                     ? 6000
                     : 4000;
 
-        const defaultTitle = {
-            success: 'Успешно',
-            error: 'Ошибка',
-            warning: 'Внимание',
-            info: 'Информация'
-        };
+        const premium = window.NotificationSystem;
 
-        const icons = {
-            success: '✓',
-            error: '✕',
-            warning: '⚠',
-            info: 'ℹ'
-        };
-
-        const toast = document.createElement('div');
-
-        toast.className =
-            `chmaf-toast ${normalizedType}`;
-
-        toast.setAttribute(
-            'role',
-            normalizedType === 'error'
-                ? 'alert'
-                : 'status'
-        );
-
-        const iconElement = document.createElement('div');
-        iconElement.className = 'chmaf-toast-icon';
-        iconElement.textContent = icons[normalizedType];
-
-        const contentElement = document.createElement('div');
-        contentElement.className = 'chmaf-toast-content';
-
-        const titleElement = document.createElement('div');
-        titleElement.className = 'chmaf-toast-title';
-        titleElement.textContent = String(
-            opts.title ||
-            defaultTitle[normalizedType]
-        );
-
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chmaf-toast-msg';
-        messageElement.textContent = text;
-        messageElement.style.whiteSpace = 'pre-line';
-
-        contentElement.append(
-            titleElement,
-            messageElement
-        );
-
-        const closeButton = document.createElement('button');
-        closeButton.type = 'button';
-        closeButton.className = 'chmaf-toast-close';
-        closeButton.textContent = '×';
-
-        closeButton.setAttribute(
-            'aria-label',
-            'Закрыть уведомление'
-        );
-
-        const progressElement = document.createElement('div');
-        progressElement.className = 'chmaf-toast-progress';
-
-        progressElement.style.transition =
-            `transform ${duration}ms linear`;
-
-        progressElement.style.transform = 'scaleX(1)';
-
-        toast.append(
-            iconElement,
-            contentElement,
-            closeButton,
-            progressElement
-        );
-
-        container.appendChild(toast);
-        activeToasts.push(toast);
-
-        requestAnimationFrame(() => {
-            if (toast.isConnected) {
-                progressElement.style.transform = 'scaleX(0)';
-            }
-        });
-
-        let closed = false;
-        let timer = null;
-        let remaining = duration;
-        let startedAt = Date.now();
-
-        function removeFromList() {
-            const index = activeToasts.indexOf(toast);
-
-            if (index !== -1) {
-                activeToasts.splice(index, 1);
-            }
+        if (premium?.show) {
+            return premium.show(text, normalizedType, {
+                title: opts?.title || DEFAULT_TITLES[normalizedType],
+                duration
+            });
         }
 
-        function closeToast() {
-            if (closed) {
-                return;
-            }
-
-            closed = true;
-            clearTimeout(timer);
-            toast.classList.add('closing');
-
-            setTimeout(() => {
-                toast.remove();
-                removeFromList();
-            }, 300);
-        }
-
-        closeButton.addEventListener('click', event => {
-            event.stopPropagation();
-            closeToast();
-        });
-
-        toast.addEventListener('click', closeToast);
-
-        timer = setTimeout(closeToast, duration);
-
-        toast.addEventListener('mouseenter', () => {
-            if (closed) {
-                return;
-            }
-
-            clearTimeout(timer);
-
-            remaining -= Date.now() - startedAt;
-            remaining = Math.max(remaining, 500);
-
-            progressElement.style.transition = 'none';
-        });
-
-        toast.addEventListener('mouseleave', () => {
-            if (closed) {
-                return;
-            }
-
-            startedAt = Date.now();
-
-            progressElement.style.transition =
-                `transform ${remaining}ms linear`;
-
-            progressElement.style.transform = 'scaleX(0)';
-
-            timer = setTimeout(closeToast, remaining);
-        });
-
-        return toast;
+        // NotificationSystem не загрузился — хотя бы не теряем сообщение
+        console.warn(`[ChMAF:${normalizedType}] ${text}`);
+        return null;
     };
 })();
+
+// ================================================================
+// ДИАЛОГИ (единые для всех модулей)
+// ================================================================
+// chmafDialog.confirm / .prompt / .alert — замена нативных
+// confirm/prompt/alert: стеклянные модалки дизайн-системы,
+// focus trap, Esc = отмена, Enter = подтверждение, промисы
+// вместо блокировки страницы. Другие модули используют так:
+//   if (await chmafDialog.confirm({ title, message })) { ... }
+//   const name = await chmafDialog.prompt({ title, label });
+(() => {
+    function buildDialog({
+        title,
+        message,
+        okText,
+        cancelText,
+        danger = false,
+        withInput = false,
+        inputValue = '',
+        placeholder = ''
+    }) {
+        const backdrop = document.createElement('div');
+        backdrop.className = 'glass-modal-backdrop';
+
+        const dialog = document.createElement('div');
+        dialog.className = 'glass-panel glass-modal';
+        dialog.style.width = 'min(440px, 92vw)';
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        if (title) dialog.setAttribute('aria-label', title);
+
+        const header = document.createElement('div');
+        header.className = 'glass-modal-header';
+
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'glass-modal-title';
+        if (title) titleEl.textContent = title;
+        header.appendChild(titleEl);
+
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'glass-modal-close';
+        closeBtn.setAttribute('aria-label', 'Закрыть');
+        closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        header.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.className = 'glass-modal-body';
+
+        if (message) {
+            const msgEl = document.createElement('div');
+            msgEl.style.cssText = 'font-size:var(--font-size-base);color:var(--text-secondary);line-height:1.5;white-space:pre-line;';
+            msgEl.textContent = message;
+            body.appendChild(msgEl);
+        }
+
+        let input = null;
+        if (withInput) {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'glass-input';
+            input.value = inputValue;
+            input.placeholder = placeholder;
+            input.style.marginTop = 'var(--space-md)';
+            body.appendChild(input);
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'glass-modal-footer';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'glass-btn';
+        cancelBtn.textContent = cancelText;
+
+        const okBtn = document.createElement('button');
+        okBtn.type = 'button';
+        okBtn.className = danger ? 'glass-btn glass-btn-danger' : 'glass-btn glass-btn-primary';
+        okBtn.textContent = okText;
+
+        footer.append(cancelBtn, okBtn);
+        dialog.append(header, body, footer);
+        backdrop.appendChild(dialog);
+
+        return { backdrop, dialog, closeBtn, cancelBtn, okBtn, input };
+    }
+
+    function runDialog(parts, { resolveOnOk, resolveOnCancel }) {
+        const { backdrop, dialog, closeBtn, cancelBtn, okBtn, input } = parts;
+
+        const previouslyFocused = document.activeElement;
+        openLayers += 1;
+
+        function finish(result) {
+            if (backdrop.dataset.closed === '1') return;
+            backdrop.dataset.closed = '1';
+            document.removeEventListener('keydown', onKeydown, true);
+            backdrop.remove();
+            if (previouslyFocused instanceof HTMLElement) {
+                previouslyFocused.focus();
+            }
+            result();
+        }
+
+        function onKeydown(event) {
+            if (event.key === 'Escape') {
+                event.stopPropagation();
+                finish(resolveOnCancel);
+                return;
+            }
+            if (event.key === 'Enter' && event.target !== cancelBtn) {
+                event.preventDefault();
+                finish(resolveOnOk);
+                return;
+            }
+            if (event.key === 'Tab') {
+                // Focus trap: цикл по интерактивным элементам диалога
+                const focusables = dialog.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+
+        okBtn.addEventListener('click', () => finish(resolveOnOk));
+        cancelBtn.addEventListener('click', () => finish(resolveOnCancel));
+        closeBtn.addEventListener('click', () => finish(resolveOnCancel));
+        backdrop.addEventListener('mousedown', (event) => {
+            if (event.target === backdrop) finish(resolveOnCancel);
+        });
+
+        document.addEventListener('keydown', onKeydown, true);
+        document.body.appendChild(backdrop);
+
+        if (input) {
+            input.focus();
+            input.select();
+        } else {
+            okBtn.focus();
+        }
+    }
+
+    window.chmafDialog = {
+        /** Promise<boolean> — true, если нажата кнопка подтверждения */
+        confirm({
+            title = 'Подтверждение',
+            message = '',
+            okText = 'Подтвердить',
+            cancelText = 'Отмена',
+            danger = false
+        } = {}) {
+            return new Promise((resolve) => {
+                const parts = buildDialog({ title, message, okText, cancelText, danger });
+                runDialog(parts, {
+                    resolveOnOk: () => resolve(true),
+                    resolveOnCancel: () => resolve(false)
+                });
+            });
+        },
+
+        /** Promise<string|null> — текст или null при отмене (как у prompt) */
+        prompt({
+            title = 'Ввод',
+            message = '',
+            label = '',
+            value = '',
+            placeholder = '',
+            okText = 'OK',
+            cancelText = 'Отмена'
+        } = {}) {
+            return new Promise((resolve) => {
+                const parts = buildDialog({
+                    title,
+                    message: message || label,
+                    okText,
+                    cancelText,
+                    withInput: true,
+                    inputValue: value,
+                    placeholder
+                });
+                runDialog(parts, {
+                    resolveOnOk: () => resolve(parts.input.value),
+                    resolveOnCancel: () => resolve(null)
+                });
+            });
+        },
+
+        /** Promise<void> — информационное окно с одной кнопкой */
+        alert({
+            title = 'Информация',
+            message = '',
+            okText = 'Понятно'
+        } = {}) {
+            return new Promise((resolve) => {
+                const parts = buildDialog({ title, message, okText, cancelText: '' });
+                parts.cancelBtn.remove();
+                runDialog(parts, {
+                    resolveOnOk: () => resolve(),
+                    resolveOnCancel: () => resolve()
+                });
+            });
+        }
+    };
+})();
+
+// ================================================================
+// СКЕЛЕТОНЫ ЗАГРУЗКИ
+// ================================================================
+// HTML-строка заглушки на время загрузки данных (классы
+// .chmaf-skeleton* из design-system.css). Использование:
+//   el.innerHTML = chmafSkeletons(4);                  // 4 строки-текста
+//   el.innerHTML = chmafSkeletons(5, { dot: true });   // строки с аватаром
+function chmafSkeletons(count = 3, { dot = false } = {}) {
+    const widths = [92, 78, 88, 70, 84, 62];
+    const rows = [];
+
+    for (let i = 0; i < Math.max(1, count); i++) {
+        const width = widths[i % widths.length];
+        const line =
+            `<div class="chmaf-skeleton chmaf-skeleton-line" style="width:${width}%"></div>`;
+
+        rows.push(dot
+            ? `<div class="chmaf-skeleton-row">` +
+              `<div class="chmaf-skeleton chmaf-skeleton-dot"></div>` +
+              `<div style="flex:1;min-width:0">${line}</div></div>`
+            : line);
+    }
+
+    return `<div class="chmaf-skeletons">${rows.join('')}</div>`;
+}
+
+window.chmafSkeletons = chmafSkeletons;
 
 function notify(
     message,

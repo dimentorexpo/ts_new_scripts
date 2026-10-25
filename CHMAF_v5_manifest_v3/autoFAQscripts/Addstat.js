@@ -24,7 +24,7 @@ window.getStatsButtonPress = function () {
 // ---------- 2. Разметка основного окна (Cyber-Dark UI) ----------
 var win_Stat = `
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    /* Шрифты (Inter) загружаются один раз в design-system.css */
 
     /* ============================================
        AF Stat — NEON GLASS ULTRA
@@ -1407,7 +1407,12 @@ function attachEventHandlers() {
                 }
             } else {
                 // ДОБАВЛЕНИЕ В ИЗБРАННОЕ
-                const comment = prompt("Введите заметку для этой задачи:", "На контроле (2ЛТП)");
+                const comment = await chmafDialog.prompt({
+                    title: "Заметка к задаче",
+                    label: "Введите заметку для этой задачи:",
+                    value: "На контроле (2ЛТП)",
+                    okText: "Добавить"
+                });
                 if (comment !== null) {
                     favoritesChats[id] = { comment: comment || "Без комментария", date: new Date().toLocaleDateString() };
 

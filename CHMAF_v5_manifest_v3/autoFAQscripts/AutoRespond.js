@@ -213,12 +213,8 @@ function getbutFrozeChatButtonPress() {
 
     // ---------- Хранилище ----------
     const loadAll = () => {
-        try {
-            const obj = JSON.parse(localStorage.getItem(FZ_STORAGE_KEY) || '{}');
-            return obj && typeof obj === 'object' ? obj : {};
-        } catch (_) {
-            return {};
-        }
+        const obj = readJsonLocal(FZ_STORAGE_KEY, {});
+        return obj && typeof obj === 'object' ? obj : {};
     };
     const saveAll = (all) => {
         try {

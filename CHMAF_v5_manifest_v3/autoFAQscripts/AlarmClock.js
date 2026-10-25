@@ -55,7 +55,7 @@
                 border-radius: 18px;
                 box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06) !important;
                 font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
-                z-index: 1000002;
+                z-index: var(--z-window-raised, 1000100);
                 position: relative;
             }
             #AF_AlarmClock .alc-panel, #AF_AlarmClock .alc-panel * { box-sizing: border-box; }
@@ -222,7 +222,7 @@
 
             /* Всплывающее окно сработавшего напоминания */
             .alc-toast-wrap {
-                position: fixed; right: 20px; bottom: 20px; z-index: 2147483000;
+                position: fixed; right: 20px; bottom: 20px; z-index: var(--z-popover, 2147483000);
                 display: flex; flex-direction: column; gap: 10px; max-width: 360px;
                 font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
             }
@@ -421,10 +421,8 @@
     // ═══════════════════════════════════════════════════════════════════
 
     const loadReminders = () => {
-        try {
-            const arr = JSON.parse(localStorage.getItem(REM_KEY) || '[]');
-            return Array.isArray(arr) ? arr.filter(r => r && r.id && r.at) : [];
-        } catch (_) { return []; }
+        const arr = readJsonLocal(REM_KEY, []);
+        return Array.isArray(arr) ? arr.filter(r => r && r.id && r.at) : [];
     };
     const saveReminders = (list) => {
         list.sort((a, b) => a.at - b.at);

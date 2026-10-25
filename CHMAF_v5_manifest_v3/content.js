@@ -283,26 +283,9 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
     window.cleanupRegistry?.register(() => clearInterval(intervalId));
 }
 
-function createAndShowButton(message, type = 'message') {
-    // Перенаправляем всё на новую современную систему из utils.js
-    if (typeof window.showCustomAlert === 'function') {
-        window.showCustomAlert(message, type);
-        return;
-    }
-
-    // Фолбэк (если utils.js еще не загрузился)
-    let toast = document.querySelector('.cyber-toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.className = 'cyber-toast';
-        document.body.appendChild(toast);
-    }
-    toast.innerHTML = message;
-    toast.className = `cyber-toast ${type}`;
-    setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => toast.classList.remove('show'), 5000);
-}
-window.createAndShowButton = createAndShowButton;
+// createAndShowButton объявлен в NotificationSystem.js и рисует
+// премиальные тосты. Здесь НЕ переопределяем его (раньше этот
+// override с легаси-.cyber-toast перебивал премиум-версию).
 
 // ============================================================
 // Медиа в сообщениях
@@ -399,7 +382,7 @@ function openImageViewer(e) {
     if (!src) return;
     const overlay = document.createElement('div');
     overlay.dataset.type = 'img-viewer';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(12px);display:flex;justify-content:center;align-items:center;z-index:999999;cursor:zoom-out;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(12px);display:flex;justify-content:center;align-items:center;z-index:var(--z-popover, 2147483000);cursor:zoom-out;';
     const img = document.createElement('img');
     img.src = src;
     img.style.cssText = 'max-width:90%;max-height:90%;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.7);';
@@ -1037,11 +1020,16 @@ function formatServiceType(serviceTypeKey) {
 
 function highlightSearchText(item, searchText) {
     if (typeof item !== 'string' || !searchText) return item;
+    // item и searchText — внешние данные (Jira/задачи/ввод оператора):
+    // экранируем до вставки в innerHTML, иначе <img onerror=...> в тексте
+    // задачи превратится в исполняемый HTML
+    const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (ch) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
     const escaped = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = new RegExp(escaped, 'i');
-    const replacement = `<span style="color:MediumSpringGreen;font-weight:700;">${searchText.toUpperCase()}</span>`;
-    let cleaned = item.replace(/"\s*:\s*/g, ' – ');
-    if (cleaned === item) cleaned = item;
+    const replacement = `<span style="color:MediumSpringGreen;font-weight:700;">${escapeHtml(searchText.toUpperCase())}</span>`;
+    let cleaned = escapeHtml(item).replace(/&quot;\s*:\s*/g, ' – ');
     return cleaned.replace(pattern, replacement);
 }
 
@@ -1097,7 +1085,7 @@ if (location.host === 'skyeng.autofaq.ai') startUiTick();
             position: fixed;
             bottom: 20px;
             right: 20px;
-            z-index: 2147483647;
+            z-index: var(--z-notification, 2147483647);
             background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.95));
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);

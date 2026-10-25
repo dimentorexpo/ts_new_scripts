@@ -560,11 +560,7 @@ function sanitizeTaskText(str) {
 }
 
 function loadTaskDrafts() {
-    try {
-        return JSON.parse(localStorage.getItem(TASK_DRAFT_KEY)) || {};
-    } catch (_) {
-        return {};
-    }
+    return readJsonLocal(TASK_DRAFT_KEY, {});
 }
 
 /** Сохраняет текущее состояние формы в черновик, привязанный к хешу чата.

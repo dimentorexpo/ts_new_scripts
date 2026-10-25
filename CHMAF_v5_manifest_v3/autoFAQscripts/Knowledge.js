@@ -361,7 +361,7 @@
         /* --- Окно материала --- */
         .knw-solution {
             position: fixed;
-            z-index: 2147483000;
+            z-index: var(--z-popover, 2147483000);
             width: min(480px, calc(100vw - 24px));
             max-height: calc(100vh - 24px);
             max-height: calc(100dvh - 24px);

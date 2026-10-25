@@ -54,12 +54,12 @@
     };
 
     const STYLES = `
-        :host { all: initial; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; }
+        :host { all: initial; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif; }
         *, *::before, *::after { box-sizing: border-box; }
 
         .chmaf-container {
             position: fixed;
-            z-index: 2147483647;
+            z-index: var(--z-notification, 2147483647);
             display: flex;
             flex-direction: column;
             gap: 12px;

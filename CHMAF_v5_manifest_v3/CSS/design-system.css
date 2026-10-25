@@ -3,6 +3,14 @@
    Version: 2.0
    ============================================================================ */
 
+/* Единственная точка загрузки шрифтов для всего расширения.
+   Раньше Inter/JetBrains Mono импортировались по отдельности в
+   Addstat/GrList/Userinfo — это давало три параллельных запроса
+   с разными наборами весов. Эмодзи-шрифты в конце стека — чтобы
+   эмодзи в UI были цветными, даже если хост-страница переопределяет
+   font-family шрифтом без эмодзи-глифов. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 /* ============================================================================
    CSS VARIABLES - Color Palette & Design Tokens
    ============================================================================ */
@@ -106,8 +114,9 @@
   --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-emoji: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, var(--font-emoji), sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', var(--font-emoji), monospace;
 
   --font-size-xs: 11px;
   --font-size-sm: 13px;
@@ -123,16 +132,23 @@
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
 
-  /* Z-index layers */
-  --z-base: 1;
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-notification: 1080;
+  /* ============================================================
+     Z-index layers — единая кросс-модульная шкала ChMAF.
+     Слой выбирается по РОЛИ элемента, а не «на глаз»:
+       окна модулей → поднятые окна → попапы окон →
+       → модалки → оверлеи «над всем» → FAB → тосты/баннеры.
+     Внутри окна используйте локальные значения (0/1/2…), к шкале
+     их не относить. В JS-инжектах пишите var(--z-..., fallback) —
+     токены определены здесь, на :root хост-страницы.
+     ============================================================ */
+  --z-window: 1000000;          /* базовые перетаскиваемые окна (extwindows, createWindow) */
+  --z-window-raised: 1000100;   /* окна поверх базовых (настройки, очереди, панельные) */
+  --z-popout: 1001000;          /* всплывашки уровня окон: IPchecker, галереи, локальные тосты */
+  --z-modal-backdrop: 1100000;  /* подложки модалок расширения */
+  --z-modal: 1100100;           /* модалки, alert-container */
+  --z-popover: 2147483000;      /* оверлеи «над всем», но под FAB и тостами */
+  --z-fab: 2147483400;          /* плавающая кнопка, панель и меню модулей */
+  --z-notification: 2147483647; /* самый верх: тосты, баннер обновления расширения */
 }
 
 /* ============================================================================
@@ -152,18 +168,6 @@
   -moz-osx-font-smoothing: grayscale;
   transform: translate3d(0, 0, 0);
   will-change: transform;
-}
-
-.glass-panel-light {
-  background: var(--bg-glass-light);
-  backdrop-filter: var(--blur-sm) saturate(150%);
-  -webkit-backdrop-filter: var(--blur-sm) saturate(150%);
-}
-
-.glass-panel-strong {
-  background: var(--bg-glass-hover);
-  backdrop-filter: var(--blur-lg) saturate(180%);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(180%);
 }
 
 /* ============================================================================
@@ -223,16 +227,6 @@
   transform: translateY(-2px);
 }
 
-.glass-btn-success {
-  background: linear-gradient(135deg, var(--success), var(--success-hover));
-  border-color: var(--success);
-  color: white;
-}
-
-.glass-btn-success:hover:not(:disabled) {
-  box-shadow: var(--shadow-md), 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
 .glass-btn-danger {
   background: linear-gradient(135deg, var(--error), var(--error-hover));
   border-color: var(--error);
@@ -243,34 +237,7 @@
   box-shadow: var(--shadow-md), 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
-.glass-btn-warning {
-  background: linear-gradient(135deg, var(--warning), var(--warning-hover));
-  border-color: var(--warning);
-  color: white;
-}
-
-.glass-btn-accent {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
-  border-color: var(--accent-purple);
-  color: white;
-}
-
-.glass-btn-accent:hover:not(:disabled) {
-  box-shadow: var(--shadow-md), 0 0 20px rgba(168, 85, 247, 0.3);
-}
-
 /* Button Sizes */
-.glass-btn-sm {
-  padding: var(--space-xs) var(--space-md);
-  font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
-}
-
-.glass-btn-lg {
-  padding: var(--space-md) var(--space-xl);
-  font-size: var(--font-size-lg);
-  border-radius: var(--radius-lg);
-}
 
 .glass-btn-icon {
   padding: var(--space-sm);
@@ -278,43 +245,7 @@
   height: 32px;
 }
 
-.glass-btn-icon-sm {
-  padding: var(--space-xs);
-  width: 24px;
-  height: 24px;
-}
-
 /* Button States */
-.glass-btn-active {
-  background: var(--bg-glass-active);
-  border-color: var(--primary-500);
-  color: var(--primary-300);
-}
-
-.glass-btn-loading {
-  position: relative;
-  color: transparent;
-  pointer-events: none;
-}
-
-.glass-btn-loading::after {
-  content: '';
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  top: 50%;
-  left: 50%;
-  margin-left: -8px;
-  margin-top: -8px;
-  border: 2px solid var(--text-primary);
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 /* ============================================================================
    INPUTS - Text Fields, Textareas, Selects
@@ -369,22 +300,6 @@
   background-repeat: no-repeat;
   background-position: right var(--space-md) center;
   appearance: none;
-}
-
-/* Input Variants */
-.glass-input-error,
-.glass-textarea-error {
-  border-color: var(--border-error);
-}
-
-.glass-input-error:focus,
-.glass-textarea-error:focus {
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--error-light);
-}
-
-.glass-input-success,
-.glass-textarea-success {
-  border-color: var(--border-success);
 }
 
 /* ============================================================================
@@ -478,178 +393,54 @@
 }
 
 /* ============================================================================
-   CARD - Content Cards
+   SKELETON - заглушки загрузки
+   Использование из JS: chmafSkeletons(n) из utils.js, либо классы напрямую.
    ============================================================================ */
-.glass-card {
-  background: var(--bg-glass-light);
-  border: 1px solid var(--border-glass-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  transition: all var(--transition-base);
+.chmaf-skeletons {
+  width: 100%;
 }
 
-.glass-card:hover {
-  background: var(--bg-glass);
-  border-color: var(--border-glass);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+.chmaf-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-sm);
 }
 
-.glass-card-header {
+.chmaf-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: chmaf-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes chmaf-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+.chmaf-skeleton-line {
+  height: 12px;
   margin-bottom: var(--space-md);
-  padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--border-glass-light);
 }
 
-.glass-card-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.glass-card-body {
-  color: var(--text-secondary);
-  font-size: var(--font-size-base);
-  line-height: 1.6;
-}
-
-/* ============================================================================
-   BADGE - Labels & Tags
-   ============================================================================ */
-.glass-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  line-height: 1;
+.chmaf-skeleton-dot {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--border-glass);
-  color: var(--text-secondary);
-  white-space: nowrap;
 }
 
-.glass-badge-primary {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: var(--primary-500);
-  color: var(--primary-300);
-}
-
-.glass-badge-success {
-  background: var(--success-light);
-  border-color: var(--success);
-  color: var(--success);
-}
-
-.glass-badge-warning {
-  background: var(--warning-light);
-  border-color: var(--warning);
-  color: var(--warning);
-}
-
-.glass-badge-error {
-  background: var(--error-light);
-  border-color: var(--error);
-  color: var(--error);
-}
-
-.glass-badge-info {
-  background: var(--info-light);
-  border-color: var(--info);
-  color: var(--info);
-}
-
-/* ============================================================================
-   NOTIFICATION TOAST
-   ============================================================================ */
-.glass-toast-container {
-  position: fixed;
-  top: var(--space-xl);
-  right: var(--space-xl);
-  z-index: var(--z-notification);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  pointer-events: none;
-}
-
-.glass-toast {
+.chmaf-skeleton-row {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  min-width: 300px;
-  max-width: 400px;
-  padding: var(--space-md) var(--space-lg);
-  background: var(--bg-glass-hover);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  pointer-events: auto;
-  animation: toastSlideIn var(--transition-base);
+  padding: var(--space-xs) 0;
 }
 
-.glass-toast-icon {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.glass-toast-content {
-  flex: 1;
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  line-height: 1.4;
-}
-
-.glass-toast-close {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-.glass-toast-close:hover {
-  color: var(--text-primary);
-}
-
-.glass-toast-success {
-  border-left: 3px solid var(--success);
-}
-
-.glass-toast-error {
-  border-left: 3px solid var(--error);
-}
-
-.glass-toast-warning {
-  border-left: 3px solid var(--warning);
-}
-
-.glass-toast-info {
-  border-left: 3px solid var(--info);
-}
-
-@keyframes toastSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.chmaf-skeleton-row .chmaf-skeleton-line {
+  margin-bottom: 0;
 }
 
 /* ============================================================================
@@ -662,50 +453,8 @@
   gap: var(--space-sm);
 }
 
-.flex-col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .flex-wrap {
   flex-wrap: wrap;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.font-bold {
-  font-weight: var(--font-weight-bold);
-}
-
-.font-semibold {
-  font-weight: var(--font-weight-semibold);
-}
-
-.text-sm {
-  font-size: var(--font-size-sm);
-}
-
-.text-lg {
-  font-size: var(--font-size-lg);
 }
 
 .text-muted {
@@ -715,27 +464,6 @@
 .text-secondary {
   color: var(--text-secondary);
 }
-
-.mt-sm { margin-top: var(--space-sm); }
-.mt-md { margin-top: var(--space-md); }
-.mt-lg { margin-top: var(--space-lg); }
-.mb-sm { margin-bottom: var(--space-sm); }
-.mb-md { margin-bottom: var(--space-md); }
-.mb-lg { margin-bottom: var(--space-lg); }
-.ml-sm { margin-left: var(--space-sm); }
-.ml-md { margin-left: var(--space-md); }
-.ml-lg { margin-left: var(--space-lg); }
-.mr-sm { margin-right: var(--space-sm); }
-.mr-md { margin-right: var(--space-md); }
-.mr-lg { margin-right: var(--space-lg); }
-
-.p-sm { padding: var(--space-sm); }
-.p-md { padding: var(--space-md); }
-.p-lg { padding: var(--space-lg); }
-.p-xl { padding: var(--space-xl); }
-
-.w-full { width: 100%; }
-.h-full { height: 100%; }
 
 .hidden { display: none !important; }
 .visible { display: block !important; }
@@ -785,17 +513,6 @@
     max-width: 95vw;
     max-height: 95vh;
   }
-
-  .glass-toast-container {
-    top: var(--space-md);
-    right: var(--space-md);
-    left: var(--space-md);
-  }
-
-  .glass-toast {
-    min-width: auto;
-    max-width: 100%;
-  }
 }
 
 /* ============================================================================
@@ -803,8 +520,7 @@
    ============================================================================ */
 @media print {
   .glass-panel,
-  .glass-modal,
-  .glass-card {
+  .glass-modal {
     background: white !important;
     color: black !important;
     box-shadow: none !important;
@@ -824,7 +540,6 @@
    нативные контролы (скроллбары, select) хост-страницы AutoFAQ */
 .glass-panel,
 .glass-modal,
-.glass-card,
 .glass-input,
 .glass-textarea,
 .glass-select,

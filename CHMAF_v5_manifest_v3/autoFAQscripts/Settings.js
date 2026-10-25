@@ -2632,7 +2632,7 @@ async function init_settings() {
                 border: 1px solid #344258 !important;
                 border-radius: 18px;
                 box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
-                z-index: 1000001;
+                z-index: var(--z-window-raised, 1000100);
             }
 
             /* Шапка */
@@ -3407,7 +3407,7 @@ async function init_settings() {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (ev) => {
+        reader.onload = async (ev) => {
             let json;
             try {
                 json = JSON.parse(ev.target.result);
@@ -3432,9 +3432,16 @@ async function init_settings() {
                 return;
             }
 
-            if (!confirm(`Загрузить ${entries.length} настроек из файла «${file.name}»?\n` +
-                'Текущие значения этих настроек будут заменены, страница перезагрузится.' +
-                (skipped > 0 ? `\n\nПропущено служебных/секретных значений: ${skipped}.` : ''))) {
+            if (
+                !(await chmafDialog.confirm({
+                    title: 'Импорт настроек',
+                    message: `Загрузить ${entries.length} настроек из файла «${file.name}»?\n` +
+                        'Текущие значения этих настроек будут заменены, страница перезагрузится.' +
+                        (skipped > 0 ? `\n\nПропущено служебных/секретных значений: ${skipped}.` : ''),
+                    okText: 'Загрузить',
+                    danger: true
+                }))
+            ) {
                 return;
             }
 

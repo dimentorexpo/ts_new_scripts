@@ -26,7 +26,7 @@
                     0 26px 70px rgba(3, 9, 22, .52),
                     inset 0 1px rgba(255, 255, 255, .06) !important;
                 font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
-                z-index: 1000005;
+                z-index: var(--z-window-raised, 1000100);
                 position: relative;
             }
             #AF_testrooms .trm-panel,

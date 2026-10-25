@@ -5,7 +5,7 @@ const injectGlassStyles = () => {
     const style = document.createElement('style');
     style.id = 'af-glass-styles';
     style.innerHTML = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+        /* Шрифты (Inter, JetBrains Mono) загружаются один раз в design-system.css */
 
         :root {
             /* «corporate graphite»: золотой акцент заменён на синий

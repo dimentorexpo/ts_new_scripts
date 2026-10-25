@@ -43,7 +43,7 @@
                 padding: 16px !important;
                 width: 330px;
                 box-sizing: border-box;
-                z-index: 1000007;
+                z-index: var(--z-window-raised, 1000100);
             }
             .l2l-header {
                 display: flex;
@@ -275,8 +275,7 @@
                 if (!/^[a-zA-Z0-9]{12,}$/.test(hash)) errors.push('Некорректный хэш (мин. 12 символов)');
 
                 if (errors.length) {
-                    if (typeof createAndShowButton === 'function') createAndShowButton(errors.join('<br>'), 'error');
-                    else alert(errors.join('\n'));
+                    createAndShowButton?.(errors.join('<br>'), 'error');
                     return;
                 }
 

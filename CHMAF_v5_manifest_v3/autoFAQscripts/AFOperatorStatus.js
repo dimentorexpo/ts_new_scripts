@@ -1089,7 +1089,7 @@
             background: rgba(5, 5, 15, 0.9);
             backdrop-filter: blur(20px) saturate(1.5);
             -webkit-backdrop-filter: blur(20px) saturate(1.5);
-            z-index: 10000000;
+            z-index: var(--z-popout, 1001000);
             display: flex;
             align-items: center;
             justify-content: center;

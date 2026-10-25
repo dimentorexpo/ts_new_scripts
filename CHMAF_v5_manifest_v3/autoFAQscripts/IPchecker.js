@@ -47,7 +47,7 @@ const injectStyles = () => {
         /* Основной контейнер в корпоративном графитово-синем стиле */
         .cyber-ip-container {
             position: fixed;
-            z-index: 999999;
+            z-index: var(--z-window, 1000000);
             width: 380px;
             box-sizing: border-box;
             background: ${bgGradient};

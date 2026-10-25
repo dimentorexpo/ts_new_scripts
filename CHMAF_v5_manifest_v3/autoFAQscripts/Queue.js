@@ -55,7 +55,7 @@
                     0 26px 70px rgba(3, 9, 22, .52),
                     inset 0 1px rgba(255, 255, 255, .06) !important;
                 font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
-                z-index: 1000003;
+                z-index: var(--z-window-raised, 1000100);
                 position: relative;
             }
 
@@ -508,12 +508,10 @@
         document.querySelector('.user_menu-dropdown-user_name')?.textContent?.trim() || '';
 
     const readCachedOperator = () => {
-        try {
-            const c = JSON.parse(localStorage.getItem(OP_CACHE_KEY) || 'null');
-            // Кэш привязан к имени в профиле: на общем компьютере у другого
-            // оператора чужой ID не подхватится
-            if (c?.id && (!c.forName || !myDisplayName() || c.forName === myDisplayName())) return c;
-        } catch (_) { /* битый кэш */ }
+        const c = readJsonLocal(OP_CACHE_KEY, null);
+        // Кэш привязан к имени в профиле: на общем компьютере у другого
+        // оператора чужой ID не подхватится
+        if (c?.id && (!c.forName || !myDisplayName() || c.forName === myDisplayName())) return c;
         return null;
     };
     const saveCachedOperator = (id, fullName) => {

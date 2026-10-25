@@ -16,7 +16,7 @@
             position: fixed;
             top: 15%;
             left: 30%;
-            z-index: 999999;
+            z-index: var(--z-window, 1000000);
             width: 660px;
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(165deg, rgba(27, 29, 40, 0.96) 0%, rgba(12, 13, 19, 0.98) 100%);

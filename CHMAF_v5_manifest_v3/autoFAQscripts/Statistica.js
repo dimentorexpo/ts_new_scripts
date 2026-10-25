@@ -89,14 +89,34 @@ const getSectionOf = (fullName) => String(fullName ?? '').split('-')[0].trim();
 let statRunId = 0;
 let csatRunId = 0;
 
-const showLoader = (id = 'outputstatafield', text = '⏳ Загрузка...') => {
+// Скелетон-дашборд вместо «⏳ Загрузка...»: контур будущей статистики
+// (шапка, карточки метрик, строки таблицы) с shimmer-анимацией.
+const showLoader = (id = 'outputstatafield', text = 'Загружаем статистику…') => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<div style="padding:15px;text-align:center">${text}</div>`;
+    if (!el) return;
+
+    const caption = escapeStatHtml(text);
+    const card = '<div class="chmaf-skeleton" style="height:64px;border-radius:var(--radius-md)"></div>';
+    const line = (w) => `<div class="chmaf-skeleton chmaf-skeleton-line" style="width:${w}%"></div>`;
+
+    el.innerHTML = `
+        <div style="padding:var(--space-lg)">
+            <div class="chmaf-skeleton-row" style="margin-bottom:var(--space-lg)">
+                <div class="chmaf-skeleton chmaf-skeleton-dot"></div>
+                <div style="flex:1;min-width:0">${line(40)}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)">
+                ${card}${card}${card}${card}
+            </div>
+            ${line(95)}${line(88)}${line(92)}${line(70)}
+            <div style="margin-top:var(--space-lg);font-size:var(--font-size-sm);color:var(--text-muted);text-align:center">${caption}</div>
+        </div>`;
 };
 
 const showError = (msg, id = 'outputstatafield') => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<div style="padding:15px;color:#fca5a5">❌ ${msg}</div>`;
+    // Экранируем внутри: тексты ошибок могут содержать данные API
+    if (el) el.innerHTML = `<div style="padding:15px;color:#fca5a5">❌ ${escapeStatHtml(msg)}</div>`;
     console.error('❌', msg);
 };
 
@@ -184,7 +204,7 @@ async function getStats() {
     } catch (e) {
         if (runId !== statRunId) return;
         console.error('💥 getStats:', e);
-        showError(escapeStatHtml(e.message || 'Ошибка загрузки'));
+        showError(e.message || 'Ошибка загрузки');
     }
 }
 
@@ -2469,7 +2489,7 @@ async function checkload(department, flag) {
             `;
         }
     } catch (e) {
-        if (load) load.innerHTML = `<span style="color:red; padding-left:50px">Ошибка: ${e.message}</span>`;
+        if (load) load.innerHTML = `<span style="color:red; padding-left:50px">Ошибка: ${escapeStatHtml(e.message)}</span>`;
     } finally {
         if (loader) loader.style.display = 'none';
     }

@@ -16,8 +16,7 @@
     })[ch]);
 
     const notify = (msg, type) => {
-        if (typeof showCustomAlert === 'function') showCustomAlert(msg, type);
-        else alert(msg);
+        showCustomAlert?.(msg, type);
     };
 
     const open = (url) => window.open(url, '_blank', 'noopener');
@@ -141,20 +140,16 @@
     /* ---------- Конфиг (свои кнопки + отдел) ---------- */
 
     function checkIsTP() {
-        try {
-            const data = JSON.parse(localStorage.getItem('AF_storage_data') || '{}');
-            if (typeof scriptAdr !== 'undefined') {
-                return ![data.KC_addr, data.KC_addrRzrv].includes(scriptAdr);
-            }
-        } catch (_) { /* нет данных — считаем ТП */ }
+        const data = readJsonLocal('AF_storage_data', {});
+        if (typeof scriptAdr !== 'undefined') {
+            return ![data.KC_addr, data.KC_addrRzrv].includes(scriptAdr);
+        }
         return true;
     }
 
     function loadConfig() {
-        try {
-            const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-            if (parsed && Array.isArray(parsed.customButtons)) return parsed;
-        } catch (_) { /* битый JSON — с нуля */ }
+        const parsed = readJsonLocal(STORAGE_KEY, null);
+        if (parsed && Array.isArray(parsed.customButtons)) return parsed;
         return { version: '1.0', customButtons: [] };
     }
 
@@ -422,7 +417,7 @@
             .lkg-dialog-overlay {
                 position: fixed;
                 inset: 0;
-                z-index: 2147483000;
+                z-index: var(--z-popover, 2147483000);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -620,8 +615,15 @@
         };
 
         if (existing) {
-            $('#lkg-btn-delete').onclick = () => {
-                if (!confirm(`Удалить кнопку «${existing.title}»?`)) return;
+            $('#lkg-btn-delete').onclick = async () => {
+                if (
+                    !(await chmafDialog.confirm({
+                        title: 'Удаление кнопки',
+                        message: `Удалить кнопку «${existing.title}»?`,
+                        okText: 'Удалить',
+                        danger: true
+                    }))
+                ) return;
                 config.customButtons = config.customButtons.filter(b => b.id !== existing.id);
                 saveConfig();
                 renderGrid();

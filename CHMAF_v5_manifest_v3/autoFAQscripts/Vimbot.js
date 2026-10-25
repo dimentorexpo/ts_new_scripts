@@ -129,7 +129,12 @@
             if (!userId || userId.length < 4) return notify('Введите ID пользователя', 'error');
             if (!text) return notify('Введите текст сообщения', 'error');
             if (chatAvailable === false &&
-                !confirm('У пользователя не найден чат поддержки. Всё равно отправить?')) return;
+                !(await chmafDialog.confirm({
+                    title: 'Нет чата поддержки',
+                    message: 'У пользователя не найден чат поддержки. Всё равно отправить?',
+                    okText: 'Отправить',
+                    danger: true
+                }))) return;
 
             UI.sendBtn.disabled = true;
             UI.sendBtn.style.opacity = "0.6";

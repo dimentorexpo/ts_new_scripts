@@ -1,7 +1,3 @@
-body {
-	overflow: hidden;
-}
-
 	.smallbtn {
 		width: 28px;
 		height: 28px;
@@ -25,7 +21,7 @@ body {
 		backdrop-filter: blur(24px) saturate(160%);
 		-webkit-backdrop-filter: blur(24px) saturate(160%);
 		font-size: 14px;
-		z-index: 1000000;
+		z-index: var(--z-window);
 		position: fixed;
 		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-top-color: rgba(255, 255, 255, 0.14);
@@ -35,7 +31,7 @@ body {
 			0 0 0 1px rgba(0, 0, 0, 0.5),
 			inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		border-radius: 14px;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 	}
 
 	.extwindows.alert-container {
@@ -47,9 +43,9 @@ body {
 		border-radius: 16px;
 		border: 1px solid rgba(239, 68, 68, 0.35);
 		font-weight: 600;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		text-align: center;
-		z-index: 1100000;
+		z-index: var(--z-modal);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -97,7 +93,7 @@ body {
 			0 24px 60px rgba(0, 0, 0, 0.6),
 			inset 0 1px 0 rgba(255, 255, 255, 0.05);
 		border-radius: 14px;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 	}
 
 	.activebtn {
@@ -912,7 +908,7 @@ body {
 	}
 
 	#pauseAudio {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		background: linear-gradient(135deg, #e74c3c, #c0392b);
 		color: #fff;
 		padding: 6px 10px;
@@ -928,7 +924,7 @@ body {
 	}
 
 	#playAudio {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		background: linear-gradient(135deg, #27ae60, #219a52);
 		color: #fff;
 		padding: 6px 10px;
@@ -944,7 +940,7 @@ body {
 	}
 
 	#addAudio {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		background: linear-gradient(135deg, #f39c12, #e67e22);
 		color: #fff;
 		padding: 6px 10px;
@@ -961,7 +957,7 @@ body {
 
 	#volumeUp,
 	#volumeDown {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
 		color: #e2e8f0;
 		padding: 6px 10px;
@@ -978,7 +974,7 @@ body {
 	}
 
 	#muteAudio {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04));
 		color: #e2e8f0;
 		padding: 6px 10px;
@@ -1295,7 +1291,7 @@ body {
 			inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 		padding: 8px;
 		width: 180px;
-		z-index: 1000000;
+		z-index: var(--z-popout);
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		position: absolute !important;
 		overflow: hidden;
@@ -1437,7 +1433,7 @@ body {
 		opacity: 0.8;
 		pointer-events: none;
 		animation: fall linear infinite;
-		z-index: 999999999;
+		z-index: var(--z-popover);
 	}
 
 	@keyframes fall {
@@ -1575,9 +1571,9 @@ body {
 		color: #eee;
 		border-radius: 8px;
 		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-		font-family: sans-serif;
+		font-family: var(--font-sans);
 		user-select: none;
-		z-index: 999999999;
+		z-index: var(--z-popover);
 		display: none;
 		/* Изначально скрыто */
 	}
@@ -1853,12 +1849,6 @@ body {
 		font-size: 16px;
 	}
 
-	.ipchecker-window {
-		width: 450px;
-		padding: 10px;
-		cursor: grab;
-		z-index: 9999999;
-	}
 
 	.ipchecker-header {
 		margin-bottom: 10px;
@@ -1998,7 +1988,7 @@ body {
   color: var(--text-primary);
   position: relative;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-sans);
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
@@ -2046,15 +2036,7 @@ body {
   background: transparent;
 
   color: var(--text-primary);
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI Variable Text",
-    "Segoe UI",
-    Roboto,
-    "Helvetica Neue",
-    Arial,
-    sans-serif;
+  font-family: var(--font-sans);
 
   font-size: 14px;
   font-weight: 600;
@@ -2506,7 +2488,7 @@ body {
 		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 		color: #e2e8f0;
 		/* Слегка приглушенный белый, чтобы не резал глаза */
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+		font-family: var(--font-sans);
 	}
 
 	/* Сетка для кнопок (без изменений) */
@@ -2628,7 +2610,7 @@ body {
 		width: 760px;
 		background: #1a1a21;
 		color: #d1d5db;
-		font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+		font-family: var(--font-sans);
 		border-radius: 12px;
 		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
 		display: flex;
@@ -2832,7 +2814,7 @@ body {
 		color: #53db4b;
 		padding: 6px 12px;
 		border-radius: 6px;
-		font-family: monospace;
+		font-family: var(--font-mono);
 		font-size: 14px;
 		font-weight: bold;
 		width: 80px;
@@ -2940,7 +2922,7 @@ body {
 
 	/* Стили для блока Themes */
 	.af-theme-widget {
-		font-family: 'Inter', sans-serif;
+		font-family: var(--font-sans);
 		background: #1e1e2e;
 		color: #cdd6f4;
 		width: 720px;
@@ -3137,7 +3119,7 @@ body {
 		color: #fff;
 		position: relative;
 		box-sizing: border-box;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		font-family: var(--font-sans);
 	}
 
 	.vimbot-warning-bar {
@@ -3227,7 +3209,7 @@ body {
 		min-width: 35px;
 		max-width: 370px;
 		font-size: 14px;
-		z-index: 1250000;
+		z-index: var(--z-popout);
 		position: fixed;
 		background: rgba(13, 15, 21, 0.8) !important;
 		/* Очень темный фон */
@@ -3434,7 +3416,7 @@ body {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		z-index: 10000;
+		z-index: var(--z-modal-backdrop);
 		animation: fadeIn 0.2s ease;
 	}
 
@@ -3803,15 +3785,7 @@ body.chmaf-en-lang #custom_templates_window {
   color: #f8fafc;
   font-size: 14px;
   font-weight: 600;
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI Variable Text",
-        "Segoe UI",
-        Roboto,
-        "Helvetica Neue",
-        Arial,
-        sans-serif;
+    font-family: var(--font-sans);
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -3830,141 +3804,6 @@ body.chmaf-en-lang #custom_templates_window {
   -webkit-backdrop-filter: blur(16px) saturate(150%);
 }
 
-/* ============================================================
-   CHMAF MODERN TOASTS (CRM Style)
-   ============================================================ */
-#chmaf-toast-container {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 2147483647;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    pointer-events: none;
-    max-width: 400px;
-    width: calc(100vw - 48px);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.chmaf-toast {
-    pointer-events: auto;
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    line-height: 1.4;
-    color: #e2e8f0;
-    background: linear-gradient(145deg, rgba(30, 32, 44, 0.95) 0%, rgba(20, 22, 30, 0.98) 100%);
-    backdrop-filter: blur(12px) saturate(140%);
-    -webkit-backdrop-filter: blur(12px) saturate(140%);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
-    border-left: 4px solid #6366f1; /* Default Info Purple/Blue */
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    animation: chmaf-toast-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.chmaf-toast:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15);
-}
-
-.chmaf-toast.closing {
-    animation: chmaf-toast-out 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-
-.chmaf-toast-icon {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-}
-
-.chmaf-toast-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.chmaf-toast-title {
-    font-weight: 700;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.9;
-}
-
-.chmaf-toast-msg {
-    font-size: 13px;
-    color: #cbd5e1;
-    word-break: break-word;
-}
-
-.chmaf-toast-close {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0 0 0 8px;
-    transition: color 0.2s;
-}
-.chmaf-toast-close:hover { color: #fff; }
-
-.chmaf-toast-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    width: 100%;
-    background: #6366f1;
-    transform-origin: left;
-}
-
-/* --- Type Modifiers --- */
-.chmaf-toast.success { border-left-color: #10b981; }
-.chmaf-toast.success .chmaf-toast-icon { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-.chmaf-toast.success .chmaf-toast-title { color: #34d399; }
-.chmaf-toast.success .chmaf-toast-progress { background: linear-gradient(90deg, #10b981, #34d399); }
-
-.chmaf-toast.error { border-left-color: #ef4444; }
-.chmaf-toast.error .chmaf-toast-icon { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-.chmaf-toast.error .chmaf-toast-title { color: #f87171; }
-.chmaf-toast.error .chmaf-toast-progress { background: linear-gradient(90deg, #ef4444, #f87171); }
-
-.chmaf-toast.warning { border-left-color: #f59e0b; }
-.chmaf-toast.warning .chmaf-toast-icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-.chmaf-toast.warning .chmaf-toast-title { color: #fbbf24; }
-.chmaf-toast.warning .chmaf-toast-progress { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-
-.chmaf-toast.info { border-left-color: #6366f1; }
-.chmaf-toast.info .chmaf-toast-icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
-.chmaf-toast.info .chmaf-toast-title { color: #818cf8; }
-.chmaf-toast.info .chmaf-toast-progress { background: linear-gradient(90deg, #6366f1, #818cf8); }
-
-@keyframes chmaf-toast-in {
-    from { opacity: 0; transform: translateX(40px) scale(0.95); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
-}
-@keyframes chmaf-toast-out {
-    from { opacity: 1; transform: translateX(0) scale(1); }
-    to { opacity: 0; transform: translateX(20px) scale(0.9); }
-}
 
 /* 1. Выразительные кнопки шаблонов */
 .glass-btn.mainButton {
