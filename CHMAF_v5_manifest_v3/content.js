@@ -283,9 +283,12 @@ function waitForElement(selector, callback, timeout = 10000, interval = 100) {
     window.cleanupRegistry?.register(() => clearInterval(intervalId));
 }
 
-// createAndShowButton объявлен в NotificationSystem.js и рисует
-// премиальные тосты. Здесь НЕ переопределяем его (раньше этот
-// override с легаси-.cyber-toast перебивал премиум-версию).
+// Все уведомления идут через легаси-тосты showCustomAlert
+// (light DOM) из utils.js — единая система расширения.
+function createAndShowButton(message, type = 'message') {
+    return window.showCustomAlert?.(message, type);
+}
+window.createAndShowButton = createAndShowButton;
 
 // ============================================================
 // Медиа в сообщениях

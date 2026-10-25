@@ -2745,25 +2745,19 @@ window.getText = getText;
 // УВЕДОМЛЕНИЯ
 // ================================================================
 
-// Единая точка входа для уведомлений. Легаси-API (showCustomAlert /
-// showToast / notify / createAndShowButton) теперь рисует премиальные
-// тосты из NotificationSystem.js (Shadow DOM, SVG-иконки, пауза по
-// hover). Откат: вернуть прежнюю реализацию этого блока из git.
+// Легаси-тосты (light DOM, иконки ✓ ✕ ⚠ ℹ) — единая система
+// уведомлений расширения по решению автора.
 (() => {
-    const DEFAULT_TITLES = {
-        success: 'Успешно',
-        error: 'Ошибка',
-        warning: 'Внимание',
-        info: 'Информация'
-    };
+    const MAX_TOASTS = 5;
+    const activeToasts = [];
 
     window.showCustomAlert = (
         message,
         type = 'info',
         opts = {}
     ) => {
-        const text = String(message ?? '');
         let normalizedType = type;
+        const text = String(message ?? '');
 
         if (type === 'message') {
             if (/error|ошибка|fail/i.test(text)) {
@@ -2779,11 +2773,33 @@ window.getText = getText;
             }
         }
 
-        if (!Object.hasOwn(DEFAULT_TITLES, normalizedType)) {
+        if (
+            ![
+                'success',
+                'error',
+                'warning',
+                'info'
+            ].includes(normalizedType)
+        ) {
             normalizedType = 'info';
         }
 
-        const requestedDuration = Number(opts?.duration);
+        let container = document.getElementById(
+            'chmaf-toast-container'
+        );
+
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'chmaf-toast-container';
+            document.body.appendChild(container);
+        }
+
+        while (activeToasts.length >= MAX_TOASTS) {
+            const oldest = activeToasts.shift();
+            oldest?.remove();
+        }
+
+        const requestedDuration = Number(opts.duration);
 
         const duration =
             Number.isFinite(requestedDuration) &&
@@ -2793,18 +2809,156 @@ window.getText = getText;
                     ? 6000
                     : 4000;
 
-        const premium = window.NotificationSystem;
+        const defaultTitle = {
+            success: 'Успешно',
+            error: 'Ошибка',
+            warning: 'Внимание',
+            info: 'Информация'
+        };
 
-        if (premium?.show) {
-            return premium.show(text, normalizedType, {
-                title: opts?.title || DEFAULT_TITLES[normalizedType],
-                duration
-            });
+        const icons = {
+            success: '✓',
+            error: '✕',
+            warning: '⚠',
+            info: 'ℹ'
+        };
+
+        const toast = document.createElement('div');
+
+        toast.className =
+            `chmaf-toast ${normalizedType}`;
+
+        toast.setAttribute(
+            'role',
+            normalizedType === 'error'
+                ? 'alert'
+                : 'status'
+        );
+
+        const iconElement = document.createElement('div');
+        iconElement.className = 'chmaf-toast-icon';
+        iconElement.textContent = icons[normalizedType];
+
+        const contentElement = document.createElement('div');
+        contentElement.className = 'chmaf-toast-content';
+
+        const titleElement = document.createElement('div');
+        titleElement.className = 'chmaf-toast-title';
+        titleElement.textContent = String(
+            opts.title ||
+            defaultTitle[normalizedType]
+        );
+
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chmaf-toast-msg';
+        messageElement.textContent = text;
+        messageElement.style.whiteSpace = 'pre-line';
+
+        contentElement.append(
+            titleElement,
+            messageElement
+        );
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'chmaf-toast-close';
+        closeButton.textContent = '×';
+
+        closeButton.setAttribute(
+            'aria-label',
+            'Закрыть уведомление'
+        );
+
+        const progressElement = document.createElement('div');
+        progressElement.className = 'chmaf-toast-progress';
+
+        progressElement.style.transition =
+            `transform ${duration}ms linear`;
+
+        progressElement.style.transform = 'scaleX(1)';
+
+        toast.append(
+            iconElement,
+            contentElement,
+            closeButton,
+            progressElement
+        );
+
+        container.appendChild(toast);
+        activeToasts.push(toast);
+
+        requestAnimationFrame(() => {
+            if (toast.isConnected) {
+                progressElement.style.transform = 'scaleX(0)';
+            }
+        });
+
+        let closed = false;
+        let timer = null;
+        let remaining = duration;
+        let startedAt = Date.now();
+
+        function removeFromList() {
+            const index = activeToasts.indexOf(toast);
+
+            if (index !== -1) {
+                activeToasts.splice(index, 1);
+            }
         }
 
-        // NotificationSystem не загрузился — хотя бы не теряем сообщение
-        console.warn(`[ChMAF:${normalizedType}] ${text}`);
-        return null;
+        function closeToast() {
+            if (closed) {
+                return;
+            }
+
+            closed = true;
+            clearTimeout(timer);
+            toast.classList.add('closing');
+
+            setTimeout(() => {
+                toast.remove();
+                removeFromList();
+            }, 300);
+        }
+
+        closeButton.addEventListener('click', event => {
+            event.stopPropagation();
+            closeToast();
+        });
+
+        toast.addEventListener('click', closeToast);
+
+        timer = setTimeout(closeToast, duration);
+
+        toast.addEventListener('mouseenter', () => {
+            if (closed) {
+                return;
+            }
+
+            clearTimeout(timer);
+
+            remaining -= Date.now() - startedAt;
+            remaining = Math.max(remaining, 500);
+
+            progressElement.style.transition = 'none';
+        });
+
+        toast.addEventListener('mouseleave', () => {
+            if (closed) {
+                return;
+            }
+
+            startedAt = Date.now();
+
+            progressElement.style.transition =
+                `transform ${remaining}ms linear`;
+
+            progressElement.style.transform = 'scaleX(0)';
+
+            timer = setTimeout(closeToast, remaining);
+        });
+
+        return toast;
     };
 })();
 
