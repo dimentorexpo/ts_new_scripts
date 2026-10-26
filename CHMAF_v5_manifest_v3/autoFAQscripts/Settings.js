@@ -803,6 +803,38 @@ async function init_settings() {
             [class*="Table_Row__"]:hover {
                 background-color: ${getRgba(textColor, 0.06)} !important;
             }
+            /* Ховер: сайт красит ЯЧЕЙКИ в светлый palette-blue-50 — перебиваем
+               на уровне td (атрибуты поднимают специфичность выше сайта) */
+            tr[class*="Table_Row__"][data-row-id]:hover > td[class*="Table_Cell__"][role] {
+                background-color: rgba(124, 77, 255, 0.16) !important;
+                color: #ffffff !important;
+            }
+            tr[class*="Table_Row__"][data-row-id]:hover > td[class*="Table_Cell__"][role] * {
+                color: #ffffff !important;
+            }
+
+            /* Фильтры-чипы («В работе у бота», «В очереди»…) на /active-tickets */
+            div[class*="inline-filter-button-base_label"][data-active] {
+                background-color: rgba(255, 255, 255, 0.06) !important;
+                border: 1px solid rgba(255, 255, 255, 0.14) !important;
+                color: #cfd6e4 !important;
+                transition: background-color .15s ease, border-color .15s ease;
+            }
+            div[class*="inline-filter-button-base_label"][data-active] * {
+                color: inherit !important;
+            }
+            div[class*="inline-filter-button-base_label"][data-active] [data-always-dashed] {
+                background: transparent !important;
+            }
+            div[class*="inline-filter-button-base_label"][data-active]:hover {
+                background-color: rgba(124, 77, 255, 0.18) !important;
+                border-color: rgba(124, 77, 255, 0.5) !important;
+            }
+            div[class*="inline-filter-button-base_label"][data-active="true"] {
+                background-color: rgba(124, 77, 255, 0.25) !important;
+                border-color: rgba(124, 77, 255, 0.6) !important;
+                color: #ffffff !important;
+            }
 
             /* Zebra mode — чётные строки */
             [class*="Table_ZebraMode__"] [class*="Table_Row__"]:nth-child(even) {
@@ -1360,6 +1392,186 @@ async function init_settings() {
                 border-color: rgba(100, 181, 246, 1) !important;
             }
             `;
+        }
+
+        // ─── Просроченный SLA в таблицах (тёмный фон) ───
+        // Классы вида table_row__CbLFN / table_cell__3zHhG генерируются сборкой
+        // и меняются, поэтому цепляемся за стабильный data-атрибут и начало имени класса.
+        if (hexBrightness(color) < 128) {
+            cssRules += `
+    /* Атрибуты повышают специфичность выше правила сайта (0,3,0) */
+    tr[data-is-sla-expired="true"][data-row-id] > td[class*="table_cell"][role],
+    tr[data-is-sla-expired="true"][data-row-id] > td[role] {
+        background-color: #33326b !important;
+    }
+    tr[data-is-sla-expired="true"][data-row-id][aria-disabled]:hover > td[class*="table_cell"][role] {
+        background-color: #45438f !important;
+    }
+
+    /* ═══ Новый фронтенд: /settings/*, архив, логи ═══ */
+    /* Карточки (Группы, Спам-фильтр и др.) */
+    [class*="card_card__"] {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #e3e8f0 !important;
+    }
+    [class*="card_card__"]:hover {
+        background-color: rgba(124, 77, 255, 0.10) !important;
+        border-color: rgba(124, 77, 255, 0.45) !important;
+    }
+    /* Текст (сайт красит в rgba(0,0,0,.85) — не виден на тёмном) */
+    [class*="typography_typography__"] {
+        color: #e3e8f0 !important;
+    }
+    /* Номер правила в спам-фильтре */
+    [class*="rule-item-header_number__"] {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e3e8f0 !important;
+    }
+    /* Карточки выбора группы (Приветствие, Автоответы) */
+    [class*="group-option-card_card__"] {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #e3e8f0 !important;
+    }
+    [class*="group-option-card_card__"]:hover {
+        border-color: rgba(124, 77, 255, 0.45) !important;
+    }
+    [class*="group-option-card_selected__"] {
+        background-color: rgba(124, 77, 255, 0.18) !important;
+        border-color: rgba(124, 77, 255, 0.6) !important;
+    }
+    /* Заголовок таблицы пар (Идентификация) */
+    [class*="pair-row_rowTableHeading__"] {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #e3e8f0 !important;
+    }
+    /* Поля ввода текста */
+    textarea:not([class*="glass"]):not(:is([id^="AF_"], .extwindows, #rightPanel) textarea) {
+        background-color: rgba(255, 255, 255, 0.04) !important;
+        color: #e3e8f0 !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    .cm-comment {
+        color: #8b95a7 !important;
+    }
+    /* Белые outlined-кнопки («Сохранить», «Сбросить» в архиве/логах и т.п.) */
+    button[class*="Buttons_Appearance_outlined__"] {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        color: #cfd6e4 !important;
+        border-color: rgba(255, 255, 255, 0.18) !important;
+    }
+    button[class*="Buttons_Appearance_outlined__"]:hover:not(:disabled) {
+        background-color: rgba(124, 77, 255, 0.18) !important;
+        border-color: rgba(124, 77, 255, 0.5) !important;
+        color: #ffffff !important;
+    }
+    button[class*="Buttons_Appearance_outlined__"]:disabled {
+        opacity: 0.45 !important;
+    }
+
+    /* Кнопки «Сохранить» / «Сбросить» у панели фильтров (архив, логи) —
+       это div.inline-filter-label без data-active (у чипов фильтров он есть) */
+    div[class*="inline-filter-label_label__"]:not([data-active]) {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        color: #cfd6e4 !important;
+        cursor: pointer;
+    }
+    div[class*="inline-filter-label_label__"]:not([data-active]) * {
+        color: inherit !important;
+    }
+    div[class*="inline-filter-label_label__"]:not([data-active]):hover {
+        background-color: rgba(124, 77, 255, 0.18) !important;
+        border-color: rgba(124, 77, 255, 0.5) !important;
+        color: #ffffff !important;
+    }
+
+    /* Псевдо-селекты на /settings/applications/.../operators:
+       в input лежит служебное значение (close, LessPayload…), а подпись
+       рисуется отдельным div поверх. Скрываем значение, пока поле не в фокусе. */
+    .ant-input-affix-wrapper:has(+ div[class]) > input.ant-input:not(:focus) {
+        color: transparent !important;
+    }
+    .ant-input-affix-wrapper + div[class] {
+        color: #e3e8f0 !important;
+        background: transparent !important;
+    }
+
+    /* ═══ Старые (Ant Design) страницы настроек ═══ */
+    /* Теги в мультиселектах (Оценка: «Входящий», «Исходящий»…) */
+    body .ant-select-multiple .ant-select-selection-item {
+        background: rgba(124, 77, 255, 0.18) !important;
+        border: 1px solid rgba(124, 77, 255, 0.45) !important;
+        color: #e3e8f0 !important;
+    }
+    body .ant-select-multiple .ant-select-selection-item-remove,
+    body .ant-select-multiple .ant-select-selection-item-remove * {
+        color: #cfd6e4 !important;
+    }
+    body .ant-select-clear {
+        background: transparent !important;
+        color: #9aa4b5 !important;
+    }
+    /* Стрелки числовых полей */
+    body .ant-input-number-handler-wrap {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-left-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body .ant-input-number-handler {
+        border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+    body .ant-input-number-handler * {
+        color: #cfd6e4 !important;
+    }
+    /* Общие: футер и даты */
+    body .ant-layout-footer {
+        background: transparent !important;
+        color: #9aa4b5 !important;
+    }
+    body .ant-layout-content time,
+    body .ant-layout-content span:has(> time) {
+        color: #cfd6e4 !important;
+    }
+    /* Чекбоксы и пагинация (Пользователи) */
+    body .ant-checkbox-wrapper .ant-checkbox-inner,
+    body .ant-checkbox .ant-checkbox-inner {
+        background-color: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+    body .ant-checkbox-checked .ant-checkbox-inner {
+        background-color: #7c4dff !important;
+        border-color: #7c4dff !important;
+    }
+    body .ant-pagination .ant-pagination-item,
+    body .ant-pagination .ant-pagination-item-link {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+        color: #cfd6e4 !important;
+    }
+    body .ant-pagination .ant-pagination-item a {
+        color: #cfd6e4 !important;
+    }
+    body .ant-pagination .ant-pagination-item-active {
+        background: rgba(124, 77, 255, 0.25) !important;
+        border-color: #7c4dff !important;
+    }
+    body .ant-pagination .ant-pagination-item-active a {
+        color: #ffffff !important;
+    }
+
+    /* Бейдж статуса «Все изменения опубликованы» (база знаний) */
+    [class*="status-badge-container_root"][data-status="success"] {
+        background: linear-gradient(135deg, #1f5f17 0%, #2e8b20 100%) !important;
+        border: 1px solid #3fae2c !important;
+        color: #eaffe3 !important;
+        box-shadow: 0 0 0 1px rgba(63, 174, 44, .15), 0 2px 10px rgba(46, 139, 32, .35) !important;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, .3) !important;
+    }
+    [class*="status-badge-container_root"][data-status="success"] * {
+        color: inherit !important;
+    }
+`;
         }
 
         injectStyleInto(document, 'chmaf-bg-main', cssRules);

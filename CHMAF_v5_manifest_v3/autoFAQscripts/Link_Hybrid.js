@@ -615,20 +615,27 @@
         };
 
         if (existing) {
-            $('#lkg-btn-delete').onclick = async () => {
-                if (
-                    !(await chmafDialog.confirm({
-                        title: 'Удаление кнопки',
-                        message: `Удалить кнопку «${existing.title}»?`,
-                        okText: 'Удалить',
-                        danger: true
-                    }))
-                ) return;
+            const delBtn = $('#lkg-btn-delete');
+            let armed = false;
+            delBtn.addEventListener('click', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Подтверждение прямо в диалоге: 1-й клик — вопрос, 2-й — удаление.
+                if (!armed) {
+                    armed = true;
+                    delBtn.textContent = '⚠ Точно удалить?';
+                    setTimeout(() => {
+                        armed = false;
+                        if (delBtn.isConnected) delBtn.textContent = '🗑 Удалить';
+                    }, 4000);
+                    return;
+                }
                 config.customButtons = config.customButtons.filter(b => b.id !== existing.id);
                 saveConfig();
                 renderGrid();
                 close();
-            };
+                notify?.('Кнопка удалена');
+            });
         }
 
         document.body.appendChild(overlay);

@@ -336,7 +336,22 @@ $af('sndbot').addEventListener('click', function () {
 // ============================================================
 // Скрытие всех окон расширения
 // ============================================================
-$af('hideMenuMain').addEventListener('click', function () {
+$af('hideMenuMain').addEventListener('click', function (event) {
+    // «Скрыть» закрывает только окна шаблонов — Grabber (и его аналитика)
+    // должен остаться в том состоянии, в котором был.
+    event.stopPropagation();
+
+    const keep = ['AF_Grabber', 'ag-analytics']
+        .map((id) => [$af(id), $af(id)?.style.display, $af(id)?.hidden])
+        .filter(([el]) => el);
+
+    setTimeout(() => {
+        keep.forEach(([el, display, hidden]) => {
+            el.style.display = display;
+            el.hidden = hidden;
+        });
+    }, 0);
+
     ['AF_helper', 'AF_CustomTemplates', 'AF_Links',
         'AF_AlarmClock', 'AF_Linksd', 'AF_Settings']
         .forEach((id) => {

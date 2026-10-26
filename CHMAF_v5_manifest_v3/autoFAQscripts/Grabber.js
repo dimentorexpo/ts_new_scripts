@@ -878,6 +878,23 @@
     letter-spacing: .03em;
 }
 
+#AF_Grabber .ag .ag-theme-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#AF_Grabber .ag .ag-theme-group:hover {
+    color: #d3e0ff;
+}
+
+#AF_Grabber .ag .ag-theme-group input {
+    margin: 0;
+    cursor: pointer;
+}
+
 #AF_Grabber .ag .ag-theme-group:not(:first-child) {
     margin-top: 6px;
     border-top: 1px solid #344258;
@@ -1525,18 +1542,30 @@
             checkbox('parsenothemes', 'Без тематики', 'theme')
         );
 
-        for (const group of THEME_GROUPS) {
-            const heading = document.createElement('div');
+        THEME_GROUPS.forEach((group, index) => {
+            // Заголовок группы — чекбокс «выбрать все подтемы группы».
+            // name="theme-group", чтобы не попадать в selected(theme-list).
+            const heading = document.createElement('label');
             heading.className = 'ag-theme-group';
-            heading.textContent = group.name;
+            heading.title = 'Выбрать / снять все подтемы группы';
+
+            const groupInput = document.createElement('input');
+            groupInput.type = 'checkbox';
+            groupInput.name = 'theme-group';
+            groupInput.dataset.group = String(index);
+
+            const groupText = document.createElement('span');
+            groupText.textContent = group.name;
+
+            heading.append(groupInput, groupText);
             themeList.appendChild(heading);
 
             for (const item of group.items) {
-                themeList.appendChild(
-                    checkbox(item.id, item.name, 'theme')
-                );
+                const row = checkbox(item.id, item.name, 'theme');
+                row.querySelector('input').dataset.group = String(index);
+                themeList.appendChild(row);
             }
-        }
+        });
 
         $('marks').replaceChildren(
             ...[
@@ -1690,7 +1719,7 @@
 
     function readFilters() {
         return {
-            themes: new Set(selected($('theme-list'))),
+            themes: new Set(selectedThemes()),
             marks: new Set(selected($('marks'))),
             tags: new Set(selected($('tags'))),
             priorities: selectedOrAny($('priorities')),
@@ -3989,8 +4018,33 @@
 
     initialize();
 
+    function selectedThemes() {
+        return [
+            ...$('theme-list').querySelectorAll(
+                'input[name="theme"]:checked'
+            )
+        ].map(input => input.value);
+    }
+
+    // Синхронизирует чекбоксы групп: все подтемы — checked, часть — indeterminate.
+    function syncThemeGroups() {
+        $('theme-list')
+            .querySelectorAll('input[name="theme-group"]')
+            .forEach(groupInput => {
+                const items = [
+                    ...$('theme-list').querySelectorAll(
+                        `input[name="theme"][data-group="${groupInput.dataset.group}"]`
+                    )
+                ];
+                const count = items.filter(i => i.checked).length;
+
+                groupInput.checked = count > 0 && count === items.length;
+                groupInput.indeterminate = count > 0 && count < items.length;
+            });
+    }
+
     function updateThemeLabel() {
-        const values = selected($('theme-list'));
+        const values = selectedThemes();
 
         if (values.includes('parseallthemes')) {
             $('theme-label').textContent = 'Все тематики';
@@ -4012,13 +4066,31 @@
     $('theme-list').addEventListener('change', event => {
         const changed = event.target;
 
-        if (!changed.matches('input[name="theme"]')) {
-            return;
-        }
-
         const all = $('theme-list').querySelector(
             'input[value="parseallthemes"]'
         );
+
+        // Клик по заголовку группы — выбрать/снять все её подтемы.
+        if (changed.matches('input[name="theme-group"]')) {
+            $('theme-list')
+                .querySelectorAll(
+                    `input[name="theme"][data-group="${changed.dataset.group}"]`
+                )
+                .forEach(input => {
+                    input.checked = changed.checked;
+                });
+
+            if (changed.checked) all.checked = false;
+            if (!selectedThemes().length) all.checked = true;
+
+            syncThemeGroups();
+            updateThemeLabel();
+            return;
+        }
+
+        if (!changed.matches('input[name="theme"]')) {
+            return;
+        }
 
         if (changed.value === 'parseallthemes' && changed.checked) {
             $('theme-list')
@@ -4031,14 +4103,32 @@
         }
 
         // Если пользователь снял все галочки — возвращаем «Все тематики».
-        if (!selected($('theme-list')).length) {
+        if (!selectedThemes().length) {
             all.checked = true;
         }
 
+        syncThemeGroups();
         updateThemeLabel();
     });
 
+    syncThemeGroups();
     updateThemeLabel();
+
+    // Закрываем список тематик при клике вне него.
+    const themeDropdown = app.querySelector('.ag-theme-dropdown');
+
+    document.addEventListener(
+        'pointerdown',
+        event => {
+            if (
+                themeDropdown?.open &&
+                !themeDropdown.contains(event.target)
+            ) {
+                themeDropdown.open = false;
+            }
+        },
+        true
+    );
 
     /*
      * Существующая внешняя кнопка может продолжать
