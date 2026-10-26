@@ -409,8 +409,8 @@ function renderSummaryStats(operators, chatCountMap) {
         { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: '🌟', color: '#a9c0ff', compact: true },
         { label: '⏱ Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: '⏱', color: '#a9c0ff', compact: true },
         { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: '📋', color: '#a9c0ff', compact: false },
-        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#a9c0ff', compact: false },
-        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#a9c0ff', compact: false },
+        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#a9c0ff', compact: true },
+        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#a9c0ff', compact: true },
     ];
 
     // Компактные карточки (2 колонки)
@@ -420,7 +420,23 @@ function renderSummaryStats(operators, chatCountMap) {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         margin-bottom: 15px;
+        align-items: start;
     `;
+    // Стили раскрывающейся детализации SLA / AFRT
+    if (!document.getElementById('stat-more-styles')) {
+        const st = document.createElement('style');
+        st.id = 'stat-more-styles';
+        st.textContent = `
+            .stat-more { margin-top: 6px; font-size: 13px; font-weight: 500; color: #cbd5e1; text-shadow: none; }
+            .stat-more > summary { cursor: pointer; list-style: none; font-size: 12px; font-weight: 600; color: #7799e2; user-select: none; }
+            .stat-more > summary::-webkit-details-marker { display: none; }
+            .stat-more > summary::after { content: ' ▾'; }
+            .stat-more[open] > summary::after { content: ' ▴'; }
+            .stat-more > summary:hover { color: #a9c0ff; }
+            .stat-more-body { margin-top: 6px; padding-left: 10px; border-left: 2px solid #344258; line-height: 1.6; }
+        `;
+        document.head.appendChild(st);
+    }
 
     stats.filter(s => s.compact).forEach((stat, index) => {
         const statCard = document.createElement('div');
@@ -971,27 +987,37 @@ async function getopersSLA(dateFrom, dateTo, operatorIds, progressBar, { rowRefs
 
     const slaPercent = alloperChatsclsed > 0 ? ((alloperChatsclsed - alloperSLAclsed) / alloperChatsclsed * 100).toFixed(1) + '%' : '100%';
     const slaCalcColor = Number(calcChatsClsContainer) < 0 ? 'coral' : 'rgb(83, 219, 75)';
+    const slaOk = parseFloat(slaPercent) >= SLA_TARGET_PERCENT;
     setHTML('SLAonGroup', `
-        ${slaPercent} Всего влияли на SLA Completed: ${alloperChatsclsed} из них:
-        <div style="margin-top:5px;padding-left:15px;border-left:2px solid #555">
-            • 🚫Вне таргета: ${alloperSLAclsed}<br>
-            • ✅В таргете: ${alloperChatsclsed - alloperSLAclsed}<br>
-            🎯Для таргета ${SLA_TARGET_PERCENT}% можем позволить просрочить:
-            <span style="color:${slaCalcColor}; font-weight:700">${calcChatsClsContainer}</span> чатов
-        </div>
+        <span style="color:${slaOk ? '#86efac' : 'coral'}">${slaPercent}</span>
+        <span style="font-size:12px;color:#aaa;font-weight:500">(${alloperChatsclsed} чатов, таргет ${SLA_TARGET_PERCENT}%)</span>
+        <details class="stat-more">
+            <summary>Подробнее</summary>
+            <div class="stat-more-body">
+                🚫 Вне таргета: <b>${alloperSLAclsed}</b><br>
+                ✅ В таргете: <b>${alloperChatsclsed - alloperSLAclsed}</b><br>
+                🎯 Можем позволить просрочить:
+                <span style="color:${slaCalcColor}; font-weight:700">${calcChatsClsContainer}</span> чатов
+            </div>
+        </details>
     `);
 
     const afrtPercent = uniquedArrayAllLength > 0 ? ((massivchikTarget.size / uniquedArrayAllLength) * 100).toFixed(1) + '%' : '100%';
     const afrtCalcColor = Number(calcAFRTContainer) < 0 ? 'coral' : 'rgb(83, 219, 75)';
     const afrtExtra = Number(calcAFRTContainer) < 0 ? `<span> (чтобы выйти в таргет, вовремя дать ответ в: <strong style="color:coral">${Math.abs(calcAFRTContainer * 6.2).toFixed(1)}</strong> чатах)</span>` : '';
+    const afrtOk = parseFloat(afrtPercent) >= AFRT_TARGET_PERCENT;
     setHTML('AFRTGroup', `
-        ${afrtPercent} Всего влияли на AFRT: ${uniquedArrayAllLength} из них:
-        <div style="margin-top:5px;padding-left:15px;border-left:2px solid #555">
-            • <span class="afrt-untarget-popup-btn" style="color:#fca5a5; cursor:pointer; border-bottom:1px dashed #fca5a5; font-weight:700;" title="Нажмите, чтобы посмотреть список чатов вне таргета">🚫Вне таргета: ${massivchikUntarget.size} 📋</span><br>
-            • ✅В таргете: ${massivchikTarget.size}<br>
-            🎯Для таргета ${AFRT_TARGET_PERCENT}% можем позволить просрочить:
-            <span style="color:${afrtCalcColor}; font-weight:700">${calcAFRTContainer}</span> чатов${afrtExtra}
-        </div>
+        <span style="color:${afrtOk ? '#86efac' : 'coral'}">${afrtPercent}</span>
+        <span style="font-size:12px;color:#aaa;font-weight:500">(${uniquedArrayAllLength} чатов, таргет ${AFRT_TARGET_PERCENT}%)</span>
+        <details class="stat-more">
+            <summary>Подробнее</summary>
+            <div class="stat-more-body">
+                <span class="afrt-untarget-popup-btn" style="color:#fca5a5; cursor:pointer; border-bottom:1px dashed #fca5a5; font-weight:700;" title="Нажмите, чтобы посмотреть список чатов вне таргета">🚫 Вне таргета: ${massivchikUntarget.size} 📋</span><br>
+                ✅ В таргете: <b>${massivchikTarget.size}</b><br>
+                🎯 Можем позволить просрочить:
+                <span style="color:${afrtCalcColor}; font-weight:700">${calcAFRTContainer}</span> чатов${afrtExtra}
+            </div>
+        </details>
     `);
     // Раньше незагрузившийся чат молча выпадал из подсчёта — цифры занижались без предупреждения
     if (failedChats || failedPages) {
