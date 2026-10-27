@@ -139,156 +139,217 @@ const UI_PREFIX = 'usinf';
 
 const usersConfig = [
     {
-        rowId: 'currUserRow',
-        rowVisible: true,
+        rowId: 'currUserRow', rowVisible: true,
         buttons: [
-            { id: 'CurrUser', title: 'Открыть в CRM', content: '👨‍🎓', label: 'CRM' },
-            { id: 'CurUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
-            { id: 'CurUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'Troubleshooter' },
-            { id: 'CurUsChatHis', title: 'История чатов', content: '☢️', label: 'История' },
-            { id: 'CurUsChatHisWA', title: 'WA', isImage: true, src: tplAssetUrl('Images/WA.png'), alt: 'WA', label: 'WhatsApp' },
-            { id: 'CurUsUserInf', title: 'UserInf', content: '⚜️', label: 'Инфо' },
-            { id: 'CurUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
+            { id: 'CurrUser',       content: '👨‍🎓', label: 'CRM',            accent: '#4f8cff' },
+            { id: 'CurUsLoginer',   content: '🔑', label: 'Логинер',        accent: '#f5b300' },
+            { id: 'CurUstroublesh', content: '🕵️‍♀️', label: 'Troubleshooter', accent: '#a66bff' },
+            { id: 'CurUsChatHis',   content: '☢️', label: 'История',        accent: '#ff8a3d' },
+            { id: 'CurUsUserInf',   content: '⚜️', label: 'Инфо',           accent: '#e0a526' },
+            { id: 'CurUsAdminka',   content: '✏️', label: 'Админка',        accent: '#ff5d73' }
         ]
     },
     {
-        rowId: 'nextUsersp',
-        rowVisible: false,
+        rowId: 'nextUsersp', rowVisible: false,
         buttons: [
-            { id: 'NextUser', title: 'CRM', content: '👽', label: 'CRM' },
-            { id: 'NextUsLoginer', title: 'Логинер', content: '🔑', label: 'Логинер' },
-            { id: 'NextUstroublesh', title: 'ТШ', content: '🕵️‍♀️', label: 'Troubleshooter' },
-            { id: 'NextUsChatHis', title: 'История', content: '☢️', label: 'История' },
-            { id: 'NextUsUserInf', title: 'Инфо', content: '⚜️', label: 'Инфо' },
-            { id: 'NextUsAdminka', title: 'Админка', content: '✏️', label: 'Админка' }
+            { id: 'NextUser',        content: '👽', label: 'CRM',            accent: '#4f8cff' },
+            { id: 'NextUsLoginer',   content: '🔑', label: 'Логинер',        accent: '#f5b300' },
+            { id: 'NextUstroublesh', content: '🕵️‍♀️', label: 'Troubleshooter', accent: '#a66bff' },
+            { id: 'NextUsChatHis',   content: '☢️', label: 'История',        accent: '#ff8a3d' },
+            { id: 'NextUsUserInf',   content: '⚜️', label: 'Инфо',           accent: '#e0a526' },
+            { id: 'NextUsAdminka',   content: '✏️', label: 'Админка',        accent: '#ff5d73' }
         ]
     }
 ];
 
 const glassmorphismCSS = `
-/* Основная панель */
 .${UI_PREFIX}-glass-panel {
-border-radius: 20px !important;
-    padding: 24px 16px 16px 16px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 16px !important;
+    gap: 8px !important;
     width: fit-content !important;
-    /* Цвета теперь придут из JS динамически */
+    padding: 10px !important;
+    border-radius: 16px !important;
+    background: rgba(127,127,127,0.06);
+    border: 1px solid rgba(127,127,127,0.18);
 }
 
 .${UI_PREFIX}-row {
     display: flex !important;
     align-items: center !important;
-    height: 40px !important;
+    gap: 6px !important;
+    padding: 4px 6px 4px 4px !important;
+    border-radius: 999px !important;
+    background: rgba(127,127,127,0.10);
+    animation: ${UI_PREFIX}-in .35s cubic-bezier(.2,.8,.2,1) both;
 }
 
-/* Кнопка - теперь это всегда ровный круг, который не меняет ширину */
-.${UI_PREFIX}-btn-glass {
-    cursor: pointer !important;
-    height: 42px !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    border-radius: 50% !important;
-
-     /* border без !important — иначе он всегда чёрный */
-    border: 1px solid rgba(0, 0, 0, 0.08);
-
-    /* УБРАЛИ !important отсюда, чтобы JS мог менять цвет */
-    background: #ffffff;
-
+/* Метка ряда: Тек. / След. */
+.${UI_PREFIX}-row-tag {
+    min-width: 44px !important;
+    height: 22px !important;
+    padding: 0 8px !important;
+    margin-right: 2px !important;
+    border-radius: 999px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 0 !important;
-    margin-left: -12px !important;
+    font: 700 10px/1 'Segoe UI', system-ui, sans-serif !important;
+    letter-spacing: .4px !important;
+    text-transform: uppercase !important;
+    color: rgba(150,150,150,1) !important;
+    background: rgba(127,127,127,0.16) !important;
+}
+#nextUsersp .${UI_PREFIX}-row-tag { color: #8fb4ff !important; background: rgba(79,140,255,.16) !important; }
+
+.${UI_PREFIX}-btn-glass {
+    --acc: #8a8a8a;
     position: relative !important;
-    z-index: 1 !important;
-
-    /* ДОБАВИЛИ background в transition для плавного перетекания цвета */
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease, z-index 0s linear 0.2s !important;
-    will-change: transform, background;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 50% !important;
+    border: 1px solid rgba(127,127,127,0.22);
+    background: rgba(127,127,127,0.12);   /* без !important: тема из Settings.js может перекрасить */
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    outline: none !important;
+    transition: transform .18s cubic-bezier(.3,1.4,.6,1), box-shadow .18s ease,
+                border-color .18s ease, background .25s ease !important;
 }
-
-/* Физическое "нажатие" кнопки при клике */
-.${UI_PREFIX}-btn-glass:active {
-    transform: translateY(0px) scale(0.92) !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-    transition: transform 0.05s ease, box-shadow 0.05s ease !important;
+.${UI_PREFIX}-btn-glass:hover {
+    z-index: 100 !important;
+    transform: translateY(-3px) scale(1.08) !important;
+    border-color: var(--acc) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 22%, transparent),
+                0 6px 14px rgba(0,0,0,.25) !important;
 }
-
-.${UI_PREFIX}-btn-glass:first-child {
-    margin-left: 0 !important;
-}
+.${UI_PREFIX}-btn-glass:active { transform: scale(.9) !important; transition-duration: .05s !important; }
+.${UI_PREFIX}-btn-glass:focus-visible { box-shadow: 0 0 0 2px var(--acc) !important; }
 
 .${UI_PREFIX}-icon-box {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 18px !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
 }
 
-/* Парящая подсказка (tooltip) */
+/* Подсказка */
 .${UI_PREFIX}-label-text {
     position: absolute !important;
-    bottom: calc(100% + 10px) !important;
+    bottom: calc(100% + 8px) !important;
     left: 50% !important;
-    transform: translateX(-50%) translateY(8px) scale(0.9) !important;
+    transform: translate(-50%, 6px) scale(.92) !important;
     opacity: 0 !important;
     pointer-events: none !important;
-
-    background: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    border-radius: 8px !important;
-    padding: 6px 12px !important;
-
+    padding: 4px 9px !important;
+    border-radius: 7px !important;
     white-space: nowrap !important;
-    font-family: 'Segoe UI', system-ui, sans-serif !important;
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    color: #333 !important;
-
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    will-change: transform, opacity;
+    font: 600 11.5px/1.2 'Segoe UI', system-ui, sans-serif !important;
+    color: #fff !important;
+    background: #1f2430 !important;
+    border-bottom: 2px solid var(--acc) !important;
+    box-shadow: 0 6px 16px rgba(0,0,0,.3) !important;
+    transition: opacity .18s ease, transform .22s cubic-bezier(.3,1.4,.6,1) !important;
 }
-
-.${UI_PREFIX}-btn-glass:hover {
-    z-index: 100 !important;
-    transform: translateY(-4px) !important;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.12) !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, z-index 0s linear 0s !important;
-}
-
 .${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-label-text {
     opacity: 1 !important;
-    transform: translateX(-50%) translateY(0) scale(1) !important;
+    transform: translate(-50%, 0) scale(1) !important;
 }
 
-.${UI_PREFIX}-btn-img {
-    width: 22px !important;
-    height: 22px !important;
+/* Бейдж роли рядом с именем: У / П / РУ */
+.${UI_PREFIX}-role {
+    --rc: #8a8a8a;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    height: 30px !important;
+    margin: 4px 0 10px 0 !important;
+    padding: 0 14px 0 5px !important;
+    border-radius: 999px !important;
+    vertical-align: middle !important;
+    font: 700 14px/1 'Segoe UI', system-ui, sans-serif !important;
+    letter-spacing: .3px !important;
+    color: var(--rc) !important;
+    background: color-mix(in srgb, var(--rc) 14%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--rc) 40%, transparent) !important;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--rc) 30%, transparent) !important;
+    cursor: default !important;
+    animation: ${UI_PREFIX}-in .35s cubic-bezier(.2,.8,.2,1) both;
 }
+.${UI_PREFIX}-role:empty { display: none !important; }
+.${UI_PREFIX}-role-code {
+    min-width: 22px !important;
+    height: 22px !important;
+    padding: 0 6px !important;
+    border-radius: 999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    color: #fff !important;
+    background: var(--rc) !important;
+}
+.${UI_PREFIX}-role--student { --rc: #ff5d73; }
+.${UI_PREFIX}-role--parent  { --rc: #ff8a3d; }
+.${UI_PREFIX}-role--teacher { --rc: #4f8cff; }
+
+/* Кнопка копирования ссылки на CRM */
+.${UI_PREFIX}-copy {
+    width: 26px !important;
+    height: 26px !important;
+    margin-left: 6px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    border: 1px solid rgba(127,127,127,0.25) !important;
+    background: rgba(127,127,127,0.12) !important;
+    transition: transform .18s cubic-bezier(.3,1.4,.6,1), box-shadow .18s ease, border-color .18s ease, background .25s ease !important;
+}
+.${UI_PREFIX}-copy:hover {
+    transform: translateY(-2px) scale(1.1) !important;
+    border-color: #7c8cff !important;
+    box-shadow: 0 0 0 3px rgba(124,140,255,.22), 0 4px 10px rgba(0,0,0,.25) !important;
+}
+.${UI_PREFIX}-copy:active { transform: scale(.88) !important; transition-duration: .05s !important; }
+.${UI_PREFIX}-copy.is-done {
+    border-color: #2ed573 !important;
+    background: rgba(46,213,115,.18) !important;
+    box-shadow: 0 0 0 3px rgba(46,213,115,.25) !important;
+    animation: ${UI_PREFIX}-pop .35s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes ${UI_PREFIX}-pop { 0% { transform: scale(.7); } 100% { transform: scale(1); } }
+
+@keyframes ${UI_PREFIX}-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 `;
 
 function buildBtn(cfg) {
-    const content = cfg.isImage
-        ? `<img src="${cfg.src}" alt="${cfg.alt}" class="${UI_PREFIX}-btn-img">`
-        : `<span>${cfg.content}</span>`;
-
+    const accent = cfg.accent ? ` style="--acc:${cfg.accent}"` : '';
     return `
-    <button class="${UI_PREFIX}-btn-glass" id="${cfg.id}" title="${cfg.title}">
-        <div class="${UI_PREFIX}-icon-box">${content}</div>
+    <button class="${UI_PREFIX}-btn-glass" id="${cfg.id}" aria-label="${cfg.label}"${accent}>
+        <div class="${UI_PREFIX}-icon-box"><span>${cfg.content}</span></div>
         <span class="${UI_PREFIX}-label-text">${cfg.label}</span>
     </button>`;
 }
 
 function buildRow(cfg) {
     const display = cfg.rowVisible ? 'flex' : 'none';
+    const tag = cfg.tag ? `<span class="${UI_PREFIX}-row-tag">${cfg.tag}</span>` : '';
     return `
     <div id="${cfg.rowId}" class="${UI_PREFIX}-row" style="display: ${display}">
-        ${cfg.buttons.map(buildBtn).join('')}
+        ${tag}${cfg.buttons.map(buildBtn).join('')}
     </div>`;
 }
 
@@ -490,13 +551,13 @@ function buildUsersPanel(iframeDoc, usernameField) {
 
     const userTypeName = iframeDoc.createElement('span');
     userTypeName.id = 'userTypeId';
-    userTypeName.style.cssText = 'margin-left:5px;';
-    nameRow.append(userTypeName);
+    userTypeName.className = `${UI_PREFIX}-role`;
 
     const usersInfoField = iframeDoc.createElement('div');
     usersInfoField.className = 'UsersInfo';
     usersInfoField.style.cssText = 'display:block;';
     usersInfoField.innerHTML = win_UsersInfo;
+    usersInfoField.prepend(userTypeName); // бейдж роли — под именем, над панелью кнопок
     usernameField.append(usersInfoField);
 
     nameContainer = getChatId();
@@ -504,27 +565,26 @@ function buildUsersPanel(iframeDoc, usernameField) {
 
     // 💾 копировать ссылку на карточку в CRM
     const copyCrmFromName = iframeDoc.createElement('span');
-    copyCrmFromName.textContent = ' 💾';
-    copyCrmFromName.style.cssText = 'cursor:pointer;margin-left:5px;';
+    copyCrmFromName.textContent = '💾';
+    copyCrmFromName.className = `${UI_PREFIX}-copy`;
+    copyCrmFromName.title = 'Скопировать ссылку на CRM';
     copyCrmFromName.id = 'diskettocopy';
     nameRow.append(copyCrmFromName);
+    let copyResetTimer = null;
     copyCrmFromName.onclick = function () {
         const idaf = SearchinAFnewUI('id');
         copyToClipboard('https://crm2.skyeng.ru/persons/' + idaf);
         createAndShowButton('💾 Cкопировано', 'message');
-    };
 
-    // test — кнопка тестового чата
-    const testchatbtn = iframeDoc.createElement('span');
-    testchatbtn.textContent = ' test';
-    testchatbtn.style.cssText =
-        'cursor:pointer;margin-left:5px;color:crimson;font-size:medium;margin-left:auto;margin-right:auto;display:none;';
-    testchatbtn.id = 'testchatbtn';
-    nameRow.append(testchatbtn);
-    testchatbtn.onclick = function () {
-        sendComment('Тестовый чат');
-        setTimeout(() => newTaggg('double'), 500);
-        setTimeout(() => setTheme('1710'), 1000);
+        clearTimeout(copyResetTimer);
+        copyCrmFromName.textContent = '✔️';
+        copyCrmFromName.classList.remove('is-done');
+        void copyCrmFromName.offsetWidth; // перезапуск анимации
+        copyCrmFromName.classList.add('is-done');
+        copyResetTimer = setTimeout(() => {
+            copyCrmFromName.textContent = '💾';
+            copyCrmFromName.classList.remove('is-done');
+        }, 1200);
     };
 
     paintUserTypeBadge(iframeDoc, usertypeis);
@@ -540,6 +600,21 @@ function setUserIcon(iframeDoc, buttonId, icon, label) {
         const labelEl = iframeDoc.querySelector(`#${buttonId} .usinf-label-text`);
         if (labelEl) labelEl.textContent = label;
     }
+}
+
+const ROLE_BADGES = {
+    student: { code: 'У',  name: 'Ученик' },
+    parent:  { code: 'РУ', name: 'Родитель' },
+    teacher: { code: 'П',  name: 'Преподаватель' }
+};
+
+/** Красит бейдж роли: цветная таблетка «[У] Ученик». */
+function setRoleBadge(badge, role) {
+    const info = ROLE_BADGES[role];
+    if (!info) return;
+    badge.className = `${UI_PREFIX}-role ${UI_PREFIX}-role--${role}`;
+    badge.title = info.name;
+    badge.innerHTML = `<span class="${UI_PREFIX}-role-code">${info.code}</span>${info.name}`;
 }
 
 /** Бейдж типа пользователя и пары «текущий → следующий». */
@@ -562,8 +637,7 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
     const LABEL_STUDENT = 'CRM У';
 
     if (usertypeis === 'teacher') {
-        badge.textContent = ' (П)';
-        badge.style.color = '#1E90FF';
+        setRoleBadge(badge, 'teacher');
 
         setUserIcon(iframeDoc, 'CurrUser', ICON_TEACHER, LABEL_TEACHER);
 
@@ -572,8 +646,7 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
             showNextRow();
         }
     } else if (usertypeis === 'student' || usertypeis === 'parent') {
-        badge.textContent = usertypeis === 'parent' ? ' (РУ)' : ' (У)';
-        badge.style.color = '#DC143C';
+        setRoleBadge(badge, usertypeis);
 
         setUserIcon(iframeDoc, 'CurrUser', ICON_STUDENT, LABEL_STUDENT);
 
@@ -588,7 +661,6 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
 
 function startTimer() {
     const tagsShowFlag = localStorage.getItem('showquicktags');
-    const trigerTestChat = localStorage.getItem('trigertestchat');
     const hrefIsNow = window.location.href;
     const iframeElement = document.querySelector('[class^="NEW_FRONTEND__frame"]');
     let taketaskElement = null;
@@ -627,13 +699,6 @@ function startTimer() {
             if (isTpBranch) { // блок только для ТП
                 updateUserBadgeInTestUsers(iframeDoc);
                 toggleQuickTags(iframeDoc, usernameField, tagsShowFlag);
-
-                // Видимость кнопки тестового чата
-                const testChatBtn = iframeDoc.getElementById('testchatbtn');
-                if (testChatBtn) {
-                    if (trigerTestChat === '0') testChatBtn.style.display = 'none';
-                    else if (trigerTestChat === '1') testChatBtn.style.display = '';
-                }
 
                 if (hrefIsNow.includes('skyeng.autofaq.ai/tickets/assigned') && usernameField) {
                     rebuildUsersPanelIfNeeded(iframeDoc, usernameField);
@@ -707,7 +772,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
 
     const currentUserId = () => SearchinAFnewUI('id');
     const nextUserId = () => SearchinAFnewUI(findrequestargument(usertypeis));
-    const phoneWithoutPlus = () => SearchinAFnewUI('phone').split('+')[1];
 
     function openCrm(idNode) {
         window.open('https://crm2.skyeng.ru/persons/' + idNode);
@@ -784,7 +848,6 @@ function buttonsfunctionsinfo(iframeDoc, usertypeis) {
     bindSimple('CurUstroublesh', currentUserId, openTroubleshooter);
     bindSimple('CurUsAdminka', currentUserId, openAdminka);
     bindSimple('CurUsChatHis', currentUserId, openChatHistory);
-    bindSimple('CurUsChatHisWA', phoneWithoutPlus, openChatHistory);
     bindSimple('CurUsUserInf', currentUserId, openUserInfo);
 
     bindSimple('NextUser', nextUserId, openCrm);

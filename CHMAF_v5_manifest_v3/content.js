@@ -1050,10 +1050,6 @@ if (window.location.host === 'skyeng.autofaq.ai' && window.location.pathname !==
         if (!event.altKey) return;
         if (event.code === 'KeyO') changeStatus('Offline');
         else if (event.code === 'KeyI') changeStatus('Busy');
-        else if (event.code === 'KeyT') {
-            const current = localStorage.getItem('trigertestchat');
-            try { localStorage.setItem('trigertestchat', current === '0' ? '1' : '0'); } catch { }
-        }
     });
 }
 
