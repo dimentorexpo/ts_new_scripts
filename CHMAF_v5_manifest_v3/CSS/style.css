@@ -4368,6 +4368,114 @@ body.chmaf-en-lang #custom_templates_window {
     font-size: 15px;
 }
 
+/* SVG-иконки шапки: цвет берётся из currentColor кнопки */
+#AF_helper .glass-btn.mainButton .afh-ico {
+    width: 17px;
+    height: 17px;
+    display: block;
+    margin: auto;
+    pointer-events: none;
+    transition: transform .2s cubic-bezier(.3, 1.4, .6, 1), color .16s ease;
+}
+#AF_helper #getnewtmpldata .btn-icon { display: flex; }
+
+/* Цвет каждой иконки и её «жест» при наведении */
+#AF_helper #testCustTMPL .afh-ico   { color: #f0c674; }
+#AF_helper #reminderstatus .afh-ico { color: #7c8aa3; }
+#AF_helper #reminderstatus.is-active .afh-ico { color: #ffd166; filter: drop-shadow(0 0 4px rgba(255, 209, 102, .45)); }
+#AF_helper #getnewtmpldata .afh-ico { color: #7dd3fc; }
+#AF_helper #addsrc .afh-ico         { color: #c4a8ff; }
+#AF_helper #links .afh-ico          { color: #8fb4ff; }
+#AF_helper #setting .afh-ico        { color: #b9c6dc; }
+
+#AF_helper #testCustTMPL:hover .afh-ico   { color: #ffe3a3; transform: rotate(-8deg) scale(1.1); }
+#AF_helper #reminderstatus:hover .afh-ico { animation: afh-ring .5s ease; }
+#AF_helper #getnewtmpldata:hover .afh-ico { color: #bae6fd; transform: rotate(90deg); }
+#AF_helper #addsrc:hover .afh-ico         { color: #e2d4ff; transform: scale(1.15); filter: drop-shadow(0 0 5px rgba(196, 168, 255, .6)); }
+#AF_helper #links:hover .afh-ico          { color: #c9dbff; transform: rotate(-20deg) scale(1.1); }
+#AF_helper #setting:hover .afh-ico        { color: #fff; transform: rotate(60deg); }
+
+/* ── Нижняя панель ── */
+#AF_helper #opandclsbarhyper.glass-btn.mainButton,
+#AF_helper #sndbot.glass-btn.mainButton { width: 34px; padding: 0 !important; }
+/* Квадратные иконки-кнопки: перебиваем общий padding 0 10px !important нижней панели */
+#AF_helper #hyperlnk + .flex-row #opandclsbarhyper.glass-btn.mainButton,
+#AF_helper #hyperlnk + .flex-row #sndbot.glass-btn.mainButton {
+    width: 38px !important;
+    min-width: 38px !important;
+    padding: 0 !important;
+    justify-content: center;
+}
+#AF_helper #opandclsbarhyper.glass-btn.mainButton .afh-ico,
+#AF_helper #sndbot.glass-btn.mainButton .afh-ico {
+    width: 22px !important;
+    height: 22px !important;
+    flex: 0 0 22px;
+    stroke-width: 1.9;
+}
+
+/* Иконка + текст */
+#AF_helper .glass-btn.mainButton .afh-ico-sm {
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    margin: 0 6px 0 0;
+    vertical-align: -2px;
+    flex: 0 0 auto;
+}
+#AF_helper #snd .afh-ico-sm,
+#AF_helper #addtocusttmplt .afh-ico-sm,
+#AF_helper #openVimbotWindows .afh-ico-sm,
+#AF_helper #insertlinktotext .afh-ico-sm { display: inline-block; }
+
+#AF_helper #opandclsbarhyper .afh-ico  { color: #8fb4ff; }
+#AF_helper #opandclsbarhyper[aria-expanded="true"] .afh-ico { color: #fff; transform: rotate(-45deg); }
+#AF_helper #sndbot .afh-ico            { color: #f9a8d4; }
+#AF_helper #snd .afh-ico               { color: #fff; }
+#AF_helper #addtocusttmplt .afh-ico    { color: #f0c674; }
+#AF_helper #openVimbotWindows .afh-ico { color: #6ee7b7; }
+#AF_helper #insertlinktotext .afh-ico  { color: #6ee7b7; }
+
+#AF_helper #opandclsbarhyper:hover .afh-ico  { color: #c9dbff; transform: rotate(-20deg) scale(1.1); }
+#AF_helper #sndbot:hover .afh-ico            { color: #fbcfe8; animation: afh-bot .45s ease; }
+#AF_helper #snd:hover .afh-ico               { transform: translate(2px, -2px); }
+#AF_helper #addtocusttmplt:hover .afh-ico    { color: #ffe3a3; transform: translateY(-2px); }
+#AF_helper #openVimbotWindows:hover .afh-ico { color: #a7f3d0; transform: scale(1.15); }
+#AF_helper #insertlinktotext:hover .afh-ico  { transform: scale(1.15); }
+
+/* Tmpl / Vimbot: иконки крупнее, кнопки чуть шире */
+#AF_helper #hyperlnk + .flex-row #addtocusttmplt.glass-btn.mainButton,
+#AF_helper #hyperlnk + .flex-row #openVimbotWindows.glass-btn.mainButton {
+    padding: 0 14px 0 11px !important;
+    display: inline-flex;
+    align-items: center;
+}
+#AF_helper #addtocusttmplt .afh-ico-sm,
+#AF_helper #openVimbotWindows .afh-ico-sm {
+    width: 20px !important;
+    height: 20px !important;
+    flex: 0 0 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+    stroke-width: 1.9;
+}
+
+@keyframes afh-bot {
+    0%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-3px) rotate(-6deg); }
+    70% { transform: translateY(0) rotate(4deg); }
+}
+
+@keyframes afh-ring {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(14deg); }
+    50% { transform: rotate(-12deg); }
+    75% { transform: rotate(6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    #AF_helper .glass-btn.mainButton .afh-ico { transition: none; animation: none !important; transform: none !important; }
+}
+
 /* Язык — акцентная пилюля */
 #AF_helper #languageAF.glass-btn.mainButton {
     color: var(--afh-accent) !important;

@@ -7,17 +7,17 @@ var win_AFhelper = `
 
     <div class="flex-row chmaf-drag-handle" id="1str" style="padding-top: 5px;">
         <button class="glass-btn mainButton" id="languageAF" title="Переключает язык Русский/Английский">Русский</button>
-        <button class="glass-btn mainButton" id="testCustTMPL" title="Открывает окно для добавления своих шаблонов">📒</button>
+        <button class="glass-btn mainButton" id="testCustTMPL" title="Свои шаблоны" aria-label="Свои шаблоны"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg></button>
         <button class="glass-btn mainButton buttonHide" id="hideMenuMain" title="Скрывает расширение">Скрыть</button>
 
         <div class="flex-right">
             <button class="glass-btn mainButton" id="reminderstatus" title="Статус будильника 🔔 - вкл, 🔕 - выкл"></button>
             <button class="glass-btn mainButton" id="getnewtmpldata" title="Обновляет шаблоны">
-                <span class="btn-icon">🔄</span>
+                <span class="btn-icon"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></span>
             </button>
-            <button class="glass-btn mainButton onlyfortp" id="addsrc" title="Доп меню для работы с сервисами школы">*</button>
-            <button class="glass-btn mainButton" id="links" title="Открывает доп.меню со ссылками">L</button>
-            <button class="glass-btn mainButton" id="setting" title="Настройки">⚙</button>
+            <button class="glass-btn mainButton onlyfortp" id="addsrc" title="Доп. ссылки (нужен отдельный доступ)" aria-label="Доп. ссылки с доступом"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg></button>
+            <button class="glass-btn mainButton" id="links" title="Ссылки" aria-label="Ссылки"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+            <button class="glass-btn mainButton" id="setting" title="Настройки" aria-label="Настройки"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
     </div>
 
@@ -41,19 +41,19 @@ var win_AFhelper = `
 
     <div id="hyperlnk" class="flex-row hyper-bar">
         <input id="bindlinktotext" class="glass-input" type="text" placeholder="Вставь ссылку, выдели текст и нажми Enter" title="Ссылка для встраивания. Enter — вставить, Esc — закрыть" style="flex-grow: 1; text-align: center;">
-        <button class="glass-btn mainButton" id="insertlinktotext">Insert ✅</button>
+        <button class="glass-btn mainButton" id="insertlinktotext"><svg class="afh-ico afh-ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Вставить</button>
     </div>
 
     <div class="flex-row chmaf-drag-handle">
         <button class="glass-btn mainButton" id="msg1" title="Отправить или доработать">Доработать</button>
         <button class="glass-btn mainButton msgtype" id="msg" title="Отправить в заметки или в чат">Чат</button>
-        <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку" aria-expanded="false">🔗</button>
-        <button class="glass-btn mainButton" id="sndbot" title="Отправить от имени бота">🤖</button>
-        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст (Ctrl+Enter)">Send</button>
+        <button class="glass-btn mainButton" id="opandclsbarhyper" title="Прикрепить ссылку" aria-expanded="false" aria-label="Прикрепить ссылку"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+        <button class="glass-btn mainButton" id="sndbot" title="Отправить от имени бота" aria-label="Отправить от имени бота"><svg class="afh-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg></button>
+        <button class="glass-btn mainButton primary" id="snd" title="Отправить текст (Ctrl+Enter)"><svg class="afh-ico afh-ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>Send</button>
 
         <div class="flex-right">
-            <button class="glass-btn mainButton" id="addtocusttmplt" title="Сохранить в личные шаблоны">⬆️+Tmpl</button>
-            <button class="glass-btn mainButton onlyfortp" id="openVimbotWindows" title="Через Vimbot">▶️Vimbot</button>
+            <button class="glass-btn mainButton" id="addtocusttmplt" title="Сохранить в личные шаблоны"><svg class="afh-ico afh-ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><line x1="12" x2="12" y1="7" y2="13"/><line x1="15" x2="9" y1="10" y2="10"/></svg>Tmpl</button>
+            <button class="glass-btn mainButton onlyfortp" id="openVimbotWindows" title="Через Vimbot"><svg class="afh-ico afh-ico-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>Vimbot</button>
         </div>
     </div>
 

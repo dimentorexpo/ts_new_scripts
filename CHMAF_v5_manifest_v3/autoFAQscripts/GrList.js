@@ -1,670 +1,275 @@
-﻿// === 1. ВСТРАИВАЕМЫЕ СТИЛИ (CYBER-DARK UI) ===
-// ==========================================
-// NEON GLASS ULTRA — Premium Cyber-Dark UI
-// ==========================================
+// === 1. СТИЛИ — Corporate Graphite Dark (как Queue.js) ===
+// Все правила под #AF_GrList, чтобы ничего не утекало в другие окна.
 
 const neonGlassStyles = `
 <style>
     /* Шрифты (Inter, JetBrains Mono) загружаются один раз в design-system.css */
-
-    /* === CORE SYSTEM === */
-    :root {
-        --ngu-deep: #030508;
-        --ngu-surface: rgba(8, 12, 20, 0.85);
-        --ngu-surface-elevated: rgba(14, 20, 32, 0.9);
-        --ngu-border: rgba(48, 56, 72, 0.4);
-        --ngu-border-active: rgba(0, 240, 255, 0.35);
-
-        --ngu-cyan: #22d3ee;
-        --ngu-cyan-soft: rgba(34, 211, 238, 0.08);
-        --ngu-cyan-glow: 0 0 20px rgba(34, 211, 238, 0.15), 0 0 40px rgba(34, 211, 238, 0.05);
-
-        --ngu-purple: #a78bfa;
-        --ngu-purple-core: #8b5cf6;
-        --ngu-purple-glow: 0 0 15px rgba(167, 139, 250, 0.2);
-
-        --ngu-green: #34d399;
-        --ngu-red: #f87171;
-        --ngu-gold: #fbbf24;
-
-        --ngu-text-primary: #f8fafc;
-        --ngu-text-secondary: #cbd5e1;
-        --ngu-text-muted: #94a3b8;
-
-        --ngu-radius-sm: 8px;
-        --ngu-radius: 12px;
-        --ngu-radius-lg: 16px;
-        --ngu-transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    #AF_GrList {
+        --ngu-cyan: #a9c0ff; /* используется инлайном в JS (подсветка «Скопировано!») */
     }
 
-    /* === ANIMATIONS === */
-    @keyframes ngu-appear {
-        0% { opacity: 0; transform: translateY(-20px) scale(0.95) rotateX(5deg); }
-        100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0); }
-    }
-    @keyframes ngu-slide-up {
-        0% { opacity: 0; transform: translateY(16px) scale(0.98); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes ngu-shimmer {
-        0% { background-position: -300% 0; }
-        100% { background-position: 300% 0; }
-    }
-    @keyframes ngu-pulse-cyan {
-        0%, 100% { box-shadow: 0 0 5px rgba(34,211,238,0.2), 0 0 20px rgba(34,211,238,0.05); }
-        50% { box-shadow: 0 0 15px rgba(34,211,238,0.3), 0 0 40px rgba(34,211,238,0.1); }
-    }
-    @keyframes ngu-float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-3px); }
-    }
-    @keyframes ngu-scanline {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(100vh); }
-    }
-    @keyframes ngu-border-rotate {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
+    #AF_GrList .ngu-wrapper,
+    #AF_GrList .ngu-wrapper * { box-sizing: border-box; }
 
-    /* === WRAPPER === */
-    .ngu-wrapper {
-        width: 500px;
-        background: var(--ngu-surface);
-        backdrop-filter: blur(24px) saturate(160%);
-        -webkit-backdrop-filter: blur(24px) saturate(160%);
-        border: 1px solid var(--ngu-border);
-        border-radius: var(--ngu-radius-lg);
-        box-shadow:
-            0 32px 64px -16px rgba(0, 0, 0, 0.85),
-            0 0 0 1px rgba(255, 255, 255, 0.04),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06),
-            0 0 60px rgba(34, 211, 238, 0.03);
-        font-family: 'Inter', -apple-system, system-ui, sans-serif;
-        overflow: hidden;
-        color: var(--ngu-text-primary);
-        animation: ngu-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    #AF_GrList .ngu-wrapper {
+        width: min(500px, calc(100vw - 24px));
+        padding: 18px;
+        color: #edf2fb;
+        background:
+            radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+            #111827;
+        border: 1px solid #344258;
+        border-radius: 18px;
+        box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+        font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
         position: relative;
-        transform-style: preserve-3d;
-        perspective: 1000px;
+        animation: ngu-appear .25s cubic-bezier(.2, .8, .2, 1);
     }
 
-    /* Holographic grid overlay */
-    .ngu-wrapper::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image:
-            radial-gradient(circle at 1px 1px, rgba(34, 211, 238, 0.04) 1px, transparent 0);
-        background-size: 32px 32px;
-        mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-        -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    /* Scanline effect */
-    .ngu-wrapper::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-            to bottom,
-            transparent 50%,
-            rgba(34, 211, 238, 0.015) 50%
-        );
-        background-size: 100% 4px;
-        pointer-events: none;
-        z-index: 1;
-    }
+    @keyframes ngu-appear { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    @keyframes ngu-slide-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes ngu-spin { to { transform: rotate(360deg); } }
 
     /* === HEADER === */
-    .ngu-header {
-        position: relative;
+    #AF_GrList .ngu-header {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(180deg, rgba(16,24,40,0.9) 0%, rgba(8,12,20,0.6) 100%);
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--ngu-border);
-        cursor: -webkit-grab;
-        z-index: 2;
-        overflow: hidden;
-    }
-
-    /* Animated border bottom */
-    .ngu-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: -50%;
-        right: -50%;
-        height: 1px;
-        background: linear-gradient(90deg,
-            transparent,
-            var(--ngu-cyan),
-            var(--ngu-purple),
-            var(--ngu-cyan),
-            transparent
-        );
-        background-size: 200% 100%;
-        animation: ngu-border-rotate 4s linear infinite;
-        opacity: 0.5;
-    }
-
-    .ngu-title-group {
-        display: flex;
-        align-items: center;
         gap: 10px;
+        margin-bottom: 14px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #344258;
+        cursor: move;
     }
-
-    .ngu-title-icon {
-        width: 8px;
-        height: 8px;
-        background: var(--ngu-cyan);
-        border-radius: 50%;
-        box-shadow: 0 0 12px var(--ngu-cyan), 0 0 24px rgba(34,211,238,0.3);
-        animation: ngu-pulse-cyan 2.5s ease-in-out infinite;
-        position: relative;
+    #AF_GrList .ngu-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    #AF_GrList .ngu-title-icon {
+        width: 34px; height: 34px; flex: 0 0 34px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 17px;
+        background: #182335;
+        border: 1px solid #364660;
+        border-radius: 10px;
     }
-
-    .ngu-title-icon::after {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: 50%;
-        border: 1px solid rgba(34,211,238,0.2);
-        animation: ngu-pulse-cyan 2.5s ease-in-out infinite 0.3s;
-    }
-
-    .ngu-title {
-        font-size: 13px;
-        font-weight: 800;
-        letter-spacing: 2.5px;
-        color: var(--ngu-text-primary);
-        text-transform: uppercase;
-        text-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
-    }
-
-    .ngu-subtitle {
-        font-size: 10px;
-        color: var(--ngu-text-muted);
-        letter-spacing: 1px;
+    #AF_GrList .ngu-title-icon::before { content: '👥'; }
+    #AF_GrList .ngu-title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
+    #AF_GrList .ngu-subtitle {
         margin-top: 2px;
-        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .03em; text-transform: uppercase;
+        color: #a6b4cb;
     }
 
     /* === CONTROLS === */
-    .ngu-controls {
-        display: flex;
-        gap: 12px;
-        padding: 20px;
-        background: transparent;
-        position: relative;
-        z-index: 2;
-    }
-
-    .ngu-input-wrap {
-        flex: 1;
-        position: relative;
-    }
-
-    .ngu-input {
+    #AF_GrList .ngu-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    #AF_GrList .ngu-input-wrap { min-width: 0; }
+    #AF_GrList .ngu-input {
         width: 100%;
-        background: rgba(2, 6, 12, 0.7);
-        border: 1px solid var(--ngu-border);
-        color: var(--ngu-cyan);
-        border-radius: var(--ngu-radius-sm);
-        padding: 11px 14px;
-        font-size: 14px;
-        font-weight: 600;
-        font-family: 'JetBrains Mono', monospace;
+        height: 36px;
+        padding: 0 10px;
+        color: #edf2fb;
+        background: #0d1625;
+        border: 1px solid #3a4961;
+        border-radius: 9px;
         outline: none;
-        text-align: center;
-        letter-spacing: 1px;
-        transition: var(--ngu-transition);
-        box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
-        box-sizing: border-box;
+        font-size: 13px;
+        font-family: 'JetBrains Mono', 'SF Mono', monospace;
+        transition: background .2s, border-color .2s, box-shadow .2s;
     }
+    #AF_GrList .ngu-input::placeholder { color: #6f7f99; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    #AF_GrList .ngu-input:hover { background: #142034; border-color: #657caa; }
+    #AF_GrList .ngu-input:focus { background: #142034; border-color: #829fff; box-shadow: 0 0 0 3px rgba(110, 152, 247, .16); }
 
-    .ngu-input::placeholder {
-        color: #64748b;
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-        letter-spacing: 0.5px;
-    }
-
-    .ngu-input:focus {
-        border-color: rgba(34, 211, 238, 0.5);
-        box-shadow:
-            inset 0 2px 8px rgba(0,0,0,0.4),
-            0 0 0 3px rgba(34, 211, 238, 0.08),
-            var(--ngu-cyan-glow);
-        background: rgba(2, 6, 12, 0.9);
-    }
-
-    /* Input glow line */
-    .ngu-input-wrap::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        width: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--ngu-cyan), transparent);
-        transition: all 0.4s ease;
-        transform: translateX(-50%);
-        border-radius: 2px;
-    }
-
-    .ngu-input-wrap:focus-within::after {
-        width: 80%;
-    }
-
-    /* === BUTTONS === */
-    .ngu-btn {
-        background: linear-gradient(145deg, rgba(30,36,48,0.9), rgba(18,24,36,0.9));
-        color: var(--ngu-text-secondary);
-        border: 1px solid rgba(56, 64, 80, 0.5);
-        border-radius: var(--ngu-radius-sm);
-        padding: 11px 20px;
-        font-size: 11px;
-        font-weight: 700;
+    #AF_GrList .ngu-btn {
+        min-height: 36px;
+        padding: 8px 14px;
+        display: inline-flex; align-items: center; gap: 8px;
+        color: #dce5f5;
+        background: #1b283c;
+        border: 1px solid #3c4d68;
+        border-radius: 9px;
         cursor: pointer;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        transition: var(--ngu-transition);
-        position: relative;
-        overflow: hidden;
+        font: 600 13px/1 inherit;
         font-family: inherit;
         white-space: nowrap;
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
     }
-
-    .ngu-btn::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
-        opacity: 0;
-        transition: opacity 0.4s;
+    #AF_GrList .ngu-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; transform: translateY(-1px); }
+    #AF_GrList .ngu-btn:active { transform: translateY(0); }
+    #AF_GrList .ngu-btn-primary {
+        color: #eef3ff;
+        background: #4268c9;
+        border-color: #7293ed;
+        box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
     }
-
-    .ngu-btn:hover::before {
-        opacity: 1;
+    #AF_GrList .ngu-btn-primary:hover { background: #547ce1; border-color: #a2b9fa; box-shadow: 0 6px 19px rgba(58, 96, 205, .3); }
+    #AF_GrList .ngu-btn-danger {
+        padding: 8px 12px;
+        color: #ffb0be;
+        background: rgba(255, 116, 140, .08);
+        border-color: rgba(255, 116, 140, .3);
     }
-
-    .ngu-btn:active {
-        transform: scale(0.96) translateY(1px);
-    }
-
-    .ngu-btn-primary {
-        color: var(--ngu-cyan);
-        border-color: rgba(34, 211, 238, 0.25);
-        background: linear-gradient(145deg, rgba(34,211,238,0.06), rgba(34,211,238,0.02));
-        text-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
-    }
-
-    .ngu-btn-primary:hover {
-        background: linear-gradient(145deg, rgba(34,211,238,0.12), rgba(34,211,238,0.04));
-        border-color: rgba(34, 211, 238, 0.5);
-        box-shadow:
-            0 0 25px rgba(34, 211, 238, 0.15),
-            0 0 50px rgba(34, 211, 238, 0.05),
-            inset 0 1px 0 rgba(255,255,255,0.05);
-        color: #fff;
-        transform: translateY(-1px);
-    }
-
-    .ngu-btn-danger {
-        padding: 8px 14px;
-        font-size: 10px;
-        border-radius: var(--ngu-radius-sm);
-        letter-spacing: 1px;
-    }
-
-    .ngu-btn-danger:hover {
-        background: linear-gradient(145deg, rgba(248,113,133,0.12), rgba(248,113,133,0.04));
-        color: var(--ngu-red);
-        border-color: rgba(248,113,133,0.4);
-        box-shadow: 0 0 20px rgba(248, 113, 133, 0.15);
-        transform: translateY(-1px);
-    }
+    #AF_GrList .ngu-btn-danger:hover { color: #fff; background: rgba(255, 116, 140, .18); border-color: rgba(255, 116, 140, .6); }
 
     /* === CONTENT === */
-    .ngu-content {
-        max-height: 480px;
+    #AF_GrList .ngu-content {
+        max-height: 460px;
         overflow-y: auto;
-        padding: 0 20px 20px 20px;
-        font-size: 13px;
-        position: relative;
-        z-index: 2;
+        padding-right: 6px;
         scrollbar-width: thin;
-        scrollbar-color: rgba(48,56,72,0.6) transparent;
+        scrollbar-color: #536a8e transparent;
     }
-    .ngu-content::-webkit-scrollbar { width: 4px; }
-    .ngu-content::-webkit-scrollbar-track { background: transparent; margin: 8px 0; }
-    .ngu-content::-webkit-scrollbar-thumb {
-        background: rgba(139, 92, 246, 0.4);
-        border-radius: 10px;
-    }
-    .ngu-content::-webkit-scrollbar-thumb:hover { background: rgba(167, 139, 250, 0.6); }
+    #AF_GrList .ngu-content:empty { display: none; }
+    #AF_GrList .ngu-content::-webkit-scrollbar { width: 6px; }
+    #AF_GrList .ngu-content::-webkit-scrollbar-track { background: transparent; }
+    #AF_GrList .ngu-content::-webkit-scrollbar-thumb { background: #536a8e; border-radius: 4px; }
 
-    /* === LOADER === */
-    .ngu-loader {
-        padding: 40px 20px;
-        text-align: center;
-    }
-
-    .ngu-loader-ring {
-        width: 40px;
-        height: 40px;
-        margin: 0 auto 16px;
-        border: 2px solid rgba(34, 211, 238, 0.1);
-        border-top-color: var(--ngu-cyan);
+    /* Loader */
+    #AF_GrList .ngu-loader { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 0; }
+    #AF_GrList .ngu-loader-ring {
+        width: 30px; height: 30px; margin-bottom: 6px;
+        border: 3px solid #2a3a55;
+        border-top-color: #7799e2;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
-        box-shadow: 0 0 15px rgba(34,211,238,0.1);
+        animation: ngu-spin .8s linear infinite;
     }
+    #AF_GrList .ngu-loader-text { font-size: 13px; font-weight: 600; color: #dce5f5; }
+    #AF_GrList .ngu-loader-sub { font-size: 11px; color: #7c8aa3; font-family: 'JetBrains Mono', monospace; }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .ngu-loader-text {
-        color: var(--ngu-cyan);
-        font-size: 11px;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        font-weight: 800;
-        text-shadow: 0 0 15px rgba(34,211,238,0.2);
-        animation: ngu-pulse-cyan 2s infinite;
-    }
-
-    .ngu-loader-sub {
-        color: #64748b;
-        font-size: 10px;
-        margin-top: 6px;
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* === STUDENT CARDS === */
-    .ngu-student-card {
-        display: flex;
-        align-items: center;
-        padding: 12px 14px;
-        margin-bottom: 8px;
-        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-        border: 1px solid rgba(48, 56, 72, 0.25);
-        border-radius: var(--ngu-radius);
-        gap: 12px;
-        transition: var(--ngu-transition);
-        opacity: 0;
-        animation: ngu-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .ngu-student-card::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(to bottom, var(--ngu-cyan), transparent);
-        opacity: 0;
-        transition: opacity 0.3s;
-        border-radius: 3px 0 0 3px;
-    }
-
-    .ngu-student-card:hover {
-        background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-        border-color: rgba(34, 211, 238, 0.15);
-        transform: translateX(6px) scale(1.01);
-        box-shadow:
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            0 0 20px rgba(34, 211, 238, 0.04);
-    }
-
-    .ngu-student-card:hover::before {
-        opacity: 0.7;
-    }
-
-    .ngu-index {
-        color: #64748b;
-        font-size: 11px;
-        font-weight: 800;
-        min-width: 28px;
-        text-align: center;
-        font-family: 'JetBrains Mono', monospace;
-        letter-spacing: 1px;
-    }
-
-    .ngu-avatar {
-        width: 32px;
-        height: 32px;
+    /* Counter */
+    #AF_GrList .ngu-counter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+    #AF_GrList .ngu-counter-item {
+        padding: 9px 10px;
+        background: #182335;
+        border: 1px solid #364660;
         border-radius: 10px;
-        background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(139,92,246,0.15));
-        border: 1px solid rgba(34,211,238,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 800;
-        color: var(--ngu-cyan);
-        flex-shrink: 0;
-        text-shadow: 0 0 10px rgba(34,211,238,0.3);
-        position: relative;
-        overflow: hidden;
+        text-align: center;
+    }
+    #AF_GrList .ngu-counter-value {
+        font-size: 17px; font-weight: 700; color: #a9c0ff;
+        font-family: 'JetBrains Mono', 'SF Mono', monospace;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #AF_GrList .ngu-counter-label {
+        margin-top: 4px;
+        font-size: 10px; font-weight: 700;
+        letter-spacing: .03em; text-transform: uppercase;
+        color: #a6b4cb;
     }
 
-    .ngu-avatar::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
-        animation: ngu-shimmer 3s infinite;
+    /* Teacher row */
+    #AF_GrList .ngu-teacher {
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 7px;
+        padding: 8px 12px;
+        font-size: 12px; font-weight: 600;
+        color: #cfe0ff;
+        background: #1b2a44;
+        border: 1px solid #3b5179;
+        border-left: 3px solid #4f8cff;
+        border-radius: 10px;
     }
+    #AF_GrList .ngu-teacher-icon { color: #4f8cff; font-size: 10px; }
 
-    .ngu-crm-btn {
-        background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04));
-        color: var(--ngu-purple);
-        border: 1px solid rgba(139, 92, 246, 0.35);
-        padding: 5px 12px;
-        border-radius: var(--ngu-radius-sm);
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 1.5px;
-        cursor: pointer;
-        transition: var(--ngu-transition);
-        text-transform: uppercase;
-        flex-shrink: 0;
-        font-family: inherit;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .ngu-crm-btn:hover {
-        background: linear-gradient(135deg, var(--ngu-purple-core), rgba(139,92,246,0.8));
-        color: #fff;
-        box-shadow: 0 0 25px rgba(139, 92, 246, 0.3);
-        transform: scale(1.08);
-        border-color: transparent;
-    }
-
-    .ngu-info {
-        flex: 1;
+    /* Student card */
+    #AF_GrList .ngu-student-card {
+        display: flex; align-items: center; gap: 10px;
         min-width: 0;
+        margin-bottom: 7px;
+        padding: 9px 12px;
+        background: #1a2536;
+        border: 1px solid #344258;
+        border-left: 3px solid #617fbd;
+        border-radius: 10px;
+        animation: ngu-slide-up .25s ease both;
+        transition: background-color .16s ease, border-color .16s ease;
     }
+    #AF_GrList .ngu-student-card:hover { background: #23334b; border-color: #6685be; border-left-color: #92afff; }
 
-    .ngu-name {
-        color: #f1f5fc;
-        font-weight: 700;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        letter-spacing: 0.2px;
-    }
-
-    .ngu-meta {
-        color: #94a3b8;
-        font-size: 11px;
-        margin-top: 4px;
+    #AF_GrList .ngu-index {
+        flex: 0 0 22px;
+        font-size: 11px; font-weight: 700;
+        color: #6f7f99;
         font-family: 'JetBrains Mono', monospace;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
     }
-
-    .ngu-meta:hover {
-        color: var(--ngu-cyan);
-        text-shadow: 0 0 10px rgba(34,211,238,0.2);
+    #AF_GrList .ngu-avatar {
+        width: 32px; height: 32px; flex: 0 0 32px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700;
+        color: #dfe8ff;
+        background: #293e67;
+        border: 1px solid #536fa7;
+        border-radius: 50%;
     }
-
-    .ngu-meta::after {
-        content: '⎘';
-        font-size: 10px;
-        opacity: 0;
-        transition: opacity 0.2s;
+    #AF_GrList .ngu-info { flex: 1; min-width: 0; }
+    #AF_GrList .ngu-name {
+        font-size: 13px; font-weight: 600; color: #f0f4fb;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
-    .ngu-meta:hover::after {
-        opacity: 0.6;
-    }
-
-    .ngu-service-tag {
-        color: #94a3b8;
-        font-size: 10px;
-        background: rgba(30, 40, 60, 0.6);
-        padding: 5px 10px;
-        border-radius: var(--ngu-radius-sm);
-        font-family: 'JetBrains Mono', monospace;
-        white-space: nowrap;
-        border: 1px solid rgba(48, 56, 72, 0.4);
-        letter-spacing: 0.5px;
-        font-weight: 500;
-    }
-
-    /* === TEACHER === */
-    .ngu-teacher {
-        margin-top: 20px;
-        padding: 16px;
-        background: linear-gradient(135deg, rgba(52,211,153,0.06), rgba(52,211,153,0.02));
-        color: var(--ngu-green);
-        font-weight: 800;
-        text-align: center;
-        border: 1px solid rgba(52, 211, 153, 0.15);
-        border-radius: var(--ngu-radius);
-        font-size: 12px;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        position: relative;
-        overflow: hidden;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .ngu-teacher::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(52,211,153,0.08), transparent);
-        animation: ngu-shimmer 4s infinite;
-    }
-
-    .ngu-teacher-icon {
+    #AF_GrList .ngu-meta {
         display: inline-block;
-        margin-right: 8px;
-        animation: ngu-float 3s ease-in-out infinite;
-    }
-
-    /* === STATUSES === */
-    .ngu-status {
-        padding: 32px 24px;
-        text-align: center;
-        color: var(--ngu-text-secondary);
-        font-size: 14px;
-        border-radius: var(--ngu-radius);
-        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-        border: 1px dashed rgba(48, 56, 72, 0.3);
-        margin-top: 4px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .ngu-status.error {
-        color: var(--ngu-red);
-        border-color: rgba(248, 113, 133, 0.25);
-        background: linear-gradient(135deg, rgba(248,113,133,0.04), rgba(248,113,133,0.01));
-        text-shadow: 0 0 15px rgba(248, 113, 133, 0.15);
-    }
-
-    .ngu-status.empty {
-        border-style: dashed;
-        border-color: rgba(251, 191, 36, 0.2);
-        color: var(--ngu-gold);
-    }
-
-    .ngu-status-icon {
-        font-size: 28px;
-        margin-bottom: 10px;
-        display: block;
-        opacity: 0.4;
-        filter: saturate(0.5);
-    }
-
-    .ngu-status-title {
-        font-weight: 700;
-        font-size: 15px;
-        margin-bottom: 4px;
-    }
-
-    .ngu-status-desc {
-        font-size: 13px;
-        color: #94a3b8;
-    }
-
-    /* === COUNTERS === */
-    .ngu-counter {
-        display: flex;
-        justify-content: center;
-        gap: 24px;
-        padding: 12px 20px;
-        margin: 0 20px 16px;
-        background: rgba(34, 211, 238, 0.03);
-        border: 1px solid rgba(34, 211, 238, 0.08);
-        border-radius: var(--ngu-radius-sm);
-    }
-
-    .ngu-counter-item {
-        text-align: center;
-    }
-
-    .ngu-counter-value {
-        font-size: 20px;
-        font-weight: 900;
-        color: var(--ngu-cyan);
+        margin-top: 2px;
+        font-size: 11px;
+        color: #8fa0bd;
         font-family: 'JetBrains Mono', monospace;
-        text-shadow: 0 0 15px rgba(34,211,238,0.2);
+        cursor: copy;
+        transition: color .15s;
+    }
+    #AF_GrList .ngu-meta:hover { color: #a9c0ff; }
+    #AF_GrList .ngu-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin-top: 2px; }
+    #AF_GrList .ngu-meta-row .ngu-meta { margin-top: 0; }
+    #AF_GrList .ngu-start {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 1px 7px;
+        font-size: 10.5px; font-weight: 600;
+        color: #9fe0bd;
+        background: rgba(52, 211, 153, .08);
+        border: 1px solid rgba(52, 211, 153, .28);
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        white-space: nowrap;
     }
 
-    .ngu-counter-label {
-        font-size: 10px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-top: 4px;
-        font-weight: 700;
+    #AF_GrList .ngu-crm-btn {
+        flex: 0 0 auto;
+        height: 28px;
+        padding: 0 10px;
+        color: #cfe0ff;
+        background: #293e67;
+        border: 1px solid #536fa7;
+        border-radius: 8px;
+        cursor: pointer;
+        font: 700 11px/1 inherit;
+        font-family: inherit;
+        transition: all .16s ease;
     }
+    #AF_GrList .ngu-crm-btn:hover { color: #fff; background: #395892; border-color: #87a9ed; transform: translateY(-1px); }
+
+    #AF_GrList .ngu-service-tag {
+        max-width: 90px;
+        padding: 2px 6px;
+        font-size: 10px;
+        color: #c8d6f4;
+        background: #293a56;
+        border: 1px solid #435b80;
+        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* Status (error / empty) */
+    #AF_GrList .ngu-status {
+        padding: 18px 14px;
+        text-align: center;
+        background: #182335;
+        border: 1px solid #364660;
+        border-radius: 12px;
+    }
+    #AF_GrList .ngu-status.error { background: rgba(255, 116, 140, .07); border-color: rgba(255, 116, 140, .3); }
+    #AF_GrList .ngu-status.empty { border-style: dashed; }
+    #AF_GrList .ngu-status-icon { display: block; font-size: 20px; margin-bottom: 6px; color: #a6b4cb; }
+    #AF_GrList .ngu-status.error .ngu-status-icon { color: #ff8fa3; }
+    #AF_GrList .ngu-status-title { font-size: 13px; font-weight: 700; color: #fff; }
+    #AF_GrList .ngu-status-desc { margin-top: 4px; font-size: 12px; color: #a6b4cb; word-break: break-word; }
 </style>
 `;
 // === HTML STRUCTURE ===
@@ -675,17 +280,17 @@ var win_GrList = `
             <div class="ngu-title-group">
                 <div class="ngu-title-icon"></div>
                 <div>
-                    <div class="ngu-title">Group information</div>
-                    <div class="ngu-subtitle">Список участников группы</div>
+                    <div class="ngu-title">Состав группы</div>
+                    <div class="ngu-subtitle">Участники по ID группы</div>
                 </div>
             </div>
-            <button class="ngu-btn ngu-btn-danger" id="ngu-hide-btn">✕ Close</button>
+            <button class="ngu-btn ngu-btn-danger" id="ngu-hide-btn" title="Закрыть">✕</button>
         </div>
         <div class="ngu-controls">
             <div class="ngu-input-wrap" style="flex: 1;">
                 <input id="ngu-input-id" class="ngu-input" placeholder="Введите ID группы..." autocomplete="off" type="text">
             </div>
-            <button class="ngu-btn ngu-btn-primary" id="ngu-get-btn">Get Info</button>
+            <button class="ngu-btn ngu-btn-primary" id="ngu-get-btn">Найти</button>
         </div>
         <div id="ngu-results" class="ngu-content"></div>
     </div>
@@ -754,6 +359,13 @@ const fetchViaBackground = (payload) => new Promise((resolve) => {
 });
 
 // === MAIN LOGIC ===
+
+// "2026-09-01T00:00:00+00:00" → "01.09.2026". Берём дату из строки как есть,
+// без new Date(), чтобы часовой пояс не сдвигал день.
+const nguFormatDate = (value) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+    return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
+};
 
 // Экранирование данных API перед вставкой в innerHTML
 const nguEsc = (s) => String(s)
@@ -853,7 +465,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 </div>
                 <div class="ngu-counter-item">
                     <div class="ngu-counter-value">${nguEsc(groupId)}</div>
-                    <div class="ngu-counter-label">Group ID</div>
+                    <div class="ngu-counter-label">ID группы</div>
                 </div>
             </div>`;
 
@@ -870,6 +482,8 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
             // filter(Boolean) — защита от двойных пробелов (иначе в аватар попадает «undefined»)
             const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
+            const startDate = nguFormatDate(student.learningStartDate);
+
             const card = document.createElement('div');
             card.className = 'ngu-student-card';
             card.style.animationDelay = `${index * 60}ms`;
@@ -879,7 +493,10 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 <div class="ngu-avatar">${nguEsc(initials)}</div>
                 <div class="ngu-info">
                     <div class="ngu-name">${nguEsc(name)}</div>
-                    <div class="ngu-meta" data-copy="${nguEsc(student.userId)}">ID: ${nguEsc(student.userId)}</div>
+                    <div class="ngu-meta-row">
+                        <span class="ngu-meta" data-copy="${nguEsc(student.userId)}">ID: ${nguEsc(student.userId)}</span>
+                        ${startDate ? `<span class="ngu-start" title="Дата начала обучения">📅 ${nguEsc(startDate)}</span>` : ''}
+                    </div>
                 </div>
                 <button class="ngu-crm-btn" data-userid="${nguEsc(student.userId)}">CRM</button>
                 <span class="ngu-service-tag">${nguEsc(student.educationServiceId)}</span>
@@ -916,21 +533,5 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
     }
 });
 
-// === BIND BUTTON (fallback) ===
-(function initBinding() {
-    const tryBind = () => {
-        const btn = document.getElementById('GrListData');
-        if (btn && !btn._nguBound) {
-            btn.onclick = getGrListDataButtonPress;
-            btn._nguBound = true;
-            return true;
-        }
-        return false;
-    };
-
-    if (!tryBind()) {
-        const obs = new MutationObserver(() => { if (tryBind()) obs.disconnect(); });
-        obs.observe(document.body, { childList: true, subtree: true });
-        setTimeout(() => obs.disconnect(), 15000);
-    }
-})();
+// Клик по #GrListData обрабатывается делегированно в Link_Hybrid.js (ACTIONS.getGrListDataButtonPress).
+// Раньше здесь был ещё и btn.onclick — из-за двойного вызова окно открывалось и сразу закрывалось.
