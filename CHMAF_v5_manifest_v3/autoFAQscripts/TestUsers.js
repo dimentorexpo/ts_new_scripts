@@ -465,6 +465,20 @@
         return;
     }
 
+    // Настройка «Новые иконки → Окно У/П»: SVG (по умолчанию) или прежние эмодзи
+    const LEGACY_EMOJI = { openuserinfo: '🔍', sidcode: '👨‍🎓', tidcode: '👽', TestRooms: '🎲', link2lessbtn: '📟' };
+    const iconButtons = [UI.searchBtn, UI.studentBtn, UI.teacherBtn, UI.testRoomsBtn, UI.linkToLessonBtn];
+    iconButtons.forEach(btn => { btn.dataset.svgIcon = btn.innerHTML; });
+    const applyTestUserIcons = () => {
+        const useNew = localStorage.getItem('newIconsTestUser') !== '0';
+        iconButtons.forEach(btn => {
+            if (useNew) btn.innerHTML = btn.dataset.svgIcon;
+            else btn.textContent = LEGACY_EMOJI[btn.id] || '';
+        });
+    };
+    applyTestUserIcons();
+    window.addEventListener('chmaf:icons-mode', applyTestUserIcons);
+
     window.__testUsersModuleInitialized = true;
 
     // Уведомления: сначала существующая функция проекта,

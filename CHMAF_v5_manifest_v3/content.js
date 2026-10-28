@@ -675,8 +675,16 @@ function tplTabKey(title) {
     return null;
 }
 function decorateTemplateTab(btn, title) {
-    const key = tplTabKey(title);
-    if (!key) { btn.textContent = title; return; }
+    btn.dataset.tabTitle = title;
+    const key = localStorage.getItem('newIconsTabs') === '0' ? null : tplTabKey(title);
+    if (!key) {
+        btn.classList.remove('tpl-tab-svg');
+        btn.style.removeProperty('--tpl-tab-color');
+        btn.removeAttribute('aria-label');
+        btn.removeAttribute('title');
+        btn.textContent = title;
+        return;
+    }
     const meta = TPL_TAB_META[key];
     btn.classList.add('tpl-tab-svg');
     btn.style.setProperty('--tpl-tab-color', meta.color);
@@ -690,6 +698,13 @@ function decorateTemplateTab(btn, title) {
     // Исходное название — для textContent (AFhelper, поиск, активная вкладка)
     btn.querySelector('.tpl-tab-src').textContent = meta.label ? '' : String(title).trim();
 }
+
+// Переключатель в настройках «Новые иконки → Вкладки шаблонов»
+window.addEventListener('chmaf:icons-mode', () => {
+    document.querySelectorAll('#pages [id$="_page_button"]').forEach((btn) => {
+        if (btn.dataset.tabTitle != null) decorateTemplateTab(btn, btn.dataset.tabTitle);
+    });
+});
 
 // Разбор таблицы в лёгкий кэш и показ вкладки (той же, что была открыта)
 function refreshTemplates() {

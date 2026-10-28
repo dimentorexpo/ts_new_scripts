@@ -1275,6 +1275,10 @@ function injectFABStyles() {
     line-height: 0;
 }
 
+.fab-premium .fab-icon.is-emoji {
+    line-height: 1;
+}
+
 .fab-premium .fab-icon svg {
     width: 21px;
     height: 21px;
@@ -1447,6 +1451,30 @@ const FAB_ICONS = Object.freeze({
     wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'
 });
 
+// Прежние эмодзи — для настройки «Новые иконки → Правая панель» = выкл
+const FAB_LEGACY_EMOJI = Object.freeze({
+    puzzle: '🧩', books: '📚', grid: '👺', history: '☢',
+    calendar: '📅', idcard: '⚜', lightbulb: '💡', wrench: '🛠'
+});
+
+const useNewFabIcons = () => localStorage.getItem('newIconsFab') !== '0';
+
+function renderFabIcon(iconElement, icon) {
+    if (useNewFabIcons() && FAB_ICONS[icon]) {
+        iconElement.classList.remove('is-emoji');
+        iconElement.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FAB_ICONS[icon]}</svg>`;
+    } else {
+        iconElement.classList.add('is-emoji');
+        iconElement.textContent = FAB_LEGACY_EMOJI[icon] || icon;
+    }
+}
+
+window.addEventListener('chmaf:icons-mode', () => {
+    document.querySelectorAll('#rightPanel .fab-premium[data-icon] .fab-icon').forEach(el => {
+        renderFabIcon(el, el.closest('.fab-premium').dataset.icon);
+    });
+});
+
 function createFAB(config) {
     const {
         id,
@@ -1466,11 +1494,8 @@ function createFAB(config) {
 
     const iconElement = document.createElement('span');
     iconElement.className = 'fab-icon';
-    if (FAB_ICONS[icon]) {
-        iconElement.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FAB_ICONS[icon]}</svg>`;
-    } else {
-        iconElement.textContent = icon;
-    }
+    button.dataset.icon = icon;
+    renderFabIcon(iconElement, icon);
 
     const tooltip = document.createElement('span');
     tooltip.className = 'fab-tooltip';

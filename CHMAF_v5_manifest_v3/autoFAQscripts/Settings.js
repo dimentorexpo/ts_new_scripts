@@ -24,7 +24,11 @@ async function init_settings() {
         sound_str: 'https://grumstv.github.io/Sounds/msg.mp3',
         appBgColor: '#FFFFFF', // Дефолтный белый цвет фона
         missingTagColor: '#ff1744', // Дефолтный цвет окна "Нет темы и тега"
-        enLangHue: 265 // Оттенок EN-режима шаблонов (0–360)
+        enLangHue: 265, // Оттенок EN-режима шаблонов (0–360)
+        // Новые SVG-иконки (1) или прежние эмодзи (0)
+        newIconsFab: 1,
+        newIconsTabs: 1,
+        newIconsTestUser: 1
     };
 
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
@@ -3148,6 +3152,14 @@ async function init_settings() {
                 <div class="set-section-title">🎨 Оформление</div>
                 <div class="set-group">
                     <div class="set-row">
+                        <span class="set-label" title="Выключите, чтобы вернуть прежние эмодзи">Новые иконки</span>
+                    </div>
+                    <div class="set-toggles">
+                        <label class="set-toggle" title="Кнопки справа: шаблоны, темы, меню, история…"><input type="checkbox" id="newIconsFab"> Правая панель</label>
+                        <label class="set-toggle" title="Вкладки Шаб / Win / Mac / iOS / Android…"><input type="checkbox" id="newIconsTabs"> Вкладки шаблонов</label>
+                        <label class="set-toggle" title="Окно логинера с тестовыми У/П"><input type="checkbox" id="newIconsTestUser"> Окно У/П</label>
+                    </div>
+                    <div class="set-row">
                         <span class="set-label">Фон диалогов</span>
                         <div class="set-presets">
                             <input type="color" id="appBgColorPicker" title="Свой цвет">
@@ -3356,6 +3368,11 @@ async function init_settings() {
         bindToggle('dblhidewindow', 'dblhidewindow');
         bindToggle('brnotificatios', 'brnotificatios');
         bindToggle('clearlessoninfo', 'clearlessoninfo');
+
+        const iconsChanged = () => window.dispatchEvent(new CustomEvent('chmaf:icons-mode'));
+        bindToggle('newIconsFab', 'newIconsFab', iconsChanged);
+        bindToggle('newIconsTabs', 'newIconsTabs', iconsChanged);
+        bindToggle('newIconsTestUser', 'newIconsTestUser', iconsChanged);
 
         bindToggle('hidelpmwindow', 'disablelpmwindow', (v) => {
             const lpm = document.getElementById('TestUsers');
