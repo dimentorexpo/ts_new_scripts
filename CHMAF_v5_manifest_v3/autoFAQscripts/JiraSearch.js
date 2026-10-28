@@ -1,324 +1,335 @@
-// Добавляем уникальные CSS-стили для эффекта Glassmorphism
+// ============================================================
+// JiraSearch — стиль Corporate Graphite Dark (как Queue.js), SVG-иконки
+// ============================================================
 
 let requesttojiratext;
 // Топ-уровень модуля: битый JSON здесь валил бы весь JiraSearch,
 // поэтому только через защитный readJsonLocal (из utils.js)
 let favissues = readJsonLocal('bugsarray', []);
 
-// Добавляем уникальные CSS-стили
+// --- SVG-иконки (Lucide, stroke = currentColor) ---
+const JIRA_ICO_PATHS = {
+    close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+    eraser: '<path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+    help: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+    list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+    bugOff: '<path d="M15 7.13V6a3 3 0 0 0-5.14-2.1L8 2"/><path d="M14.12 3.88 16 2"/><path d="M22 13h-4v-2a4 4 0 0 0-4-4h-1.3"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="m2 2 20 20"/><path d="M7.7 7.7A4 4 0 0 0 6 11v3a6 6 0 0 0 11.13 3.13"/><path d="M12 20v-8"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/>',
+    sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/>',
+    code: '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/>',
+    lifebuoy: '<circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/><circle cx="12" cy="12" r="4"/>',
+    apple: '<path d="M12 6.528V3a1 1 0 0 1 1-1"/><path d="M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"/>',
+    phone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
+    heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>'
+};
+const jIco = (name, cls = 'jiras-ico') =>
+    `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${JIRA_ICO_PATHS[name] || ''}</svg>`;
+
+/** Сердечко «в избранном»: заливка через класс, иконка одна. */
+function setJiraHeart(btn, isFav) {
+    if (!btn) return;
+    btn.classList.toggle('is-fav', isFav);
+    btn.title = isFav ? 'Удалить из избранного' : 'В избранное';
+}
+
 const glassStylesJiraS = `
 <style>
-    .jiras-glass-wrapper {
+    /* Шрифты (Inter, JetBrains Mono) загружаются один раз в design-system.css */
+    #AF_Jira .jiras-glass-wrapper,
+    #AF_Jira .jiras-glass-wrapper * { box-sizing: border-box; }
+
+    #AF_Jira .jiras-glass-wrapper {
         display: flex;
         flex-direction: column;
-        width: 650px;
-        background: rgba(30, 35, 45, 0.65);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        padding: 15px;
-        color: bisque;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        width: min(650px, calc(100vw - 24px));
+        padding: 18px;
+        color: #edf2fb;
+        background:
+            radial-gradient(circle at 95% 0%, rgba(105, 137, 238, .13), transparent 40%),
+            #111827;
+        border: 1px solid #344258;
+        border-radius: 18px;
+        box-shadow: 0 26px 70px rgba(3, 9, 22, .52), inset 0 1px rgba(255, 255, 255, .06);
+        font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        font-size: 13px;
     }
 
-.jiras-glass-header {
+    #AF_Jira .jiras-ico { width: 17px; height: 17px; display: block; flex: 0 0 auto; transition: transform .2s cubic-bezier(.3, 1.4, .6, 1), color .16s ease; }
+
+    /* === HEADER === */
+    #AF_Jira .jiras-glass-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        gap: 8px;
+        margin-bottom: 14px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #344258;
+        cursor: move;
     }
-
-    /* Статус токена - сделаем его более заметным */
-    #searchjiratknstatus {
-        font-weight: bold;
-        text-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+    #AF_Jira .jiras-title {
+        display: flex; align-items: center; gap: 10px;
+        flex: 1; min-width: 0;
     }
-
-
-
-.jiras-glass-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    #AF_Jira .jiras-title-name { font-size: 15px; font-weight: 700; color: #fff; }
+    #AF_Jira .jiras-token {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 6px 11px;
+        color: #a6b4cb;
+        background: #182335;
+        border: 1px solid #364660;
         border-radius: 10px;
-        color: rgba(255, 228, 196, 0.8);
-        padding: 8px 4px;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .03em; text-transform: uppercase;
+    }
+    #AF_Jira #searchjiratknstatus {
+        display: inline-flex; align-items: center; gap: 6px;
+        color: #7c8aa3;
+        font-family: 'JetBrains Mono', 'SF Mono', monospace;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+    #AF_Jira #searchjiratknstatus::before {
+        content: '';
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 8px currentColor;
+    }
+    #AF_Jira #searchjiratknstatus.is-ok  { color: #4ade80; }
+    #AF_Jira #searchjiratknstatus.is-bad { color: #ff7a8f; }
+
+    /* Квадратные кнопки-иконки */
+    #AF_Jira .jiras-glass-btn-icon {
+        width: 36px; height: 36px; min-width: 36px;
+        padding: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #dce5f5;
+        background: #1b283c;
+        border: 1px solid #3c4d68;
+        border-radius: 9px;
         cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        aspect-ratio: 1.5 / 1; /* Делает кнопки одинаковыми прямоугольниками */
-        font-size: 11px;
-        font-weight: 500;
-        position: relative;
-        overflow: hidden;
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
     }
-        .jiras-glass-btn::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0; height: 50%;
-        background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
-        pointer-events: none;
-    }
+    #AF_Jira .jiras-glass-btn-icon:hover { color: #fff; background: #293b56; border-color: #7799e2; transform: translateY(-1px); }
+    #AF_Jira #RefreshJiraStatus .jiras-ico { color: #7dd3fc; }
+    #AF_Jira #ClearJiraData .jiras-ico     { color: #f0c674; }
+    #AF_Jira #jirainstr .jiras-ico         { color: #a9c0ff; }
+    #AF_Jira #RefreshJiraStatus:hover .jiras-ico { transform: rotate(90deg); }
+    #AF_Jira #ClearJiraData:hover .jiras-ico     { transform: rotate(-12deg) translateX(-1px); }
+    #AF_Jira #jirainstr:hover .jiras-ico         { transform: scale(1.12); }
 
-    /* Эффект при наведении */
-.jiras-glass-btn:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: rgba(255, 255, 255, 0.25);
-        transform: scale(1.02);
-        color: #fff;
+    #AF_Jira #hideMej {
+        color: #ffb0be;
+        background: rgba(255, 116, 140, .08);
+        border-color: rgba(255, 116, 140, .3);
     }
+    #AF_Jira #hideMej:hover { color: #fff; background: rgba(255, 116, 140, .18); border-color: rgba(255, 116, 140, .6); }
 
-    /* Активная плитка (выбранный фильтр) */
-.jiras-glass-btn.active-query {
-        background: rgba(60, 179, 113, 0.2);
-        border-color: rgba(60, 179, 113, 0.5);
-        color: #00FA9A;
-        box-shadow: inset 0 0 10px rgba(60, 179, 113, 0.1);
-    }
-        .jiras-glass-btn.glass-tool-line {
-            padding:18px;
-        }
-
-        /* Кнопки-иконки (🔄, 🧹, ❓) */
-    .jiras-glass-btn-icon {
-        width: 36px !important;
-        height: 36px !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px !important;
-        border-radius: 8px !important;
-        background: rgba(255, 255, 255, 0.08) !important;
-        aspect-ratio: 1 / 1 !important;
-        transition: all 0.2s ease;
-    }
-
-    /* Специфические цвета при наведении для каждой кнопки */
-    #RefreshJiraStatus:hover {
-        border-color: #00FA9A !important;
-        box-shadow: 0 0 10px rgba(0, 250, 154, 0.2);
-    }
-
-    #ClearJiraData:hover {
-        border-color: #FFD700 !important;
-        box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
-    }
-
-    #jirainstr:hover {
-        border-color: #87CEEB !important;
-        box-shadow: 0 0 10px rgba(135, 206, 235, 0.2);
-    }
-
-
-           /* Стили для иконок внутри плиток */
-.jiras-glass-btn-icon-large {
-        font-size: 16px;
-        margin-bottom: 4px;
-    }
-            /* Адаптивность для маленьких экранов (если нужно) */
-    @media (max-width: 500px) {
-        .jiras-glass-toolbar {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-.jiras-glass-toolbar {
+    /* === ФИЛЬТРЫ === */
+    #AF_Jira .jiras-glass-toolbar {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    #AF_Jira .glass-tool-line {
+        --tc: #8fb4ff; --tc-rgb: 143, 180, 255;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
         gap: 6px;
-        margin-bottom: 15px;
+        min-height: 62px;
+        padding: 10px 6px;
+        color: #c3cee2;
+        background: #1a2536;
+        border: 1px solid #344258;
+        border-radius: 12px;
+        cursor: pointer;
+        font: 600 12px/1 inherit;
+        font-family: inherit;
+        transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease, color .16s ease;
+    }
+    #AF_Jira .glass-tool-line .jiras-ico { width: 20px; height: 20px; color: var(--tc); }
+    #AF_Jira .glass-tool-line:hover {
+        color: #fff;
+        background: #23334b;
+        border-color: rgba(var(--tc-rgb), .7);
+        transform: translateY(-1px);
+    }
+    #AF_Jira .glass-tool-line:hover .jiras-ico { transform: scale(1.12); }
+    #AF_Jira .glass-tool-line.active-query {
+        color: #fff;
+        background: linear-gradient(180deg, rgba(var(--tc-rgb), .22), rgba(var(--tc-rgb), .08));
+        border-color: rgba(var(--tc-rgb), .8);
+        box-shadow: 0 0 0 3px rgba(var(--tc-rgb), .14), 0 6px 16px rgba(var(--tc-rgb), .16);
+    }
+    #AF_Jira .glass-tool-line.active-query .jiras-ico { filter: drop-shadow(0 0 5px rgba(var(--tc-rgb), .7)); }
+
+    #AF_Jira #defaultQuery   { --tc: #8fb4ff; --tc-rgb: 143, 180, 255; }
+    #AF_Jira #ZBPQuery       { --tc: #ff7a8f; --tc-rgb: 255, 122, 143; }
+    #AF_Jira #freshQuery     { --tc: #4ade80; --tc-rgb: 74, 222, 128; }
+    #AF_Jira #customQuery    { --tc: #c4a8ff; --tc-rgb: 196, 168, 255; }
+    #AF_Jira #PSquery        { --tc: #fb923c; --tc-rgb: 251, 146, 60; }
+    #AF_Jira #getiosbugs     { --tc: #e2e8f0; --tc-rgb: 226, 232, 240; }
+    #AF_Jira #getandroidbugs { --tc: #a3e635; --tc-rgb: 163, 230, 53; }
+    #AF_Jira #favouriteBugs  { --tc: #f472b6; --tc-rgb: 244, 114, 182; }
+
+    @media (max-width: 500px) {
+        #AF_Jira .jiras-glass-toolbar { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* === ПОЛЯ === */
+    #AF_Jira .jiras-glass-input-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    #AF_Jira .jiras-search-line { display: flex; gap: 8px; }
+    #AF_Jira .jiras-glass-input {
         width: 100%;
-        box-sizing: border-box;
-    }
-
-    .jiras-glass-input-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
-
-    .jiras-glass-input {
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        color: #fff;
-        padding: 10px;
+        min-height: 36px;
+        padding: 8px 12px;
+        color: #edf2fb;
+        background: #0d1625;
+        border: 1px solid #3a4961;
+        border-radius: 9px;
         outline: none;
-        width: 96%;
-        text-align: center;
-        box-sizing: border-box;
-        transition: border 0.3s ease, background 0.3s ease;
-    }
-
-    .jiras-glass-input::placeholder {
-        color: rgba(255,255,255,0.5);
-    }
-
-    .jiras-glass-input:focus {
-        border-color: rgba(60, 179, 113, 0.6);
-        background: rgba(0, 0, 0, 0.35);
-        box-shadow: 0 0 8px rgba(60, 179, 113, 0.2);
-    }
-
-    .jiras-glass-textarea {
-        resize: vertical;
-        min-height: 40px;
-    }
-
-    .jiras-glass-scroll {
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 5px;
-        margin-bottom: 10px;
-    }
-
-    .jiras-glass-scroll::-webkit-scrollbar {
-        width: 6px;
-    }
-    .jiras-glass-scroll::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 4px;
-    }
-    .jiras-glass-scroll::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 4px;
-    }
-    .jiras-glass-scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.35);
-    }
-
-    /* ==================== PREMIUM ISSUE ROW ==================== */
-    .jiras-glass-issue-row {
-        margin-bottom: 5px;
-        padding: 8px 12px;           /* чуть увеличен для комфорта */
-        border-radius: 10px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-left: 3px solid rgba(60, 179, 113, 0.7);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        display: flex;
-        align-items: flex-start;     /* важно для переноса текста */
-        flex-wrap: nowrap;
-        gap: 8px;                    /* чуть больше воздуха между элементами */
-        line-height: 1.4;
-        position: relative;
-        overflow: hidden;
-        align-items:anchor-center;
-    }
-
-    /* Hover эффекты (сохранены и улучшены) */
-    .jiras-glass-issue-row:hover {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
-        border-left-color: #00FA9A;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(60, 179, 113, 0.2);
-    }
-
-    /* Красивый блик стекла при наведении */
-    .jiras-glass-issue-row::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -150%;
-        width: 50%;
-        height: 100%;
-        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.12), transparent);
-        transform: skewX(-20deg);
-        transition: 0s;
-        pointer-events: none;
-    }
-
-    .jiras-glass-issue-row:hover::before {
-        left: 150%;
-        transition: 0.75s ease-in-out;
-    }
-
-    /* Стили для ссылок (улучшены) */
-    .jiras-glass-issue-row a {
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        color: #ffd0c4;
-        text-decoration: none;
         font-size: 13px;
-        word-break: break-word;
-        white-space: normal;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-        transition: color 0.2s, text-shadow 0.2s;
+        font-family: inherit;
+        transition: background .2s, border-color .2s, box-shadow .2s;
     }
+    #AF_Jira .jiras-glass-input::placeholder { color: #6f7f99; }
+    #AF_Jira .jiras-glass-input:hover { background: #142034; border-color: #657caa; }
+    #AF_Jira .jiras-glass-input:focus { background: #142034; border-color: #829fff; box-shadow: 0 0 0 3px rgba(110, 152, 247, .16); }
+    #AF_Jira .jiras-glass-textarea { resize: vertical; min-height: 54px; font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 12px; }
 
-    .jiras-glass-issue-row a:hover {
-        color: #fff !important;
-        text-shadow: 0 0 8px rgba(255,228,196, 0.6);
+    #AF_Jira #getJiraTasks {
+        width: auto; padding: 0 16px; gap: 7px;
+        color: #eef3ff;
+        background: #4268c9;
+        border-color: #7293ed;
+        box-shadow: 0 5px 15px rgba(58, 96, 205, .22);
+        font: 600 13px/1 inherit;
+        font-family: inherit;
     }
+    #AF_Jira #getJiraTasks:hover { background: #547ce1; border-color: #a2b9fa; box-shadow: 0 6px 19px rgba(58, 96, 205, .3); }
+    #AF_Jira #getJiraTasks .jiras-ico { width: 16px; height: 16px; }
 
-    /* Иконки-кнопки */
-    .jiras-glass-icon-btn {
+    /* === СПИСОК === */
+    #AF_Jira .jiras-glass-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 6px;
+        margin-bottom: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: #536a8e transparent;
+    }
+    #AF_Jira .jiras-glass-scroll::-webkit-scrollbar { width: 6px; }
+    #AF_Jira .jiras-glass-scroll::-webkit-scrollbar-track { background: transparent; }
+    #AF_Jira .jiras-glass-scroll::-webkit-scrollbar-thumb { background: #536a8e; border-radius: 4px; }
+
+    #AF_Jira .jiras-glass-issue-row {
         display: flex;
         align-items: center;
-        justify-content: center;
-        width: 26px;
-        height: 26px;
-        border-radius: 6px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid transparent;
-        cursor: pointer;
-        flex-shrink: 0;
-        transition: all 0.2s ease;
+        gap: 8px;
+        min-width: 0;
+        margin-bottom: 7px;
+        padding: 8px 10px;
+        background: #1a2536;
+        border: 1px solid #344258;
+        border-left: 3px solid #617fbd;
+        border-radius: 10px;
+        line-height: 1.4;
+        transition: background-color .16s ease, border-color .16s ease;
     }
+    #AF_Jira .jiras-glass-issue-row:hover { background: #23334b; border-color: #6685be; border-left-color: #92afff; }
 
-    .jiras-glass-icon-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transform: scale(1.15);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    /* Бейдж количества */
-    .newcount {
-        background: linear-gradient(135deg, rgba(60,179,113,0.8), rgba(46,139,87,0.8));
-        box-shadow: inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.2);
-        text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-        min-width: 26px;
-        width: fit-content;
-        height: 26px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 5px;
-        font-weight: 700;
-        border-radius: 8px;
-        font-size: 11px;
-        color: #fff;
-        flex-shrink: 0;
-    }
-
-    .jiras-glass-page-btn {
+    #AF_Jira .jiras-glass-issue-row a {
         flex: 1;
-        background: rgba(72, 61, 139, 0.5);
-        text-align: center;
-        border: 1px solid rgba(70, 130, 180, 0.5);
-        border-radius: 6px;
-        margin: 0 4px;
-        padding: 6px 0;
+        min-width: 0;
+        color: #f0f4fb;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        word-break: break-word;
+        transition: color .15s;
+    }
+    #AF_Jira .jiras-glass-issue-row a:hover { color: #a9c0ff; text-decoration: underline; text-underline-offset: 3px; }
+
+    #AF_Jira .jiras-priority-img { width: 18px; height: 18px; flex: 0 0 18px; }
+    #AF_Jira .jiras-prio-dot { width: 18px; height: 18px; flex: 0 0 18px; display: inline-flex; align-items: center; justify-content: center; }
+    #AF_Jira .jiras-prio-dot::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--pc, #94a3b8); box-shadow: 0 0 6px var(--pc, #94a3b8); }
+
+    /* Кнопки в строке */
+    #AF_Jira .jiras-glass-icon-btn {
+        width: 28px; height: 28px; flex: 0 0 28px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #a6b4cb;
+        background: #1b283c;
+        border: 1px solid #364660;
+        border-radius: 8px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        font: 700 11px/1 'JetBrains Mono', monospace;
+        transition: all .16s ease;
+    }
+    #AF_Jira .jiras-glass-icon-btn .jiras-ico { width: 15px; height: 15px; }
+    #AF_Jira .jiras-glass-icon-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; transform: translateY(-1px); }
+    #AF_Jira .jiras-btn-chat .jiras-ico { color: #8fb4ff; }
+    #AF_Jira .jiras-btn-plus { color: #4ade80; }
+    #AF_Jira .jiras-btn-plus:hover { border-color: #4ade80; }
+    #AF_Jira .jiras-btn-del .jiras-ico { color: #ff8fa3; }
+    #AF_Jira .jiras-btn-del:hover { border-color: #ff7a8f; background: rgba(255, 116, 140, .14); }
+    #AF_Jira .jiras-btn-heart .jiras-ico { color: #8c97ad; }
+    #AF_Jira .jiras-btn-heart:hover .jiras-ico { color: #f472b6; transform: scale(1.15); }
+    #AF_Jira .jiras-btn-heart.is-fav { border-color: rgba(244, 114, 182, .55); background: rgba(244, 114, 182, .12); }
+    #AF_Jira .jiras-btn-heart.is-fav .jiras-ico { color: #f472b6; fill: #f472b6; filter: drop-shadow(0 0 4px rgba(244, 114, 182, .6)); }
+
+    /* Счётчик репортов */
+    #AF_Jira .newcount {
+        min-width: 30px; height: 24px;
+        padding: 0 6px;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        color: #a9c0ff;
+        background: #293a56;
+        border: 1px solid #435b80;
+        border-radius: 7px;
+        font: 700 11px/1 'JetBrains Mono', 'SF Mono', monospace;
     }
 
-    .jiras-glass-page-btn:hover,
-    .jiras-glass-page-btn.active {
-        background: rgba(72, 61, 139, 0.9);
-        border-color: rgba(70, 130, 180, 0.9);
-        box-shadow: 0 0 8px rgba(70, 130, 180, 0.5);
+    #AF_Jira .jiras-row-actions { display: flex; gap: 5px; margin-left: auto; }
+    #AF_Jira .jiras-empty {
+        padding: 18px 14px;
+        text-align: center;
+        color: #a6b4cb;
+        background: #182335;
+        border: 1px dashed #364660;
+        border-radius: 12px;
+    }
+    #AF_Jira #foundIssuesAmount {
+        display: inline-block;
+        color: #a6b4cb;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .03em; text-transform: uppercase;
+    }
+    #AF_Jira #foundIssuesAmount:empty { display: none; }
+
+    /* Пагинация */
+    #AF_Jira #pagesSwitcher { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; padding-top: 8px; }
+    #AF_Jira .jiras-glass-page-btn {
+        min-width: 34px; height: 30px;
+        padding: 0 8px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #c3cee2;
+        background: #1b283c;
+        border: 1px solid #3c4d68;
+        border-radius: 8px;
+        cursor: pointer;
+        font: 700 12px/1 'JetBrains Mono', monospace;
+        transition: all .16s ease;
+    }
+    #AF_Jira .jiras-glass-page-btn:hover { color: #fff; background: #293b56; border-color: #7799e2; }
+    #AF_Jira .jiras-glass-page-btn.active { color: #fff; background: #4268c9; border-color: #7293ed; box-shadow: 0 4px 12px rgba(58, 96, 205, .28); }
+
+    @media (prefers-reduced-motion: reduce) {
+        #AF_Jira .jiras-ico { transition: none; transform: none !important; }
     }
 </style>
 `;
@@ -326,61 +337,44 @@ const glassStylesJiraS = `
 const win_Jira = `
 ${glassStylesJiraS}
 <div class="jiras-glass-wrapper">
-<div class="jiras-glass-header chmaf-drag-handle" id="jira_1str">
-        <button class="mainButton jiras-glass-btn buttonHide" title="Скрывает меню" id="hideMej">❌</button>
-
-        <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255, 228, 196, 0.6);">
-            <span>Token Status:</span>
-            <span id="searchjiratknstatus" style="color: #00FA9A;">—</span>
+    <div class="jiras-glass-header chmaf-drag-handle" id="jira_1str">
+        <div class="jiras-title">
+            <span class="jiras-title-name">Jira</span>
+            <span class="jiras-token">Токен <span id="searchjiratknstatus">—</span></span>
         </div>
 
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="RefreshJiraStatus" title="Обновить статус">🔄</button>
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="ClearJiraData" title="Очистить всё">🧹</button>
-        <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="jirainstr" title="Инструкция">❓</button>
+        <button class="mainButton jiras-glass-btn-icon" id="RefreshJiraStatus" title="Обновить статус токена">${jIco('refresh')}</button>
+        <button class="mainButton jiras-glass-btn-icon" id="ClearJiraData" title="Очистить всё">${jIco('eraser')}</button>
+        <button class="mainButton jiras-glass-btn-icon" id="jirainstr" title="Инструкция">${jIco('help')}</button>
+        <button class="mainButton jiras-glass-btn-icon buttonHide" id="hideMej" title="Закрыть">${jIco('close')}</button>
     </div>
 
-<div class="jiras-glass-toolbar" id="control_jira_search">
-        <button class="mainButton jiras-glass-btn active-query glass-tool-line" id="defaultQuery" title="Дефолтный поиск">
-            <span class="jiras-glass-btn-icon-large">📇</span>Default
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="ZBPQuery" title="Zero Bug Policy">
-            <span class="jiras-glass-btn-icon-large">🙅‍♂️</span>ZeroBug
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="freshQuery" title="Свежие баги">
-            <span class="jiras-glass-btn-icon-large">🍀</span>Fresh
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="customQuery" title="Ваш JQL запрос">
-            <span class="jiras-glass-btn-icon-large">📝</span>Custom
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="PSquery" title="Project Support">
-            <span class="jiras-glass-btn-icon-large">😵</span>Support
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="getiosbugs" title="iOS задачи">
-            <span class="jiras-glass-btn-icon-large">🍏</span>iOS
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="getandroidbugs" title="Android задачи">
-            <span class="jiras-glass-btn-icon-large">🤖</span>Android
-        </button>
-        <button class="mainButton jiras-glass-btn glass-tool-line" id="favouriteBugs" title="Избранное">
-            <span class="jiras-glass-btn-icon-large">❤</span>Saved
-        </button>
+    <div class="jiras-glass-toolbar" id="control_jira_search">
+        <button class="mainButton jiras-glass-btn active-query glass-tool-line" id="defaultQuery" title="Дефолтный поиск">${jIco('list')}Default</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="ZBPQuery" title="Zero Bug Policy">${jIco('bugOff')}ZeroBug</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="freshQuery" title="Свежие баги">${jIco('sparkles')}Fresh</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="customQuery" title="Ваш JQL запрос">${jIco('code')}Custom</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="PSquery" title="Project Support">${jIco('lifebuoy')}Support</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="getiosbugs" title="iOS задачи">${jIco('apple')}iOS</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="getandroidbugs" title="Android задачи">${jIco('phone')}Android</button>
+        <button class="mainButton jiras-glass-btn glass-tool-line" id="favouriteBugs" title="Избранное">${jIco('heart')}Saved</button>
     </div>
 
     <div class="jiras-glass-input-container" id="fields_jira_search">
         <textarea id="JQLquery" class="jiras-glass-input jiras-glass-textarea" placeholder="JQL запрос" title="Введите сюда JQL запрос" autocomplete="off"></textarea>
-        <div style="display: flex; width: 96%; gap: 8px;">
-            <input id="testJira" class="jiras-glass-input" placeholder="Введите слово/фразу" autocomplete="off" style="border-radius: 20px; flex-grow: 1; height:30px;">
-            <button class="mainButton jiras-glass-btn jiras-glass-btn-icon" id="getJiraTasks">🚀</button>
+        <div class="jiras-search-line">
+            <input id="testJira" class="jiras-glass-input" placeholder="Введите слово или фразу" autocomplete="off">
+            <button class="mainButton jiras-glass-btn-icon" id="getJiraTasks" title="Искать (Enter)">${jIco('search')}Найти</button>
         </div>
     </div>
 
     <div id="jira_tasks_box">
         <div id="issuetable" class="jiras-glass-scroll"></div>
         <div id="favouriteissuetable" class="jiras-glass-scroll" style="display:none"></div>
-        <span id="foundIssuesAmount" style="font-size: 14px; opacity: 0.9; margin-left: 5px;"></span>
+        <span id="foundIssuesAmount"></span>
     </div>
 
-    <div id="pagesSwitcher" style="display:flex; justify-content:space-evenly; padding-top:10px;"></div>
+    <div id="pagesSwitcher"></div>
 </div>`;
 
 createWindow('AF_Jira', 'winTopJira', 'winLeftJira', win_Jira);
@@ -459,9 +453,9 @@ const isFavorite = (issueId) => favissues.some(fav => fav.id === issueId);
 const priorityIconCache = new Map(); // url → dataURI | '' (ошибка)
 
 // Эмодзи-фолбэк на случай, если SVG приоритета не загрузился
-const PRIO_EMOJI = {
-    blocker: '⛔', critical: '🔴', highest: '🔴', major: '🟠',
-    medium: '🟡', minor: '🔵', low: '🟢', lowest: '⬇️', trivial: '⚪'
+const PRIO_COLOR = {
+    blocker: '#ef4444', critical: '#f43f5e', highest: '#f43f5e', major: '#fb923c',
+    high: '#fb923c', medium: '#facc15', minor: '#60a5fa', low: '#4ade80', lowest: '#94a3b8', trivial: '#cbd5e1'
 };
 
 function applyPriorityIcon(url, uri) {
@@ -469,10 +463,9 @@ function applyPriorityIcon(url, uri) {
     const fallbackSpan = () => {
         const key = (url.match(/priorities\/([a-z0-9_]+)\.svg/i) || [])[1] || '';
         const span = document.createElement('span');
-        span.textContent = PRIO_EMOJI[key.toLowerCase()] || '🚩';
+        span.className = 'jiras-prio-dot';
         span.title = key || 'priority';
-        span.style.cssText = 'width:20px;height:20px;display:inline-flex;align-items:center;' +
-            'justify-content:center;flex-shrink:0;margin-top:2px;font-size:15px;';
+        span.style.setProperty('--pc', PRIO_COLOR[key.toLowerCase()] || '#94a3b8');
         return span;
     };
 
@@ -538,17 +531,15 @@ function formatIssue(item, currentNumber, issueKey, searchText, currentpic, curr
 
     // Сверяем ID строки с массивом избранного (приводим к строке для надежности)
     const isAlreadyFav = favissues.some(fav => String(fav.id) === String(currentIds));
-    const heartIcon = isAlreadyFav ? "❤️" : "🤍";
     const heartTitle = isAlreadyFav ? "Удалить из избранного" : "В избранное";
 
     return `
         <div class="jiras-glass-issue-row" data-id="${currentIds}">
-            <span style="color: #00FA9A; font-size: 10px; margin-top: 4px;">&#5129;</span>
-            <span class="newcount">${currentNumber || 0}</span>
-            <img class="jiras-priority-img" data-src="${currentpic}" style="width:20px; height:20px; flex-shrink:0; margin-top: 2px;" title="Приоритеты">
-            <span class="jiraissues jiras-glass-icon-btn" title="Отправить в чат">💬</span>
-            <span class="refreshissues jiras-glass-icon-btn" style="color:#ADFF2F;" title="Увеличить Support Tab">+1</span>
-            <span name="addtofavourites" class="jiras-glass-icon-btn" title="${heartTitle}">${heartIcon}</span>
+            <span class="newcount" title="Репорты">${currentNumber || 0}</span>
+            <img class="jiras-priority-img" data-src="${currentpic}" title="Приоритет">
+            <span class="jiraissues jiras-glass-icon-btn jiras-btn-chat" title="Отправить в чат">${jIco('chat')}</span>
+            <span class="refreshissues jiras-glass-icon-btn jiras-btn-plus" title="Увеличить Support Tab">+1</span>
+            <span name="addtofavourites" class="jiras-glass-icon-btn jiras-btn-heart${isAlreadyFav ? ' is-fav' : ''}" title="${heartTitle}">${jIco('heart')}</span>
             <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank">${temporarka}</a>
             <span name="issueIds" style="display:none">${currentIds}</span>
         </div>
@@ -594,19 +585,18 @@ function renderFavorites() {
     localStorage.setItem('bugsarray', JSON.stringify(favissues));
 
     if (favissues.length === 0) {
-        outputTable.innerHTML = '<div style="padding:10px; color:bisque;">Список избранного пуст</div>';
+        outputTable.innerHTML = '<div class="jiras-empty">Список избранного пуст</div>';
         return;
     }
 
     outputTable.innerHTML = favissues.map(fav => `
         <div class="jiras-glass-issue-row" data-id="${fav.id}">
-            <span style="color: #00FA9A; margin-top:4px;">&#5129;</span>
-            <span class="newcount">${fav.num}</span>
-            <a href="${fav.href}" target="_blank" style="color:bisque;">${fav.html}</a>
-            <div style="display:flex; gap:5px; margin-left:auto;">
-                <span name="addtonotesbug" class="jiras-glass-icon-btn" title="В чат">💬</span>
-                <span name="increasecount" class="jiras-glass-icon-btn" style="color:#ADFF2F;" title="Увеличить Tab">+1</span>
-                <span name="removefromfavourites" class="jiras-glass-icon-btn" title="Удалить">❌</span>
+            <span class="newcount" title="Репорты">${fav.num}</span>
+            <a href="${fav.href}" target="_blank">${fav.html}</a>
+            <div class="jiras-row-actions">
+                <span name="addtonotesbug" class="jiras-glass-icon-btn jiras-btn-chat" title="В чат">${jIco('chat')}</span>
+                <span name="increasecount" class="jiras-glass-icon-btn jiras-btn-plus" title="Увеличить Tab">+1</span>
+                <span name="removefromfavourites" class="jiras-glass-icon-btn jiras-btn-del" title="Удалить">${jIco('trash')}</span>
             </div>
         </div>
     `).join("");
@@ -624,8 +614,7 @@ function renderFavorites() {
             // КЛЮЧЕВОЙ МОМЕНТ: Синхронизируем иконку в основном поиске (если он отрисован)
             const mainSearchBtn = document.querySelector(`#issuetable .jiras-glass-issue-row[data-id="${id}"] [name="addtofavourites"]`);
             if (mainSearchBtn) {
-                mainSearchBtn.innerText = "🤍";
-                mainSearchBtn.title = "В избранное";
+                setJiraHeart(mainSearchBtn, false);
             }
 
             renderFavorites();
@@ -704,13 +693,11 @@ function addFavouritesOnClickEvent(addtofarr, tagsarray, massivissueids) {
                     num: btn.closest('.jiras-glass-issue-row').querySelector('.newcount').innerText
                 };
                 favissues.push(issueData);
-                btn.innerText = "❤️";
-                btn.title = "Удалить из избранного";
+                setJiraHeart(btn, true);
             } else {
                 // Удаляем из избранного (если нажали на красное сердечко в поиске)
                 favissues = favissues.filter(fav => String(fav.id) !== String(issueId));
-                btn.innerText = "🤍";
-                btn.title = "В избранное";
+                setJiraHeart(btn, false);
             }
 
             localStorage.setItem('bugsarray', JSON.stringify(favissues));
@@ -784,7 +771,7 @@ function getJiraTask(requestOptions) {
             const { issueKeys, table, issueIds } = rezissuetable.issueTable;
 
             if (!table) {
-                document.getElementById('issuetable').innerHTML = '<a style="margin-left:5px; color: #ffe4c4">Задач не найдено</a>';
+                document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Задач не найдено</div>';
                 return;
             }
 
@@ -952,7 +939,9 @@ function getJiraOpenFormPress() {
                         );
 
                         if (statusEl) {
-                            statusEl.innerText = ok ? '🟢' : '🔴';
+                            statusEl.textContent = ok ? 'активен' : 'нет входа';
+                            statusEl.classList.toggle('is-ok', ok);
+                            statusEl.classList.toggle('is-bad', !ok);
                         }
 
                         if (!ok) {
