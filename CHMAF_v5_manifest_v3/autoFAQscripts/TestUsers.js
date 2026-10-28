@@ -228,6 +228,30 @@
     box-shadow: 0 0 12px rgba(34, 211, 238, 0.15), inset 0 0 8px rgba(34, 211, 238, 0.05);
 }
 
+/* === SVG-иконки кнопок === */
+.glass-btn-testuser .tu-ico {
+    width: 17px;
+    height: 17px;
+    display: block;
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s;
+}
+#openuserinfo .tu-ico { width: 14px; height: 14px; }
+/* style.css задаёт кнопкам color: #fff !important — красим саму иконку */
+#openuserinfo .tu-ico { color: var(--nu-cyan, #22d3ee) !important; }
+#sidcode .tu-ico { color: var(--nu-green, #34d399) !important; }
+#tidcode .tu-ico { color: var(--nu-purple, #a78bfa) !important; }
+#TestRooms .tu-ico { color: var(--nu-orange, #fb923c) !important; }
+#link2lessbtn .tu-ico { color: var(--nu-cyan, #22d3ee) !important; }
+#sidcode.successbtn .tu-ico, #tidcode.successbtn .tu-ico,
+#sidcode.errorbtn .tu-ico, #tidcode.errorbtn .tu-ico { color: #fff !important; }
+.glass-btn-testuser:hover .tu-ico {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 5px currentColor);
+}
+#tidcode:hover .tu-ico { transform: scale(1.12) rotate(-8deg); }
+#TestRooms:hover .tu-ico { transform: scale(1.12) rotate(18deg); }
+
 /* === DIVIDER === */
 .glass-divider-horizontal-testuser {
     height: 1.5px;
@@ -368,7 +392,7 @@
             title="Поиск"
             aria-label="Поиск пользователя"
             class="glass-btn-testuser"
-        >🔍</button>
+        ><svg class="tu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
     </div>
 
     <div class="glass-divider-horizontal-testuser"></div>
@@ -380,28 +404,28 @@
             title="Ученик (ЛКМ: логин, ПКМ: ID)"
             aria-label="Ученик: получить ссылку; правый клик — копировать ID"
             class="glass-btn-testuser"
-        >👨‍🎓</button>
+        ><svg class="tu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 3 6.5l9 4 9-4Z"/><path d="M21 6.5v4"/><path d="M7.5 8.6v2.4a4.5 4.5 0 0 0 9 0V8.6"/><path d="M5.5 21.5a6.5 6.5 0 0 1 13 0"/></svg></button>
         <button
             id="tidcode"
             type="button"
             title="Преподаватель (ЛКМ: логин, ПКМ: ID)"
             aria-label="Преподаватель: получить ссылку; правый клик — копировать ID"
             class="glass-btn-testuser"
-        >👽</button>
+        ><svg class="tu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C7.6 3 4.5 6.4 4.5 10.5c0 4.6 4.2 9.5 7.5 10.5 3.3-1 7.5-5.9 7.5-10.5C19.5 6.4 16.4 3 12 3Z"/><path d="M7.4 10.4c1.7-.2 3.1.8 3.4 2.4-1.7.3-3.1-.7-3.4-2.4Z" fill="currentColor"/><path d="M16.6 10.4c-1.7-.2-3.1.8-3.4 2.4 1.7.3 3.1-.7 3.4-2.4Z" fill="currentColor"/><path d="M10.6 17.2h2.8"/></svg></button>
         <button
             id="TestRooms"
             type="button"
             title="Тестовые комнаты"
             aria-label="Тестовые комнаты"
             class="glass-btn-testuser"
-        >🎲</button>
+        ><svg class="tu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3.5"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/></svg></button>
         <button
             id="link2lessbtn"
             type="button"
             title="Ссылка на урок"
             aria-label="Ссылка на урок"
             class="glass-btn-testuser"
-        >📟</button>
+        ><svg class="tu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
     </div>
 
     <div id="addInfoUser" style="display: none;"></div>

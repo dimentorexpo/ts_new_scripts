@@ -630,6 +630,67 @@ function bindAddTmpToggle(target, pageContainer) {
     });
 }
 
+
+// -------------------- SVG-иконки вкладок шаблонов --------------------
+// Названия вкладок приходят из таблицы (эмодзи/текст). Узнаём их по ключу
+// и рисуем SVG; исходное название остаётся в скрытом span (textContent,
+// поиск и AFhelper продолжают работать) и в подсказке title.
+const TPL_TAB_SVG = {
+    win: '<rect width="7.5" height="7.5" x="3" y="3" rx="1"/><rect width="7.5" height="7.5" x="13.5" y="3" rx="1"/><rect width="7.5" height="7.5" x="3" y="13.5" rx="1"/><rect width="7.5" height="7.5" x="13.5" y="13.5" rx="1"/>',
+    mac: '<path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/>',
+    ios: '<path d="M12 6.528V3a1 1 0 0 1 1-1"/><path d="M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"/>',
+    android: '<path d="M5 16V11a7 7 0 0 1 14 0v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1Z"/><path d="m7 5-1.5-2.5"/><path d="m17 5 1.5-2.5"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M8 17v3"/><path d="M16 17v3"/>',
+    extra: '<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/>',
+    transfer: '<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>',
+    server: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/>',
+    faq: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    tpl: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 8h10"/><path d="M7 12h10"/><path d="M7 16h6"/>'
+};
+const TPL_TAB_META = {
+    win: { color: '#60a5fa', label: 'Win' },
+    mac: { color: '#cbd5e1', label: 'Mac' },
+    ios: { color: '#e2e8f0', label: 'iOS' },
+    android: { color: '#4ade80', label: 'Android' },
+    extra: { color: '#a78bfa', label: '', tip: 'Дополнительные шаблоны' },
+    transfer: { color: '#38bdf8', label: '', tip: 'Передача в другой отдел, ответы по багам' },
+    server: { color: '#fb923c', label: '', tip: 'Серверные' },
+    chat: { color: '#f472b6', label: '', tip: 'Инициированные чаты и ОС' },
+    faq: { color: '#facc15', label: '', tip: 'Частые вопросы от П' },
+    tpl: { color: '#22d3ee', label: 'Шаб', tip: 'Основные шаблоны' }
+};
+function tplTabKey(title) {
+    const t = String(title || '').trim();
+    const low = t.toLowerCase();
+    if (low === 'шаб' || low === 'шаблоны') return 'tpl';
+    if (low.startsWith('win')) return 'win';
+    if (low.startsWith('mac')) return 'mac';
+    if (low === 'ios') return 'ios';
+    if (low.startsWith('android')) return 'android';
+    if (t.includes('🔥')) return 'server';
+    if (t.includes('🔀')) return 'transfer';
+    if (t.includes('🦽')) return 'extra';
+    if (t.includes('💬')) return 'chat';
+    if (t.includes('💡')) return 'faq';
+    return null;
+}
+function decorateTemplateTab(btn, title) {
+    const key = tplTabKey(title);
+    if (!key) { btn.textContent = title; return; }
+    const meta = TPL_TAB_META[key];
+    btn.classList.add('tpl-tab-svg');
+    btn.style.setProperty('--tpl-tab-color', meta.color);
+    btn.title = meta.tip || String(title).trim();
+    btn.setAttribute('aria-label', meta.tip || String(title).trim());
+    btn.innerHTML = '<svg class="tpl-tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+        + TPL_TAB_SVG[key] + '</svg>'
+        + (meta.label ? '<span class="tpl-tab-label" aria-hidden="true"></span>' : '')
+        + '<span class="tpl-tab-src"></span>';
+    if (meta.label) btn.querySelector('.tpl-tab-label').textContent = meta.label;
+    // Исходное название — для textContent (AFhelper, поиск, активная вкладка)
+    btn.querySelector('.tpl-tab-src').textContent = meta.label ? '' : String(title).trim();
+}
+
 // Разбор таблицы в лёгкий кэш и показ вкладки (той же, что была открыта)
 function refreshTemplates() {
     if (location.host !== 'skyeng.autofaq.ai') return;
@@ -675,8 +736,8 @@ function refreshTemplates() {
 
             const pageBtn = document.createElement('button');
             pageBtn.type = 'button';
-            pageBtn.textContent = row[1];
             pageBtn.className = 'glass-btn mainButton';
+            decorateTemplateTab(pageBtn, row[1]);
             pageBtn.id = `${id}_page_button`;
             pageBtn.setAttribute('role', 'tab');
             pageBtn.addEventListener('click', pageClick);

@@ -202,66 +202,107 @@ window.addEventListener(
 );
 
 
+
+// -------------------- SVG-ИКОНКИ МЕНЮ (Lucide, stroke = currentColor) --------------------
+const MODULE_MENU_ICONS = Object.freeze({
+    bug: '<path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/>',
+    headset: '<path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 1 1 18 0m0 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Z"/><path d="M21 16v2a4 4 0 0 1-4 4h-5"/>',
+    star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+    lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    cap: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+    snowflake: '<path d="M2 12h20"/><path d="M12 2v20"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/>',
+    chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+    calclock: '<path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/>',
+    clipboard: '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+    messages: '<path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>',
+    badgealert: '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="M12 8v4"/><path d="M12 16h.01"/>',
+    gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>',
+    queue: '<path d="M10 12h11"/><path d="M10 18h11"/><path d="M10 6h11"/><path d="M4 10h2"/><path d="M4 6h1v4"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>'
+});
+
+const moduleMenuIconSvg = (name) =>
+    `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MODULE_MENU_ICONS[name] || ''}</svg>`;
+
 // -------------------- КОНФИГУРАЦИЯ МЕНЮ --------------------
 
 const MODULE_MENU_CONFIG = Object.freeze([
     Object.freeze({
         id: 'JiraOpenForm',
-        text: '🔎 Jira Search',
+        text: 'Jira Search',
+        icon: 'bug',
+        color: '#f87171',
         fn: () => window.getJiraOpenFormPress?.(),
         tp: true
     }),
     Object.freeze({
         id: 'crmopersstatuses',
-        text: '🧮 Статусы CRM2',
+        text: 'Статусы CRM2',
+        icon: 'headset',
+        color: '#60a5fa',
         fn: () => window.getcrmopersstatusesButtonPress?.(),
         tp: true
     }),
     Object.freeze({
         id: 'butMarks',
-        text: '🎭 Оценки',
+        text: 'Оценки',
+        icon: 'star',
+        color: '#fbbf24',
         fn: () => window.getbutMarksButtonPress?.(),
         tp: false
     }),
     Object.freeze({
         id: 'smartroomform',
-        text: '🦐 Smartroom',
+        text: 'Smartroom',
+        icon: 'lightbulb',
+        color: '#facc15',
         fn: () => window.getsmartroomformButtonPress?.(),
         tp: true
     }),
     Object.freeze({
         id: 'butLessonInfo',
-        text: '🎓 Lesson Info',
+        text: 'Lesson Info',
+        icon: 'cap',
+        color: '#a78bfa',
         fn: () => window.getbutLessonInfoButtonPress?.(),
         tp: false
     }),
     Object.freeze({
         id: 'butFrozeChat',
-        text: '❄ Auto Respond',
+        text: 'Auto Respond',
+        icon: 'snowflake',
+        color: '#67e8f9',
         fn: () => window.getbutFrozeChatButtonPress?.(),
         tp: false
     }),
     Object.freeze({
         id: 'buttonGetStat',
-        text: '📊 Статистика',
+        text: 'Статистика',
+        icon: 'chart',
+        color: '#34d399',
         fn: () => window.getbuttonGetStatButtonPress?.(),
         tp: false
     }),
     Object.freeze({
         id: 'buttonTimetable',
-        text: '⏱️ Timetable',
+        text: 'Timetable',
+        icon: 'calclock',
+        color: '#f472b6',
         fn: () => window.getbutTimetableButtonPress?.(),
         tp: false
     }),
     Object.freeze({
         id: 'buttonCheckCRMComments',
-        text: '🛄 CRM Task',
+        text: 'CRM Task',
+        icon: 'clipboard',
+        color: '#93c5fd',
         fn: () => window.getbutCRMCommentsButtonPress?.(),
         tp: true
     }),
     Object.freeze({
         id: 'butMattermost',
-        text: '🔍 Mattermost',
+        text: 'Mattermost',
+        icon: 'messages',
+        color: '#38bdf8',
         fn: () => {
             if (typeof window.getMattermostSearchPress === 'function') {
                 window.getMattermostSearchPress();
@@ -276,7 +317,9 @@ const MODULE_MENU_CONFIG = Object.freeze([
     }),
     Object.freeze({
         id: 'buttonCRMSPecial',
-        text: '☄️ CRM Спец.ком',
+        text: 'CRM Спец.ком',
+        icon: 'badgealert',
+        color: '#fb923c',
         fn: () => {
             if (typeof window.getbutCRMSPecialButtonPress === 'function') {
                 window.getbutCRMSPecialButtonPress();
@@ -293,7 +336,9 @@ const MODULE_MENU_CONFIG = Object.freeze([
     }),
     Object.freeze({
         id: 'buttonCompensation',
-        text: '🎁 Нет честных оплат',
+        text: 'Нет честных оплат',
+        icon: 'gift',
+        color: '#f43f5e',
         fn: () => {
             if (typeof window.getCompensationPress === 'function') {
                 window.getCompensationPress();
@@ -308,7 +353,9 @@ const MODULE_MENU_CONFIG = Object.freeze([
     }),
     Object.freeze({
         id: 'buttonGetQueue',
-        text: '🚧 Очередь',
+        text: 'Очередь',
+        icon: 'queue',
+        color: '#a3e635',
         fn: () => window.getQueuePress?.(),
         tp: false
     })
@@ -1211,6 +1258,35 @@ function injectFABStyles() {
     --fab-light: 60%;
 }
 
+.fab-premium[data-theme="sky"] {
+    --fab-color: 212;
+    --fab-sat: 92%;
+    --fab-light: 66%;
+}
+
+.fab-premium[data-theme="gold"] {
+    --fab-color: 46;
+    --fab-sat: 95%;
+    --fab-light: 58%;
+}
+
+.fab-premium .fab-icon {
+    display: inline-flex;
+    line-height: 0;
+}
+
+.fab-premium .fab-icon svg {
+    width: 21px;
+    height: 21px;
+    display: block;
+    filter: drop-shadow(0 0 6px hsla(var(--fab-color), var(--fab-sat), var(--fab-light), 0.35));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fab-premium:hover .fab-icon svg {
+    transform: rotate(-6deg) scale(1.05);
+}
+
 .fab-premium.onlyfortp {
     display: none;
 }
@@ -1358,6 +1434,19 @@ function injectFABStyles() {
     document.head.appendChild(style);
 }
 
+
+// -------------------- SVG-ИКОНКИ ПРАВОЙ ПАНЕЛИ (Lucide) --------------------
+const FAB_ICONS = Object.freeze({
+    puzzle: '<path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/>',
+    books: '<path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/>',
+    grid: '<rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/>',
+    history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+    calendar: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    idcard: '<rect width="20" height="16" x="2" y="4" rx="2"/><circle cx="8" cy="11" r="2.5"/><path d="M4.5 17a3.5 3.5 0 0 1 7 0"/><path d="M14 9h5"/><path d="M14 13h5"/>',
+    lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'
+});
+
 function createFAB(config) {
     const {
         id,
@@ -1376,7 +1465,12 @@ function createFAB(config) {
     button.setAttribute('aria-label', title);
 
     const iconElement = document.createElement('span');
-    iconElement.textContent = icon;
+    iconElement.className = 'fab-icon';
+    if (FAB_ICONS[icon]) {
+        iconElement.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FAB_ICONS[icon]}</svg>`;
+    } else {
+        iconElement.textContent = icon;
+    }
 
     const tooltip = document.createElement('span');
     tooltip.className = 'fab-tooltip';
@@ -1525,15 +1619,16 @@ function buildModuleMenu(panel, isTP) {
         button.id = item.id;
         button.className = 'm-menu-btn';
 
-        const match = item.text.match(/^(\S+)\s+(.+)$/u);
-
         const iconElement = document.createElement('span');
         iconElement.className = 'chmaf-menu-icon';
-        iconElement.textContent = match?.[1] ?? '';
+        if (item.icon && MODULE_MENU_ICONS[item.icon]) {
+            iconElement.innerHTML = moduleMenuIconSvg(item.icon);
+            iconElement.style.setProperty('--chmaf-menu-icon-color', item.color || 'currentColor');
+        }
 
         const labelElement = document.createElement('span');
         labelElement.className = 'chmaf-menu-label';
-        labelElement.textContent = match?.[2] ?? item.text;
+        labelElement.textContent = item.text;
 
         button.append(iconElement, labelElement);
         menubar.appendChild(button);
@@ -1667,11 +1762,23 @@ function injectModuleMenuStyles() {
 }
 
 #chmaf-module-menu .chmaf-menu-icon {
-    flex: 0 0 22px;
-    width: 22px;
-    font-size: 17px;
-    line-height: 1;
-    text-align: center;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    color: var(--chmaf-menu-icon-color, currentColor);
+    background: color-mix(in srgb, var(--chmaf-menu-icon-color, #94a3b8) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chmaf-menu-icon-color, #94a3b8) 28%, transparent);
+    line-height: 0;
+}
+
+#chmaf-module-menu .chmaf-menu-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
 
 #chmaf-module-menu .chmaf-menu-label {
@@ -2070,9 +2177,9 @@ async function move_again_AF() {
         addFabButton(
             newPanel,
             'scriptBut',
-            '🧩',
+            'puzzle',
             'Шаблоны',
-            'cyan',
+            'emerald',
             () => {
                 const element = document.getElementById(
                     'AF_helper'
@@ -2103,7 +2210,7 @@ async function move_again_AF() {
         addFabButton(
             newPanel,
             'themes',
-            '📚',
+            'books',
             'Темы',
             'violet',
             () => window.getThemesButtonPress?.()
@@ -2112,7 +2219,7 @@ async function move_again_AF() {
         addFabButton(
             newPanel,
             'MainMenuBtn',
-            '👺',
+            'grid',
             'Меню',
             'rose',
             () => {
@@ -2149,9 +2256,9 @@ async function move_again_AF() {
         addFabButton(
             newPanel,
             'opennewcat',
-            '☢',
+            'history',
             'История чатов',
-            'emerald',
+            'amber',
             () => window.getopennewcatButtonPress?.()
         );
 
@@ -2346,17 +2453,17 @@ function prepTp() {
 
     create(
         'datsyCalendar',
-        '📅',
+        'calendar',
         'Datsy',
-        'amber',
+        'sky',
         () => window.getdatsyCalendarButtonPress?.()
     );
 
     create(
         'butServ',
-        '⚜',
+        'idcard',
         'Сервисы',
-        'violet',
+        'gold',
         function () {
             const serviceWindow = document.getElementById(
                 'AF_Service'
@@ -2380,17 +2487,17 @@ function prepTp() {
 
     create(
         'knowledgeCenter',
-        '💡',
+        'lightbulb',
         'БЗ',
-        'orange',
+        'gold',
         () => window.getknowledgeCenterButtonPress?.()
     );
 
     create(
         'taskBut',
-        '🛠',
+        'wrench',
         'Задачи',
-        'emerald',
+        'orange',
         () => window.gettaskButButtonPress?.()
     );
 

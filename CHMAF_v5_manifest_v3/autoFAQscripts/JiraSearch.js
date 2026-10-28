@@ -439,7 +439,7 @@ function showelemonpages() {
 
 // Функции фильтрации и замены
 const filterItems = (item, index) => index % 2 !== 0 ? item : null;
-const replaceItem = (item) => item ? item.replace('">', ' – ') : item;
+const replaceItem = (item) => item ? item.replace('">', ' – ').replace(/<\/a>\s*$/, '') : item;
 
 // Хелпер для проверки, в избранном ли задача
 const isFavorite = (issueId) => favissues.some(fav => fav.id === issueId);
@@ -526,7 +526,7 @@ function hydratePriorityImages(rootEl) {
 function formatIssue(item, currentNumber, issueKey, searchText, currentpic, currentIds) {
     const processedItem = replaceItem(item);
     const temporarka = (processedItem && processedItem.toLowerCase().includes(searchText.toLowerCase()))
-        ? highlightSearchText(item, searchText)
+        ? highlightSearchText(processedItem, searchText)
         : processedItem;
 
     // Сверяем ID строки с массивом избранного (приводим к строке для надежности)
