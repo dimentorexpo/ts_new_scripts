@@ -268,6 +268,13 @@
         });
         const uniqueOps = Array.from(merged.values());
 
+        const LOAD_THEMES = {
+            idle: { c: '#94a3b8', bg: 'rgba(148, 163, 184, 0.08)', b: 'rgba(148, 163, 184, 0.25)', g: 'none' },
+            low:  { c: '#34d399', bg: 'rgba(16, 185, 129, 0.14)', b: 'rgba(16, 185, 129, 0.45)', g: '0 0 8px rgba(16, 185, 129, 0.5)' },
+            mid:  { c: '#fbbf24', bg: 'rgba(245, 158, 11, 0.14)', b: 'rgba(245, 158, 11, 0.45)', g: '0 0 8px rgba(245, 158, 11, 0.5)' },
+            high: { c: '#f87171', bg: 'rgba(239, 68, 68, 0.18)', b: 'rgba(239, 68, 68, 0.6)', g: '0 0 10px rgba(239, 68, 68, 0.7)' }
+        };
+
         const statusMap = {
             Online: {
                 bg: 'rgba(16, 185, 129, 0.12)',
@@ -337,22 +344,34 @@
                 prevStatus = op.status;
 
                 const displayName = cleanOperatorName(op.fullName);
+                // Цвет бейджа — по нагрузке (норма до 5 чатов), статус — точкой у имени
+                const LOAD_MAX = 5;
+                const load = currentCount === 0 ? LOAD_THEMES.idle
+                    : currentCount <= 2 ? LOAD_THEMES.low
+                    : currentCount < LOAD_MAX ? LOAD_THEMES.mid
+                    : LOAD_THEMES.high;
+                const loadPct = Math.min(currentCount / LOAD_MAX, 1) * 100;
                 const tip = `${STATUS_TEXT[op.status] || op.status}, ${currentCount} ${chatsWord(currentCount)}`
+                    + (currentCount >= LOAD_MAX ? ' — перегруз' : '')
                     + (isNext ? ' — следующий чат придёт сюда' : '');
 
                 const rowClasses = [
                     'op-st-row',
                     isTpOs ? 'tp-os-row' : '',
                     isOnline ? '' : 'is-away',
+                    op.status === 'Busy' ? 'st-busy' : '',
+                    op.status === 'Pause' ? 'st-pause' : '',
                     isNext ? 'is-next' : ''
                 ].filter(Boolean).join(' ');
 
                 return `${sep}<div class="${rowClasses}" name="operrow" data-id="${op.id}" title="${tip}">
                         <span class="op-st-badge ${pulseClass}" data-count="${currentCount}"
-                            style="--badge-bg: ${theme.bg}; --badge-color: ${theme.glow}; --badge-border: ${theme.b}; --badge-glow: ${theme.textGlow};">
+                            style="--badge-bg: ${load.bg}; --badge-color: ${load.c}; --badge-border: ${load.b}; --badge-glow: ${load.g};">
                             ${currentCount}
                         </span>
+                        <span class="op-st-dot" style="--dot: ${theme.glow};" aria-hidden="true"></span>
                         <span class="op-st-name">${displayName}</span>
+                        <span class="op-st-load ${currentCount >= LOAD_MAX ? 'is-over' : ''}" style="--load: ${loadPct}%; --load-c: ${load.c};" aria-hidden="true"></span>
                         ${isNext ? '<span class="op-st-next" aria-hidden="true"></span>' : ''}
                     </div>`;
             }).join('');
@@ -867,6 +886,58 @@
             from { opacity: 0; transform: translateX(-8px); }
             to   { opacity: 1; transform: none; }
         }
+
+        /* === Статус (точка) и полоска нагрузки === */
+        /* Точка статуса «приклеена» к правому верхнему углу бейджа — не отнимает ширину у имени */
+        .op-st-dot {
+            position: relative;
+            z-index: 2;
+            width: 8px; height: 8px; flex: 0 0 8px;
+            margin: 0 -8px 0 -15px;
+            top: -10px;
+            border-radius: 50%;
+            background: var(--dot, #94a3b8);
+            box-shadow: 0 0 0 2px #0f1522, 0 0 6px var(--dot, transparent);
+        }
+        .op-st-row.is-away .op-st-dot { box-shadow: 0 0 0 2px #0f1522; }
+        .op-st-load {
+            position: absolute;
+            left: 0; bottom: 0;
+            height: 2px;
+            width: var(--load, 0%);
+            background: linear-gradient(90deg, transparent, var(--load-c, #94a3b8));
+            border-radius: 0 2px 2px 0;
+            opacity: 0.75;
+            transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.4s;
+            pointer-events: none;
+        }
+        .op-st-load.is-over { animation: opLoadOver 1.6s ease-in-out infinite; }
+        @keyframes opLoadOver { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+        .op-st-badge { transition: all 0.4s ease, color 0.4s, background 0.4s; }
+
+        /* Строка подсвечивается цветом статуса: занят — жёлтым, перерыв — красным (рассеянное свечение) */
+        .op-st-row.st-busy,
+        .op-st-row.st-busy.is-away {
+            background:
+                radial-gradient(120% 140% at 0% 50%, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0.10) 45%, transparent 80%),
+                rgba(245, 158, 11, 0.05);
+            border-color: rgba(245, 158, 11, 0.28);
+            border-left-color: rgba(245, 158, 11, 0.85);
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.12), inset 0 0 12px rgba(245, 158, 11, 0.06);
+        }
+        .op-st-row.st-pause,
+        .op-st-row.st-pause.is-away {
+            background:
+                radial-gradient(120% 140% at 0% 50%, rgba(239, 68, 68, 0.30) 0%, rgba(239, 68, 68, 0.11) 45%, transparent 80%),
+                rgba(239, 68, 68, 0.05);
+            border-color: rgba(239, 68, 68, 0.30);
+            border-left-color: rgba(239, 68, 68, 0.9);
+            box-shadow: 0 0 14px rgba(239, 68, 68, 0.14), inset 0 0 12px rgba(239, 68, 68, 0.07);
+        }
+        .op-st-row.st-busy .op-st-name { color: #fde68a; opacity: 0.9; }
+        .op-st-row.st-pause .op-st-name { color: #fecaca; opacity: 0.9; }
+        .op-st-row.st-busy:hover { background: radial-gradient(120% 140% at 0% 50%, rgba(245, 158, 11, 0.38) 0%, rgba(245, 158, 11, 0.14) 50%, transparent 85%), rgba(245, 158, 11, 0.07); }
+        .op-st-row.st-pause:hover { background: radial-gradient(120% 140% at 0% 50%, rgba(239, 68, 68, 0.40) 0%, rgba(239, 68, 68, 0.15) 50%, transparent 85%), rgba(239, 68, 68, 0.07); }
 
         /* === BADGES === */
         .op-st-badge {
