@@ -1496,3 +1496,23 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
     transition-duration: 1ms !important;
   }
 }
+/* Кнопка «ДЗ» в карточке ученика */
+.tsm-btn-homework {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0 10px;
+  font-family: var(--tsm-font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tsm-accent);
+  background: var(--tsm-accent-soft);
+  border: 1px solid var(--tsm-accent-line);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease);
+}
+.tsm-btn-homework:hover { background: var(--tsm-accent); color: var(--tsm-surface); }
