@@ -389,11 +389,83 @@ const injectGlassStyles = () => {
 };
 injectGlassStyles();
 
+// --- SVG-ИКОНКИ (stroke = currentColor; цвет задаётся классом gli-<имя>) ---
+const GLI_PATHS = {
+    close:   '<path d="M6 6l12 12M18 6L6 18"/>',
+    refresh: '<path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/>',
+    eye:     '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    circle:  '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/>',
+    search:  '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+    clipboard:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+    copy:    '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
+    cube:    '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM4 7.5l8 4.5 8-4.5M12 12v9"/>',
+    mask:    '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M14 9h4M14 13h4M6 16c1.5 1.5 4.5 1.5 6 0"/>',
+    globe:   '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+    pin:     '<path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+    coin:    '<circle cx="12" cy="12" r="9"/><path d="M14.8 9.2c-.5-.8-1.5-1.2-2.8-1.2-1.7 0-2.8.8-2.8 2 0 3 5.6 1.4 5.6 4.2 0 1.2-1.1 2-2.8 2-1.3 0-2.4-.5-3-1.4M12 6v2M12 16v2"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    eraser:  '<path d="M7 21h10M5.5 13.5l7-7a2 2 0 012.8 0l3.2 3.2a2 2 0 010 2.8L11 20H8l-2.5-2.5a2 2 0 010-4zM9 11l5 5"/>',
+    phone:   '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+    phoneoff:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2M3 3l18 18"/>',
+    call:    '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/>',
+    edit:    '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19l-4 1zM14 7l3 3"/>',
+    archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9M10 13h4"/>',
+    userx:   '<circle cx="10" cy="8" r="4"/><path d="M3 21a7 7 0 0111-5.7M16 16l5 5M21 16l-5 5"/>',
+    coins:   '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M15 11c3.3 0 6 1.3 6 3v3c0 1.7-2.7 3-6 3-1.2 0-2.3-.2-3.2-.5"/>',
+    banknote:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4M18 10v4"/>',
+    play:    '<path d="M7 4.5v15l12-7.5-12-7.5z"/>',
+    key:     '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+    mail:    '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>',
+    sparkles:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z"/>',
+    check:   '<path d="M5 12.5l4.5 4.5L19 7"/>',
+    loader:  '<path d="M12 3a9 9 0 109 9"/>',
+    student: '<path d="M2 9l10-5 10 5-10 5L2 9zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6"/>',
+    alien:   '<path d="M12 3c-5 0-8 3.5-8 7.5 0 4.5 3.5 9.5 8 10.5 4.5-1 8-6 8-10.5C20 6.5 17 3 12 3zM7.5 10.5c1.5 0 3 1 3.5 2.5-2.5.2-4-.8-3.5-2.5zM16.5 10.5c-1.5 0-3 1-3.5 2.5 2.5.2 4-.8 3.5-2.5z"/>',
+    books:   '<path d="M4 4h4v16H4zM10 4h4v16h-4zM16.5 5.5l3.8-1 3 15.5-3.8 1z"/>',
+    bulb:    '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z"/>',
+    skull:   '<path d="M12 3c-4.4 0-8 3-8 7.2 0 2.4 1.1 4.2 3 5.3V19h10v-3.5c1.9-1.1 3-2.9 3-5.3C20 6 16.4 3 12 3zM9 18v3M12 18v3M15 18v3"/><circle cx="9" cy="11" r="1.4"/><circle cx="15" cy="11" r="1.4"/>',
+    bolt:    '<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',
+    alert:   '<path d="M12 3L2 20h20L12 3zM12 10v4.5M12 17.5v.5"/>',
+    inbox:   '<path d="M3 13l3-8h12l3 8v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6zM3 13h5l1 3h6l1-3h5"/>',
+    wrench:  '<path d="M14.5 6.5a4 4 0 005 5L21 13l-8 8a2.1 2.1 0 01-3-3l8-8-1.5-1.5a4 4 0 00-2-.9zM5 19l2-2"/>',
+    burst:   '<path d="M12 2l2 6 6-2-3 5.5L22 14l-6 1 1 6-5-3.5L7 21l1-6-6-1 5-2.5L4 6l6 2 2-6z"/>',
+    hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',
+    question:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 015 .8c0 1.7-2.5 2-2.5 3.7M12 17v.5"/>',
+    adult:   '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 15l2.2-6 2.2 6M8.8 13h3M16 9v6"/>',
+    minor:   '<circle cx="12" cy="12" r="9"/><path d="M8 8l8 8M8 16l8-8"/>'
+};
+const GLI = Object.fromEntries(Object.entries(GLI_PATHS).map(([n, b]) =>
+    [n, `<svg class="gli gli-${n}${n === 'loader' ? ' gli-spin' : ''}" viewBox="0 0 24 24" aria-hidden="true">${b}</svg>`]));
+(function injectGliStyles() {
+    if (document.getElementById('af-gli-styles')) return;
+    const st = document.createElement('style');
+    st.id = 'af-gli-styles';
+    const colors = {
+        close: '#fb7185', refresh: '#34d399', eye: '#7dd3fc', circle: '#94a3b8', search: '#60a5fa', clipboard: '#fbbf24', copy: '#fbbf24',
+        cube: '#fb923c', mask: '#f472b6', globe: '#38bdf8', pin: '#f87171', coin: '#facc15', calendar: '#818cf8',
+        eraser: '#fb923c', phone: '#a78bfa', phoneoff: '#94a3b8', call: '#4ade80', edit: '#fb923c', archive: '#4dcce5',
+        userx: '#f87171', coins: '#f59e0b', banknote: '#34d399', play: '#34d399',
+        key: '#fbbf24', mail: '#60a5fa', sparkles: '#fde047', check: '#4ade80', loader: '#94a3b8', student: '#86efac',
+        alien: '#7dd3fc', books: '#a5b4fc', bulb: '#fde047', skull: '#cbd5e1', bolt: '#fbbf24', alert: '#fb923c',
+        inbox: '#94a3b8', wrench: '#fbbf24', burst: '#f87171', hourglass: '#fbbf24', question: '#94a3b8',
+        adult: '#4ade80', minor: '#f87171'
+    };
+    const fills = ['calendar','cube','eraser','edit','archive','mask','coin','phone','mail','clipboard','copy','student','books','bulb','skull','alien','alert','inbox','banknote','coins','circle','globe','pin','sparkles','burst','adult'];
+    st.textContent =
+        `.gli{width:1.2em;height:1.2em;display:inline-block;vertical-align:-.22em;flex:none;fill:none;stroke:var(--ic,currentColor);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--ic,currentColor) 40%,transparent))}` +
+        `.gli-spin{animation:gliSpin .8s linear infinite}@keyframes gliSpin{to{transform:rotate(360deg)}}` +
+        `.af-gl-btn-icon .gli{width:18px;height:18px;vertical-align:middle}` +
+        `.af-gl-btn-icon,.af-gl-key-btn,.af-gl-icon-btn,.af-gl-sync-btn,.af-gl-identity-status,.af-gl-age-badge{display:inline-flex;align-items:center;justify-content:center}` +
+        Object.entries(colors).map(([n, c]) => `.gli-${n}{--ic:${c}}`).join('') +
+        fills.map(n => `.gli-${n}{fill:color-mix(in srgb,var(--ic) 18%,transparent)}`).join('');
+    document.head.appendChild(st);
+})();
+
 // --- КОНФИГУРАЦИЯ И ГЛОБАЛЬНЫЕ СОСТОЯНИЯ ---
 let servicecontainer = null;
 let stid = null;
 
-const STATUS_ICONS = { VALID: '✅', INVALID: '❌', EMAIL: '📧', PHONE: '☎️' };
+const STATUS_ICONS = { VALID: GLI.check, INVALID: GLI.close, EMAIL: GLI.mail, PHONE: GLI.call };
 const API_BASE_URL = 'https://backend.skyeng.ru/api/persons';
 
 const LINK_CONFIG = {
@@ -427,23 +499,23 @@ const win_serviceinfo = `
 <div class="af-gl-wrapper">
     <div class="af-gl-panel">
         <div class="af-gl-header chmaf-drag-handle" id="servicehead" style="cursor: grab;">
-            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px; background: rgba(255, 116, 140, .08); border-color: rgba(255, 116, 140, .3); color: #ffb0be;">❌</button>
+            <button title="Скрыть меню" id="hideMeservice" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px; background: rgba(255, 116, 140, .08); border-color: rgba(255, 116, 140, .3); color: #ffb0be;">${GLI.close}</button>
             <button title="CRM" id="GotoCRM" class="af-gl-btn" style="min-width: 50px;">CRM</button>
-            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">👁️</button>
-            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">⭕</button>
+            <button title="Показать контакты" id="dounhidemailandphone" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.eye}</button>
+            <button title="Статус CRM" id="CrmStatus" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">${GLI.circle}</button>
             <span id="getcurrentstatus" class="af-gl-badge af-gl-bg-info" style="display:none;"></span>
         </div>
 
         <div class="af-gl-row af-gl-row-wrap">
             <input id="idstudent" class="af-gl-input" placeholder="ID У/П" autocomplete="off" style="min-width: 90px;">
-            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🚀</button>
-            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📋</button>
-            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🗿</button>
-            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🎭</button>
-            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🌍</button>
-            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💰</button>
-            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📆</button>
-            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🧹</button>
+            <button title="Поиск" id="getidstudent" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.search}</button>
+            <button title="Все задачи" id="crmactivetasks" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.clipboard}</button>
+            <button title="TRM 2.0" id="newTrm" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">${GLI.cube}</button>
+            <button title="Стран. учителя" id="personalteacherpage" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">${GLI.mask}</button>
+            <button title="Язык: RU" id="changeLocaleLng" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.globe}</button>
+            <button title="Баланс" id="checkBalance" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.coin}</button>
+            <button title="Уроки" id="getPastAndFutureLessons" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.calendar}</button>
+            <button title="Очистить" id="clearservinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.eraser}</button>
         </div>
 
         <div class="af-gl-row af-gl-row-wrap">
@@ -459,13 +531,13 @@ const win_serviceinfo = `
                     </span>
                 </div>
             </div>
-            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">📱</button>
-            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">✏️</button>
-            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">🗄️</button>
-            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">🚷</button>
-            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💸</button>
-            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">💵</button>
-            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">▶️</button>
+            <button title="Сген. код (МП)" id="getonetimepass" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.phone}</button>
+            <button title="Админка" id="editadmbtn" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.edit}</button>
+            <button title="История чатов" id="catchathistory" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.archive}</button>
+            <button title="Набор" id="butTeacherNabor" class="af-gl-btn af-gl-btn-icon" style="display:none; min-width: 34px;">${GLI.userx}</button>
+            <button title="Рассрочка" id="partialPaymentinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.coins}</button>
+            <button title="Подписка" id="subscriptioninfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.banknote}</button>
+            <button title="Vimbot" id="openVimbotWindowsUserinfo" class="af-gl-btn af-gl-btn-icon" style="min-width: 34px;">${GLI.play}</button>
         </div>
 
         <div id="basicInfo" class="af-gl-info-container af-gl-info-compact">
@@ -478,7 +550,7 @@ const win_serviceinfo = `
                     <div class="af-gl-user-name-row">
                         <span id="usrAge" class="af-gl-age-badge"></span>
                         <span id="usrName" class="af-gl-user-name"></span>
-                        <span id="getloginer" class="af-gl-key-btn" title="Ссылка-логинер">🔑</span>
+                        <span id="getloginer" class="af-gl-key-btn" title="Ссылка-логинер">${GLI.key}</span>
                     </div>
                 </div>
             </div>
@@ -486,19 +558,19 @@ const win_serviceinfo = `
             <!-- Контакты с интегрированным статусом Identity -->
             <div class="af-gl-contacts-row">
                 <div class="af-gl-contact-cell">
-                    <span class="af-gl-contact-label">📧 Почта</span>
+                    <span class="af-gl-contact-label">${GLI.mail} Почта</span>
                     <div class="af-gl-contact-value-row">
                         <span id="mailunhidden" class="af-gl-contact-value">hidden</span>
                         <span id="mailIdentityStatus" class="af-gl-identity-status"></span>
-                        <span class="af-gl-icon-btn" id="getusremail" title="Скопировать">📋</span>
+                        <span class="af-gl-icon-btn" id="getusremail" title="Скопировать">${GLI.copy}</span>
                     </div>
                 </div>
                 <div class="af-gl-contact-cell">
-                    <span class="af-gl-contact-label">☎️ Телефон</span>
+                    <span class="af-gl-contact-label">${GLI.call} Телефон</span>
                     <div class="af-gl-contact-value-row">
                         <span id="phoneunhidden" class="af-gl-contact-value">hidden</span>
                         <span id="phoneIdentityStatus" class="af-gl-identity-status"></span>
-                        <span class="af-gl-icon-btn" id="getusrphone" title="Скопировать">📋</span>
+                        <span class="af-gl-icon-btn" id="getusrphone" title="Скопировать">${GLI.copy}</span>
                     </div>
                 </div>
             </div>
@@ -506,11 +578,11 @@ const win_serviceinfo = `
             <!-- Страна | Язык | Время (без Identity, так как он теперь в контактах) -->
             <div class="af-gl-info-single-row">
                 <div class="af-gl-info-item">
-                    <span class="af-gl-info-item-label">🌍</span>
+                    <span class="af-gl-info-item-label">${GLI.pin}</span>
                     <span id="usrCountry" class="af-gl-info-item-value">—</span>
                 </div>
                 <div class="af-gl-info-item">
-                    <span class="af-gl-info-item-label">Язык🌐</span>
+                    <span class="af-gl-info-item-label">${GLI.globe} Язык</span>
                     <span id="usrServLang" class="af-gl-info-item-value">—</span>
                 </div>
                 <div class="af-gl-time-group">
@@ -531,7 +603,7 @@ const win_serviceinfo = `
         </div>
 
         <div id="serviceSectionTitle" class="af-gl-section-title">
-            <span>✨ Услуги</span>
+            <span>${GLI.sparkles} Услуги</span>
             <div class="af-gl-section-line"></div>
         </div>
         <div id="serviceList" class="af-gl-scrollable">
@@ -539,7 +611,7 @@ const win_serviceinfo = `
         </div>
 
         <div id="complektSectionTitle" class="af-gl-section-title" style="margin-top: 4px;">
-            <span>📦 Комплектации</span>
+            <span>${GLI.cube} Комплектации</span>
             <div class="af-gl-section-line"></div>
         </div>
         <div id="complektList" class="af-gl-scrollable">
@@ -552,8 +624,8 @@ const win_Timetable = `
 <div class="af-gl-wrapper" style="width: 440px;">
     <div class="af-gl-panel">
         <div class="af-gl-header chmaf-drag-handle" id="HeadTimetable" style="cursor: grab; justify-content: space-between;">
-            <span style="font-weight: 700; font-size: 15px;">📅 Расписание</span>
-            <button class="af-gl-btn af-gl-btn-icon" id="hideMeTT" style="color: #ef4444; min-width: 34px;">❌</button>
+            <span style="font-weight: 700; font-size: 15px;">${GLI.calendar} Расписание</span>
+            <button class="af-gl-btn af-gl-btn-icon" id="hideMeTT" style="color: #ef4444; min-width: 34px;">${GLI.close}</button>
         </div>
         <div class="af-gl-row" style="justify-content: center; gap: 10px;">
             <button class="af-gl-btn" id="getlessonpast" style="flex:1;">Прошедшие</button>
@@ -569,8 +641,8 @@ const win_Complectations = `
 <div class="af-gl-wrapper" style="width: 480px;">
     <div class="af-gl-panel">
         <div class="af-gl-header chmaf-drag-handle" id="headComplectations" style="cursor: grab; justify-content: space-between;">
-            <span style="font-weight: 700; font-size: 15px;">📦 Комплектации</span>
-            <button class="af-gl-btn af-gl-btn-icon" id="hideComplecations" style="color: #ef4444; min-width: 34px;">❌</button>
+            <span style="font-weight: 700; font-size: 15px;">${GLI.cube} Комплектации</span>
+            <button class="af-gl-btn af-gl-btn-icon" id="hideComplecations" style="color: #ef4444; min-width: 34px;">${GLI.close}</button>
         </div>
         <div id="cmplInfo" class="af-gl-scrollable">
             <div id="cmplData"></div>
@@ -614,7 +686,7 @@ const initCopyButtons = () => {
         const email = document.getElementById('mailunhidden')?.textContent;
         if (email && email !== 'hidden' && typeof copyToClipboard === 'function') {
             copyToClipboard(email);
-            if (typeof createAndShowButton === 'function') createAndShowButton('📧 Почта скопирована', 'message');
+            if (typeof createAndShowButton === 'function') createAndShowButton('Почта скопирована', 'message');
         }
     });
 
@@ -622,7 +694,7 @@ const initCopyButtons = () => {
         const phone = document.getElementById('phoneunhidden')?.textContent;
         if (phone && phone !== 'hidden' && typeof copyToClipboard === 'function') {
             copyToClipboard(phone);
-            if (typeof createAndShowButton === 'function') createAndShowButton('☎️ Телефон скопирован', 'message');
+            if (typeof createAndShowButton === 'function') createAndShowButton('Телефон скопирован', 'message');
         }
     });
 };
@@ -642,8 +714,8 @@ document.getElementById('hideMeservice')?.addEventListener('click', () => {
 
 document.getElementById('dounhidemailandphone')?.addEventListener('click', async function () {
     this.disabled = true;
-    const originalText = this.textContent;
-    this.textContent = '⏳';
+    const originalHtml = this.innerHTML;
+    this.innerHTML = GLI.loader;
     try {
         await Promise.all([typeof getUnhideEmail === 'function' && getUnhideEmail(), typeof getUnhidePhone === 'function' && getUnhidePhone()]);
         if (typeof checkEmailAndPhoneIdentity === 'function') await checkEmailAndPhoneIdentity();
@@ -655,7 +727,7 @@ document.getElementById('dounhidemailandphone')?.addEventListener('click', async
         document.getElementById('phoneIdentityStatus').textContent = '';
     } finally {
         this.disabled = false;
-        this.textContent = originalText;
+        this.innerHTML = originalHtml;
     }
 });
 
@@ -683,7 +755,7 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
     }
 
     this.disabled = true;
-    this.innerHTML = '⏳';
+    this.innerHTML = GLI.loader;
 
     try {
         const reqOpts = {
@@ -708,7 +780,7 @@ document.getElementById('getonetimepass')?.addEventListener('click', async funct
         timerContainer.style.display = 'none';
     } finally {
         this.disabled = false;
-        this.innerHTML = '📱';
+        this.innerHTML = GLI.phone;
     }
 });
 
@@ -818,8 +890,8 @@ async function checkEmailAndPhoneIdentity() {
         const mailStatusEl = document.getElementById('mailIdentityStatus');
         const phoneStatusEl = document.getElementById('phoneIdentityStatus');
 
-        if (mailStatusEl) mailStatusEl.textContent = hasEmail ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
-        if (phoneStatusEl) phoneStatusEl.textContent = hasPhone ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
+        if (mailStatusEl) mailStatusEl.innerHTML = hasEmail ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
+        if (phoneStatusEl) phoneStatusEl.innerHTML = hasPhone ? STATUS_ICONS.VALID : STATUS_ICONS.INVALID;
     } catch (error) {
         console.error("Не удалось проверить статус identity:", error);
     }
@@ -857,7 +929,7 @@ function formatLessonDate(dateString) {
 }
 
 const teacherLoginerBtn = (teacherId) => teacherId
-    ? `<span class="af-gl-icon-btn af-gl-teacher-loginer" data-loginer-id="${escapeUserinfoHtml(teacherId)}" title="Ссылка-логинер преподавателя">🔑</span>`
+    ? `<span class="af-gl-icon-btn af-gl-teacher-loginer" data-loginer-id="${escapeUserinfoHtml(teacherId)}" title="Ссылка-логинер преподавателя">${GLI.key}</span>`
     : '';
 
 const escapeUserinfoHtml = (value) => String(value ?? '').replace(/[&<>"']/g, ch => ({
@@ -869,7 +941,7 @@ function createFutureLessonHTML(lesson, type) {
     const translatedType = LESSONS_CONFIG.LESSON_TYPE_MAP[lessonType] || lessonType;
     const srvTitle = (servicecontainer?.data || []).find(i => i.serviceTypeKey === educationService.serviceTypeKey)?.shortTitle || educationService.serviceTypeKey;
     const tg = teacher?.general;
-    const teacherInfo = tg ? `<div style="font-size:12px; color:#86efac; margin-top:6px;">👽 ${escapeUserinfoHtml(tg.id)} ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</div>` : '';
+    const teacherInfo = tg ? `<div style="font-size:12px; color:#86efac; margin-top:6px;">${GLI.alien} ${escapeUserinfoHtml(tg.id)} ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</div>` : '';
 
     // Раньше у всех прошедших уроков был зашит статус «Прошел»,
     // а STATUS_MAP не использовался. Берём реальный статус из ответа.
@@ -880,9 +952,9 @@ function createFutureLessonHTML(lesson, type) {
 
     return `
         <div style="background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; padding: 12px; margin-bottom: 8px;">
-            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">📅</span> ${formatLessonDate(startedAt)}</div>
-            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#7dd3fc;">🎓</span> ${translatedType}</div>
-            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">📚</span> ${escapeUserinfoHtml(educationService.id)} ${escapeUserinfoHtml(srvTitle)}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">${GLI.calendar}</span> ${formatLessonDate(startedAt)}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#7dd3fc;">${GLI.student}</span> ${translatedType}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">${GLI.books}</span> ${escapeUserinfoHtml(educationService.id)} ${escapeUserinfoHtml(srvTitle)}</div>
             ${statusHTML}
             ${teacherInfo}
         </div>`;
@@ -917,7 +989,7 @@ document.getElementById('getlessonpast')?.addEventListener('click', () => fetchA
 document.getElementById('changeLocaleLng')?.addEventListener('click', async function () {
     const userId = getStudentId();
     if (!userId) return;
-    this.disabled = true; this.innerHTML = '⏳';
+    this.disabled = true; this.innerHTML = GLI.loader;
     try {
         await sendMessageAsync({
             action: 'getFetchRequest',
@@ -925,11 +997,11 @@ document.getElementById('changeLocaleLng')?.addEventListener('click', async func
             requestOptions: { method: 'PUT', body: JSON.stringify({ serviceLocale: 'ru' }), headers: { 'Content-Type': 'application/json' } }
         });
         if (typeof createAndShowButton === 'function') createAndShowButton('Язык обновлен', 'message');
-        this.innerHTML = '✅';
+        this.innerHTML = GLI.check;
     } catch (e) {
-        this.innerHTML = '❌';
+        this.innerHTML = GLI.close;
     } finally {
-        setTimeout(() => { this.innerHTML = '🌍'; this.disabled = false; }, 2000);
+        setTimeout(() => { this.innerHTML = GLI.globe; this.disabled = false; }, 2000);
     }
 });
 
@@ -951,8 +1023,8 @@ async function getusernamecrm() {
     document.getElementById('usrName').textContent = `${data.name} ${data.surname || ''}`.trim();
     const typeEl = document.getElementById('usrType');
     typeEl.innerHTML = isStudent
-        ? `<span style="color:#86efac;"><span class="af-gl-type-emoji">🧑‍🎓</span> Ученик</span>`
-        : `<span style="color:#7dd3fc;"><span class="af-gl-type-emoji">👽</span> Преподаватель</span>`;
+        ? `<span style="color:#86efac;"><span class="af-gl-type-emoji">${GLI.student}</span> Ученик</span>`
+        : `<span style="color:#7dd3fc;"><span class="af-gl-type-emoji">${GLI.alien}</span> Преподаватель</span>`;
 
     document.getElementById('usrCountry').textContent = data.country || '—';
 
@@ -983,7 +1055,7 @@ async function getusernamecrm() {
         console.warn('[Userinfo] Неожиданный адрес аватара:', data.avatarUrl);
     }
 
-    let ageIco = "❓";
+    let ageIco = GLI.question;
     if (data.birthday) {
         // Полный возраст с учётом месяца и дня: раньше считалась только разница
         // годов, и 17-летний ученик с ДР в конце года показывался совершеннолетним.
@@ -991,9 +1063,9 @@ async function getusernamecrm() {
         const now = new Date();
         let age = now.getFullYear() - by;
         if (now.getMonth() + 1 < bm || (now.getMonth() + 1 === bm && now.getDate() < bd)) age--;
-        ageIco = Number.isFinite(age) ? (age < 18 ? "🔞" : age < 99 ? "🅰️" : "❓") : "❓";
+        ageIco = Number.isFinite(age) ? (age < 18 ? GLI.minor : age < 99 ? GLI.adult : GLI.question) : GLI.question;
     }
-    document.getElementById('usrAge').textContent = ageIco;
+    document.getElementById('usrAge').innerHTML = ageIco;
 
     const elsToHide = ['checkBalance', 'partialPaymentinfo', 'subscriptioninfo', 'getPastAndFutureLessons', 'complekttable', 'newTrm', 'butTeacherNabor', 'personalteacherpage', 'serviceList', 'complektList', 'serviceSectionTitle', 'complektSectionTitle'];
     elsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
@@ -1013,8 +1085,8 @@ async function getusernamecrm() {
         document.getElementById('servicetable').innerHTML = '';
     }
 
-    const locale = data.serviceLocale || "⭕";
-    document.getElementById('usrServLang').textContent = locale;
+    const locale = data.serviceLocale || "";
+    document.getElementById('usrServLang').textContent = locale || "—";
     document.getElementById('changeLocaleLng').style.display = locale === "ru" ? "none" : "";
 
     document.getElementById('utcOffset').textContent = data.utcOffset;
@@ -1065,14 +1137,14 @@ async function crmstatus() {
             statusEl.title = flags.operator;
         }
 
-        let icon = '📵';
-        if (flags.tpOut && !flags.tp && !flags.notTp) icon = '💥';
-        else if (!flags.tpOut && flags.tp && !flags.notTp) icon = '🛠';
-        else if (flags.tpOut && flags.tp) icon = '💥';
-        else if (flags.tp && flags.notTp && !flags.tpOut) icon = '🛠';
+        let icon = GLI.phoneoff;
+        if (flags.tpOut && !flags.tp && !flags.notTp) icon = GLI.burst;
+        else if (!flags.tpOut && flags.tp && !flags.notTp) icon = GLI.wrench;
+        else if (flags.tpOut && flags.tp) icon = GLI.burst;
+        else if (flags.tp && flags.notTp && !flags.tpOut) icon = GLI.wrench;
 
         crmEl.style.display = '';
-        crmEl.innerText = icon;
+        crmEl.innerHTML = icon;
     } catch (e) {
         console.error('crmstatus error:', e);
     }
@@ -1095,7 +1167,7 @@ async function getservices(stidNew) {
 
         const complectData = JSON.parse(complectRes.fetchansver);
         if (complectData.data.length > 0) {
-            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px; padding: 10px; border-radius:10px;">✅ Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
+            linkTable.innerHTML += `<div id="openOneComplectation" class="af-gl-card cursor-pointer af-gl-bg-success" style="text-align:center; margin-bottom: 8px; padding: 10px; border-radius:10px;">${GLI.check} Есть комплектации <span style="font-size: 11px; opacity: 0.8;">(кликни)</span></div>`;
             document.getElementById('openOneComplectation')?.addEventListener('click', () => {
                 const w = document.getElementById('AF_Complectations');
                 w.style.display = w.style.display === "none" ? "" : "none";
@@ -1110,7 +1182,7 @@ async function getservices(stidNew) {
                             <td><a href="https://crm2.skyeng.ru/persons/${service.student.general.id}/services/${el.id}" target="_blank" style="color:inherit; text-decoration:none;">${el.id}</a></td>
                             <td>${formattedText}</td>
                             <td style="color: #fde047; font-weight: 700;">${el.balance}</td>
-                            <td><span class="af-gl-sync-btn" data-srvid="${el.id}" title="Синхронизировать">♻️</span></td>
+                            <td><span class="af-gl-sync-btn" data-srvid="${el.id}" title="Синхронизировать">${GLI.refresh}</span></td>
                         </tr>`;
                     });
                     sHtml += `</table>`;
@@ -1120,7 +1192,7 @@ async function getservices(stidNew) {
 
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px;">
                         <div class="af-gl-complect-header ${stageClass}" ${opNote}>
-                            📦 [${service.id}] ${service.productKit.title}
+                            ${GLI.cube} [${service.id}] ${service.productKit.title}
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; font-weight: 500;">
                                 ${service.stage === "regular_lessons" ? "Регулярные занятия" : service.stage === "lost" ? "Потерянная" : service.stage}
                             </div>
@@ -1129,7 +1201,7 @@ async function getservices(stidNew) {
                     </div>`;
                 } else {
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px; text-align:center; border: 1px solid rgba(220, 20, 60, 0.3); background: linear-gradient(145deg, rgba(220, 20, 60, 0.1), rgba(220, 20, 60, 0.05));">
-                        <div style="color: #fca5a5; font-weight: 600; font-size: 13px;">⚠️ [${service.id}] '${service.productKit.title}' — некорректна</div>
+                        <div style="color: #fca5a5; font-weight: 600; font-size: 13px;">${GLI.alert} [${service.id}] '${service.productKit.title}' — некорректна</div>
                     </div>`;
                 }
             });
@@ -1137,7 +1209,7 @@ async function getservices(stidNew) {
             document.querySelectorAll('.af-gl-sync-btn').forEach(btn => {
                 btn.onclick = async function () {
                     const srvId = this.getAttribute('data-srvid');
-                    this.innerText = "⏳";
+                    this.innerHTML = GLI.loader;
                     const gToken = localStorage.getItem('token_global');
                     try {
                         await sendMessageAsync({
@@ -1145,17 +1217,17 @@ async function getservices(stidNew) {
                             fetchURL: `https://skysmart-core.skyeng.ru/api/v1/academic-activity/upsert-education-service-history/${srvId}`,
                             requestOptions: { headers: { "accept": "application/json, text/plain, */*", "authorization": `Bearer ${gToken}` }, method: "POST", mode: "cors" }
                         });
-                        this.innerText = "✅";
-                        setTimeout(() => this.innerText = "♻️", 3000);
+                        this.innerHTML = GLI.check;
+                        setTimeout(() => this.innerHTML = GLI.refresh, 3000);
                     } catch (response) {
                         if (typeof createAndShowButton === 'function') createAndShowButton('Не удалось выполнить запрос: ' + (response?.error || response.message), 'error');
-                        this.innerText = "❌";
+                        this.innerHTML = GLI.close;
                         localStorage.removeItem('token_global');
                     }
                 };
             });
         } else {
-            linkTable.innerHTML += `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3); color: #fca5a5;">❌ Нет комплектаций</div>`;
+            linkTable.innerHTML += `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3); color: #fca5a5;">${GLI.close} Нет комплектаций</div>`;
         }
 
         const data = JSON.parse(servicesRes.fetchansver);
@@ -1174,47 +1246,47 @@ async function getservices(stidNew) {
                 if (ignoreTypes.includes(sType)) return;
 
                 let statusClass, statusText, statusIcon;
-                const balanceHtml = `<div class="af-gl-service-balance">💰 ${service.balance}</div>`;
+                const balanceHtml = `<div class="af-gl-service-balance">${GLI.coin} ${service.balance}</div>`;
 
                 if (service.stage === "after_trial" || service.stage === "before_call") {
-                    statusClass = 'af-gl-status-vu'; statusText = 'Этап ВУ'; statusIcon = '⚡';
+                    statusClass = 'af-gl-status-vu'; statusText = 'Этап ВУ'; statusIcon = GLI.bolt;
                     htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">${GLI.copy}</span></span>
                         </div>
                         ${balanceHtml}
-                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        <div class="af-gl-service-type">${GLI.bulb} ${sType}</div>
                     </div>`;
                 } else if (service.stage === "regular_lessons") {
                     statusClass = 'af-gl-status-regular'; statusText = 'Регулярные'; statusIcon = '';
                     const tg = service.teacher?.general;
                     const ttg = service.temporaryTeacher?.general;
                     const t = tg
-                        ? `<div class="af-gl-service-teacher"><span>👽 ${escapeUserinfoHtml(tg.id)}, ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</span>${teacherLoginerBtn(tg.id)}</div>`
-                        : `<div class="af-gl-service-teacher missing">👽 Не закреплен!</div>`;
+                        ? `<div class="af-gl-service-teacher"><span>${GLI.alien} ${escapeUserinfoHtml(tg.id)}, ${escapeUserinfoHtml(tg.name)} ${escapeUserinfoHtml(tg.surname)}</span>${teacherLoginerBtn(tg.id)}</div>`
+                        : `<div class="af-gl-service-teacher missing">${GLI.alien} Не закреплен!</div>`;
                     const tmp = ttg
-                        ? `<div class="af-gl-service-teacher" style="margin-top:6px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;"><span>⏳ ${escapeUserinfoHtml(ttg.id)}, ${escapeUserinfoHtml(ttg.name)}</span>${teacherLoginerBtn(ttg.id)}</div>`
+                        ? `<div class="af-gl-service-teacher" style="margin-top:6px; background: rgba(253, 224, 71, 0.08); border-color: rgba(253, 224, 71, 0.2); color: #fde047;"><span>${GLI.hourglass} ${escapeUserinfoHtml(ttg.id)}, ${escapeUserinfoHtml(ttg.name)}</span>${teacherLoginerBtn(ttg.id)}</div>`
                         : '';
                     htmlStr += `<div class="af-gl-service-card">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">${GLI.copy}</span></span>
                         </div>
                         ${balanceHtml}
-                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        <div class="af-gl-service-type">${GLI.bulb} ${sType}</div>
                         ${t}${tmp}
                     </div>`;
                 } else if (service.stage === "lost") {
-                    statusClass = 'af-gl-status-lost'; statusText = 'Потерянная'; statusIcon = '💀';
+                    statusClass = 'af-gl-status-lost'; statusText = 'Потерянная'; statusIcon = GLI.skull;
                     lostCount++;
                     // Потерянные копим отдельно и показываем свёрнутыми под основными
                     lostHtml += `<div class="af-gl-service-card af-gl-service-card-lost">
                         <div class="af-gl-service-header">
                             <span class="af-gl-service-status ${statusClass}">${statusIcon} ${statusText}</span>
-                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">📋</span></span>
+                            <span class="af-gl-service-id">#${service.id} <span class="af-gl-icon-btn af-gl-copy-sid" data-sid="${service.id}" title="Копировать ID">${GLI.copy}</span></span>
                         </div>
-                        <div class="af-gl-service-type">💡 ${sType}</div>
+                        <div class="af-gl-service-type">${GLI.bulb} ${sType}</div>
                     </div>`;
                 }
             });
@@ -1222,7 +1294,7 @@ async function getservices(stidNew) {
             if (lostCount > 0) {
                 htmlStr += `<details class="af-gl-lost-group">
                     <summary>
-                        <span>💀 Потерянные услуги</span>
+                        <span>${GLI.skull} Потерянные услуги</span>
                         <span class="af-gl-lost-count">${lostCount}</span>
                     </summary>
                     <div class="af-gl-services-grid af-gl-lost-grid">${lostHtml}</div>
@@ -1237,16 +1309,16 @@ async function getservices(stidNew) {
                     const sid = this.dataset.sid;
                     if (typeof copyToClipboard === 'function') copyToClipboard(sid);
                     if (typeof createAndShowButton === 'function') createAndShowButton(`ID услуги ${sid} скопирован`, 'message');
-                    this.textContent = '✅';
-                    setTimeout(() => this.textContent = '📋', 1200);
+                    this.innerHTML = GLI.check;
+                    setTimeout(() => this.innerHTML = GLI.copy, 1200);
                 };
             });
         } else {
-            servTable.innerHTML = `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3);"><div style="font-size: 24px; margin-bottom: 8px;">📭</div><div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div></div>`;
+            servTable.innerHTML = `<div class="af-gl-empty-state" style="border-color: rgba(220, 20, 60, 0.3);"><div style="font-size: 24px; margin-bottom: 8px;">${GLI.inbox}</div><div style="color: #fca5a5; font-weight: 600;">Услуг не найдено</div></div>`;
         }
     } catch (e) {
         console.error('getservices error:', e);
-        servTable.innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">❌ Ошибка загрузки услуг</div>`;
+        servTable.innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">${GLI.close} Ошибка загрузки услуг</div>`;
     }
 }
 
@@ -1284,7 +1356,7 @@ async function getuserinfo() {
         }
     } catch (err) {
         console.error('Ошибка загрузки данных пользователя:', err);
-        document.getElementById('servicetable').innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">❌ ${err.message}</div>`;
+        document.getElementById('servicetable').innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">${GLI.close} ${err.message}</div>`;
     }
 }
 
@@ -1343,10 +1415,10 @@ async function runLoginerButton(btn, id) {
     }
     if (btn.classList.contains('is-loading')) return;
 
-    const idleIcon = '🔑';
+    const idleIcon = GLI.key;
     btn.classList.remove('is-success', 'is-error');
     btn.classList.add('is-loading');
-    btn.innerHTML = '⏳';
+    btn.innerHTML = GLI.loader;
 
     try {
         // Раньше при отсутствии getLoginLink показывалось «скопирована», хотя ничего не произошло.
@@ -1355,13 +1427,13 @@ async function runLoginerButton(btn, id) {
 
         btn.classList.remove('is-loading');
         btn.classList.add('is-success');
-        btn.innerHTML = '✅';
-        if (typeof createAndShowButton === 'function') createAndShowButton('💾 Ссылка-логинер скопирована', 'message');
+        btn.innerHTML = GLI.check;
+        if (typeof createAndShowButton === 'function') createAndShowButton('Ссылка-логинер скопирована', 'message');
 
     } catch (e) {
         btn.classList.remove('is-loading');
         btn.classList.add('is-error');
-        btn.innerHTML = '❌';
+        btn.innerHTML = GLI.close;
         if (typeof createAndShowButton === 'function') createAndShowButton('Не удалось получить логинер: ' + (e.message || 'Ошибка'), 'error');
 
     } finally {

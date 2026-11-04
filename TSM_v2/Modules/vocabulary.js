@@ -428,7 +428,7 @@ function renderWordSets(wordSets, isSearch = false) {
                 <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS" aria-label="Скопировать ссылку в CMS">${tsmIcon("link", 14)}</button>
                 <div class="tsm-word-id tsm-word-stat">${id}</div>
                 <div class="tsm-word-stat">${escapeHTML(word.progress)}%</div>
-                <div class="tsm-learned-status" title="${word.isLearned ? "Выучено" : "Не выучено"}">${word.isLearned ? "✓" : "·"}</div>
+                <div class="tsm-learned-status" title="${word.isLearned ? "Выучено" : "Не выучено"}">${word.isLearned ? tsmIcon("check", 14) : "·"}</div>
             </div>`;
         }).join("");
 
@@ -443,7 +443,7 @@ function renderWordSets(wordSets, isSearch = false) {
                         <input type="checkbox" name="selectwordsinonelesson" class="tsm-checkbox-all">
                         <span class="tsm-checkmark"></span>
                     </label>
-                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">%</div><div class="tsm-text-center">✓</div>
+                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">%</div><div class="tsm-text-center">${tsmIcon("check", 13)}</div>
                 </div>
                 <div>${rows}</div>
             </div>

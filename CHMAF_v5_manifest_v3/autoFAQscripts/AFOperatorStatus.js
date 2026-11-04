@@ -350,7 +350,6 @@
                     : currentCount <= 2 ? LOAD_THEMES.low
                     : currentCount < LOAD_MAX ? LOAD_THEMES.mid
                     : LOAD_THEMES.high;
-                const loadPct = Math.min(currentCount / LOAD_MAX, 1) * 100;
                 const tip = `${STATUS_TEXT[op.status] || op.status}, ${currentCount} ${chatsWord(currentCount)}`
                     + (currentCount >= LOAD_MAX ? ' — перегруз' : '')
                     + (isNext ? ' — следующий чат придёт сюда' : '');
@@ -366,12 +365,10 @@
 
                 return `${sep}<div class="${rowClasses}" name="operrow" data-id="${op.id}" title="${tip}">
                         <span class="op-st-badge ${pulseClass}" data-count="${currentCount}"
-                            style="--badge-bg: ${load.bg}; --badge-color: ${load.c}; --badge-border: ${load.b}; --badge-glow: ${load.g};">
+                            style="--badge-bg: ${theme.bg}; --badge-color: ${theme.glow}; --badge-border: ${theme.b}; --badge-glow: ${theme.textGlow};">
                             ${currentCount}
                         </span>
-                        <span class="op-st-dot" style="--dot: ${theme.glow};" aria-hidden="true"></span>
                         <span class="op-st-name">${displayName}</span>
-                        <span class="op-st-load ${currentCount >= LOAD_MAX ? 'is-over' : ''}" style="--load: ${loadPct}%; --load-c: ${load.c};" aria-hidden="true"></span>
                         ${isNext ? '<span class="op-st-next" aria-hidden="true"></span>' : ''}
                     </div>`;
             }).join('');
@@ -838,20 +835,11 @@
         .op-st-row.tp-os-row .op-st-name { color: #22d3ee; font-weight: 600; }
         .op-st-row.tp-os-row.is-away .op-st-name { color: #0891b2; }
 
+        .op-st-row:not(.is-away):not(.tp-os-row) { border-left-color: rgba(16, 185, 129, 0.85); }
         .op-st-row.is-away { background: transparent; border-color: rgba(255, 255, 255, 0.025); }
         .op-st-row.is-away:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1); }
 
         /* Следующий получатель чата */
-        .op-st-row.is-next {
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.10) 0%, rgba(16, 185, 129, 0.02) 100%);
-            border-color: rgba(16, 185, 129, 0.18);
-            border-left-color: #10b981;
-        }
-        .op-st-row.tp-os-row.is-next {
-            background: linear-gradient(90deg, rgba(34, 211, 238, 0.14) 0%, rgba(34, 211, 238, 0.03) 100%);
-            border-color: rgba(34, 211, 238, 0.22);
-            border-left-color: #67e8f9;
-        }
         .op-st-next {
             flex-shrink: 0;
             width: 0;
@@ -919,7 +907,7 @@
         .op-st-row.st-busy,
         .op-st-row.st-busy.is-away {
             background:
-                radial-gradient(120% 140% at 0% 50%, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0.10) 45%, transparent 80%),
+                radial-gradient(120% 140% at 0% 50%, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.06) 45%, transparent 80%),
                 rgba(245, 158, 11, 0.05);
             border-color: rgba(245, 158, 11, 0.28);
             border-left-color: rgba(245, 158, 11, 0.85);
@@ -928,7 +916,7 @@
         .op-st-row.st-pause,
         .op-st-row.st-pause.is-away {
             background:
-                radial-gradient(120% 140% at 0% 50%, rgba(239, 68, 68, 0.30) 0%, rgba(239, 68, 68, 0.11) 45%, transparent 80%),
+                radial-gradient(120% 140% at 0% 50%, rgba(239, 68, 68, 0.18) 0%, rgba(239, 68, 68, 0.06) 45%, transparent 80%),
                 rgba(239, 68, 68, 0.05);
             border-color: rgba(239, 68, 68, 0.30);
             border-left-color: rgba(239, 68, 68, 0.9);
@@ -1340,6 +1328,60 @@
         }
 
         /* === ACCESSIBILITY === */
+
+        /* === ВАРИАНТ D: градиентное свечение слева цветом статуса, без рамок === */
+        .op-st-row,
+        .op-st-row.is-away,
+        .op-st-row.st-busy, .op-st-row.st-busy.is-away,
+        .op-st-row.st-pause, .op-st-row.st-pause.is-away {
+            background: linear-gradient(90deg, rgba(var(--st-rgb), 0.20), rgba(var(--st-rgb), 0.02) 70%);
+            border: 1px solid transparent;
+            border-left-width: 1px;
+            box-shadow: none;
+        }
+        .op-st-row,
+        .op-st-row.is-away { --st-rgb: 16, 185, 129; }
+        .op-st-row.st-busy, .op-st-row.st-busy.is-away   { --st-rgb: 245, 158, 11; }
+        .op-st-row.st-pause, .op-st-row.st-pause.is-away { --st-rgb: 239, 68, 68; }
+        .op-st-row:hover,
+        .op-st-row.st-busy:hover,
+        .op-st-row.st-pause:hover {
+            background: linear-gradient(90deg, rgba(var(--st-rgb), 0.32), rgba(var(--st-rgb), 0.05) 75%);
+            border-color: rgba(var(--st-rgb), 0.25);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+        /* ТП ОС: отличается только цветом имени, чтобы не спорить со статусом */
+        .op-st-row.tp-os-row { box-shadow: none; }
+        .op-st-row.is-away .op-st-name { opacity: 0.75; }
+        /* Левая граница не нужна: статус виден по свечению. Перебиваем прежние правила (ТП ОС, online, busy, pause) */
+        .op-st-row, .op-st-row.tp-os-row, .op-st-row.st-busy, .op-st-row.st-pause, .op-st-row.is-away,
+        .op-st-row:hover, .op-st-row.tp-os-row:hover {
+            border-left: 1px solid transparent !important;
+        }
+        .op-st-row:hover { border-left-color: rgba(var(--st-rgb), 0.25) !important; }
+
+        /* Стеклянный бейдж: тонированная подложка, блик сверху, внутренняя светлая кромка */
+        .op-st-row .op-st-badge {
+            background:
+                linear-gradient(160deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 45%, rgba(255,255,255,0) 60%),
+                linear-gradient(180deg, rgba(var(--st-rgb), 0.22), rgba(var(--st-rgb), 0.06));
+            border: 1px solid rgba(var(--st-rgb), 0.45);
+            -webkit-backdrop-filter: blur(6px) saturate(140%);
+            backdrop-filter: blur(6px) saturate(140%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.28),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+                0 2px 6px rgba(0, 0, 0, 0.35);
+        }
+        .op-st-row .op-st-badge::before {
+            display: block;
+            height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0));
+            border-radius: 7px 7px 0 0;
+        }
+        .op-st-row .op-st-badge::after { opacity: 0.22; }
+        .op-st-row .op-st-next { border-right-color: rgb(var(--st-rgb)); filter: none; }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;

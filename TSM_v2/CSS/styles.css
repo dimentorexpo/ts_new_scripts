@@ -148,7 +148,7 @@
   color: var(--tsm-text);
   white-space: nowrap;
 }
-.tsm-window-title .tsm-icon { color: var(--tsm-accent); }
+.tsm-window-title .tsm-icon { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35)); }
 .tsm-toolbar {
   display: flex;
   align-items: center;
@@ -787,7 +787,7 @@
 .tsm-kid-card.sleep { border-left: 3px solid var(--tsm-text-3); }
 .tsm-kid-card.vacation { border-left: 3px solid var(--tsm-warn); }
 .tsm-student-name-kid { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; min-width: 0; }
-.tsm-kid-status { flex: 0 0 auto; font-size: 13px; line-height: 1; cursor: help; }
+.tsm-kid-status { flex: 0 0 auto; line-height: 1; cursor: help; }
 .tsm-kid-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsm-kid-meta { display: flex; flex-wrap: wrap; gap: 5px; }
 .tsm-id-badge,
@@ -1057,8 +1057,16 @@
 /* ─── Иконки ─── */
 .tsm-icon { display: block; flex: 0 0 auto; }
 .tsm-emphasis .tsm-icon { display: inline-block; vertical-align: -3px; color: var(--tsm-text-2); }
-.tsm-icon.tsm-flash-ok { color: var(--tsm-ok); }
-.tsm-icon.tsm-flash-bad { color: var(--tsm-bad); }
+.tsm-icon { transition: transform 0.15s ease, filter 0.15s ease; }
+button:hover > .tsm-icon,
+.tsm-menu-item:hover .tsm-icon { transform: scale(1.1); filter: saturate(1.25) brightness(1.1); }
+button:disabled > .tsm-icon { filter: grayscale(0.7); opacity: 0.55; }
+.tsm-collapsible-title,
+.tsm-fix-op-title,
+.tsm-fix-section-title,
+.tsm-dialog-title,
+.tsm-fix-stat { display: inline-flex; align-items: center; gap: 7px; }
+.tsm-kid-status { display: inline-flex; align-items: center; }
 
 /* Выбор ученика в строке участников */
 .tsm-select-student { max-width: 180px; }

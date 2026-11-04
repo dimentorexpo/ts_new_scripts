@@ -195,14 +195,14 @@
 <div class="tpl-widget">
   <div class="tpl-header">
     <div class="tpl-brand">
-      <span class="tpl-brand-ico">📑</span>
+      <span class="tpl-brand-ico">${crmColorIcon('templates', 18)}</span>
       <span class="tpl-title">Шаблоны ответов</span>
       <span class="tpl-count"></span>
     </div>
     <div class="tpl-actions">
-      <button type="button" class="tpl-icon-btn" data-action="refresh" title="Обновить шаблоны" aria-label="Обновить">↻</button>
+      <button type="button" class="tpl-icon-btn" data-action="refresh" title="Обновить шаблоны" aria-label="Обновить">${crmIcon('refresh', 15)}</button>
       <button type="button" class="tpl-icon-btn" data-action="min" title="Свернуть" aria-label="Свернуть">–</button>
-      <button type="button" class="tpl-icon-btn" data-action="close" title="Скрыть" aria-label="Скрыть">✕</button>
+      <button type="button" class="tpl-icon-btn" data-action="close" title="Скрыть" aria-label="Скрыть">${crmIcon('close', 15)}</button>
     </div>
   </div>
 

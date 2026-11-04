@@ -32,6 +32,10 @@
     const ROW_CLASSES = ['ps-row-completed', 'ps-row-failed', 'ps-row-processing'];
     const CELL_CLASSES = ['ps-status-completed', 'ps-status-failed', 'ps-status-processing', 'ps-recurrent', 'ps-overpay-failed'];
 
+    // Иконка «рекуррент» для ::before (CSS не принимает inline-SVG — отдаём data-URI).
+    const PS_REFRESH_URI = 'data:image/svg+xml,' + encodeURIComponent(
+        crmColorIcon('refresh', 14).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '));
+
     const style = document.createElement('style');
     style.id = 'ps-custom-styles';
     style.textContent = `
@@ -108,7 +112,8 @@
         .ps-status-failed     { background-color: #fde3e4 !important; color: #a3262d !important; font-weight: 600 !important; box-shadow: inset 0 0 0 2px #e05a60 !important; }
         .ps-status-processing { background-color: #ffead6 !important; color: #8a4310 !important; font-weight: 600 !important; box-shadow: inset 0 0 0 2px #f2a65a !important; }
         .ps-recurrent { background-color: #e3f0fd !important; color: #13406f !important; font-weight: 700 !important; box-shadow: inset 0 0 0 2px #2f6db3 !important; }
-        .ps-recurrent::before { content: "🔄 "; }
+        .ps-head .crm-cicon, #ps-fab-btn .crm-cicon { vertical-align: -4px; }
+        .ps-recurrent::before { content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 5px; vertical-align: -2px; background: url("${PS_REFRESH_URI}") center / contain no-repeat; }
         .ps-overpay-failed { background-color: #efecff !important; color: #3f2f8f !important; font-weight: 700 !important; box-shadow: inset 0 0 0 2px #8b7cf0 !important; }
         .ps-overpay-badge {
             display: block; width: fit-content; margin-top: 4px; padding: 2px 8px;
@@ -121,7 +126,7 @@
     fab.type = 'button';
     fab.id = 'ps-fab-btn';
     fab.title = 'Проверить платежи и автоплатежи в таблице';
-    fab.innerHTML = '<span aria-hidden="true">💳</span><span>Анализ платежей</span>';
+    fab.innerHTML = `<span aria-hidden="true" style="display:inline-flex">${crmColorIcon('card', 18)}</span><span>Анализ платежей</span>`;
     document.body.appendChild(fab);
 
     const panel = document.createElement('div');
@@ -130,7 +135,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-label', 'Анализ платежей');
     panel.innerHTML = `
-        <div class="ps-head">💳 Анализ платежей<button type="button" class="ps-close" id="ps-checker-close" title="Закрыть" aria-label="Закрыть">✕</button></div>
+        <div class="ps-head">${crmColorIcon('card', 18)} Анализ платежей<button type="button" class="ps-close" id="ps-checker-close" title="Закрыть" aria-label="Закрыть">${crmColorIcon('close', 14)}</button></div>
         <div class="ps-body">
             <div class="ps-verdict" id="ps-verdict">Таблица ещё не проверена</div>
             <div id="ps-recommendation"></div>

@@ -63,6 +63,26 @@
     setTimeout(() => toast.remove(), 3500);
   }
 
+  // === SVG-иконки (stroke = currentColor, поэтому сами подхватывают тему и состояние кнопки) ===
+  const ICON_PATHS = {
+    close:   '<path d="M6 6l12 12M18 6L6 18"/>',
+    archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9M10 13h4"/>',
+    back:    '<path d="M19 12H5M11 6l-6 6 6 6"/>',
+    refresh: '<path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/>',
+    sun:     '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon:    '<path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/>',
+    search:  '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+    user:    '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
+    book:    '<path d="M12 6c-1.5-1.3-3.5-2-6-2H3v14h3c2.5 0 4.5.7 6 2 1.5-1.3 3.5-2 6-2h3V4h-3c-2.5 0-4.5.7-6 2zM12 6v14"/>',
+    eraser:  '<path d="M7 21h10M5.5 13.5l7-7a2 2 0 012.8 0l3.2 3.2a2 2 0 010 2.8L11 20H8l-2.5-2.5a2 2 0 010-4zM9 11l5 5"/>',
+    key:     '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>',
+    shuffle: '<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
+    check:   '<path d="M5 12.5l4.5 4.5L19 7"/>',
+    loader:  '<path d="M12 3a9 9 0 109 9"/>'
+  };
+  const ICON = Object.fromEntries(Object.entries(ICON_PATHS).map(([name, body]) =>
+    [name, `<svg class="afg-i afg-i-${name}${name === 'loader' ? ' afg-i-spin' : ''}" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`]));
+
   function setBusy(id, busy) {
     const button = $(id);
     if (!button) return;
@@ -1036,40 +1056,43 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .afg-panel.afg-light {
-            --bg: #d9e2eb;
-            --surface: #e9eff5;
-            --surface-2: #dce6ef;
-            --surface-hover: #d0deea;
-            --line: rgba(33, 57, 84, .16);
-            --text: #142338;
-            --muted: #40566d;
-            --subtle: #536a81;
-            --accent: #2f56b5;
-            --accent-bg: rgba(66, 104, 201, .11);
-            --green: #087253;
-            --amber: #8c611a;
+        /* Светлая тема — только область содержимого чата. Шапка, меню, подвал и окна остаются тёмными. */
+        .afg-panel.afg-light .afg-chat-area {
+            --bg: #eef2f8;
+            --surface: #ffffff;
+            --surface-2: #f6f8fc;
+            --surface-hover: #e6ecf6;
+            --line: rgba(30, 55, 100, .13);
+            --text: #16233a;
+            --muted: #475a76;
+            --subtle: #6b7d98;
+            --accent: #2f5fd0;
+            --accent-bg: rgba(47, 95, 208, .10);
+            --green: #0a7d5a;
+            --amber: #b45f06;
 
-            --btn-bg: #e9eff5;
-            --btn-line: rgba(33, 57, 84, .2);
-            --btn-hover: #d0deea;
+            --btn-bg: #ffffff;
+            --btn-line: rgba(30, 55, 100, .2);
+            --btn-hover: #e6ecf6;
             --btn-hover-line: #5f7fc9;
-            --field: #f3f6fa;
-            --field-line: rgba(33, 57, 84, .2);
-            --focus: #4268c9;
-            --primary: #4268c9;
-            --primary-hover: #3a5eb8;
-            --primary-line: #3557ad;
-            --primary-text: #fff;
-            --close: #b8324a;
-            --close-bg: rgba(214, 51, 79, .08);
-            --close-line: rgba(214, 51, 79, .3);
+            --field: #ffffff;
+            --field-line: rgba(30, 55, 100, .2);
+            --focus: #2f5fd0;
 
+            color: var(--text);
+            text-shadow: none;
             background:
-                radial-gradient(circle at 95% 0%, rgba(66, 104, 201, .10), transparent 40%),
+                radial-gradient(circle at 100% 0%, rgba(47, 95, 208, .08), transparent 45%),
                 var(--bg);
-            box-shadow: -18px 0 55px rgba(24, 42, 68, .17);
+            scrollbar-color: rgba(47, 95, 208, .35) transparent;
         }
+        .afg-panel.afg-light .afg-chat-area .afg-msg {
+            box-shadow: 0 1px 2px rgba(22, 35, 58, .06), 0 6px 16px rgba(22, 35, 58, .06);
+        }
+        .afg-panel.afg-light .afg-chat-area .afg-msg-oper    { background: #fff8ec; }
+        .afg-panel.afg-light .afg-chat-area .afg-msg-bot     { background: #eefaf4; }
+        .afg-panel.afg-light .afg-chat-area .afg-msg-comment { background: #fffbe8; border-color: rgba(180, 95, 6, .35); }
+        .afg-panel.afg-light .afg-chat-area .afg-message-content pre { background: rgba(22, 35, 58, .06); }
 
         .afg-panel button,
         .afg-panel input,
@@ -1217,9 +1240,45 @@
             color-scheme: dark;
         }
 
-        .afg-light .afg-input[type="date"] {
-            color-scheme: light;
+
+        /* === SVG-иконки панели === */
+        .afg-i {
+            width: 18px; height: 18px; display: block;
+            fill: none; stroke: currentColor; stroke-width: 1.8;
+            stroke-linecap: round; stroke-linejoin: round;
         }
+        .afg-i-spin { animation: afgIconSpin .8s linear infinite; }
+        @keyframes afgIconSpin { to { transform: rotate(360deg); } }
+        .afg-title-ico, .afg-modal-title { display: inline-flex; align-items: center; }
+        .afg-title-ico { margin-right: 8px; color: var(--accent, #4dcce5); }
+        .afg-title-ico .afg-i { width: 17px; height: 17px; }
+        .afg-icon-btn .afg-i, .afg-primary .afg-i { margin: auto; }
+        .afg-key-btn { display: inline-grid; place-items: center; }
+        .afg-key-btn .afg-i { width: 16px; height: 16px; }
+        .afg-primary { display: inline-grid; place-items: center; }
+
+        /* Цветные иконки: свой оттенок + лёгкая заливка замкнутых контуров */
+        .afg-i-archive { --ic: #4dcce5; } .afg-i-back    { --ic: #60a5fa; }
+        .afg-i-refresh { --ic: #34d399; } .afg-i-sun     { --ic: #fbbf24; }
+        .afg-i-moon    { --ic: #a5b4fc; } .afg-i-user    { --ic: #c084fc; }
+        .afg-i-book    { --ic: #38bdf8; } .afg-i-eraser  { --ic: #fb923c; }
+        .afg-i-key     { --ic: #fbbf24; } .afg-i-shuffle { --ic: #22d3ee; }
+        .afg-i-check   { --ic: #22c55e; } .afg-i-close   { --ic: #f87171; }
+        .afg-i[class*="afg-i-"]:not(.afg-i-search):not(.afg-i-loader) {
+            stroke: var(--ic, currentColor);
+            fill: color-mix(in srgb, var(--ic, currentColor) 20%, transparent);
+            filter: drop-shadow(0 0 3px color-mix(in srgb, var(--ic, currentColor) 45%, transparent));
+        }
+        .afg-i-sun, .afg-i-refresh, .afg-i-back, .afg-i-key, .afg-i-shuffle, .afg-i-check, .afg-i-close { fill: none !important; }
+        /* Кнопка закрытия сохраняет свой красный из темы */
+        .afg-icon-btn--close .afg-i-close { stroke: var(--close, #f87171); }
+
+        /* Календарь в полях даты — свой значок вместо системного */
+        .afg-input[type="date"]::-webkit-calendar-picker-indicator {
+            width: 18px; height: 18px; padding: 0; margin-left: 4px; cursor: pointer; opacity: .8;
+            background: center / 16px 16px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2360a5fa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2.5'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
+        }
+        .afg-input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
 
         .afg-primary {
             display: inline-grid;
@@ -1412,6 +1471,42 @@
             border: 1px solid rgba(66, 104, 201, .25);
             border-radius: 21px;
             font-size: 27px;
+        }
+
+        /* === Анимация загрузки === */
+        .afg-spinner { position: relative; display: block; width: 38px; height: 38px; }
+        .afg-spinner-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--accent);
+            border-right-color: color-mix(in srgb, var(--accent) 40%, transparent);
+            animation: afgSpin 1s cubic-bezier(.5, .1, .5, .9) infinite;
+            filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 60%, transparent));
+        }
+        .afg-spinner-ring--2 {
+            inset: 7px; border-width: 2px;
+            border-top-color: #34d399;
+            border-right-color: transparent;
+            border-left-color: color-mix(in srgb, #34d399 40%, transparent);
+            animation-duration: 1.4s; animation-direction: reverse;
+            filter: drop-shadow(0 0 4px rgba(52, 211, 153, .5));
+        }
+        .afg-spinner-dot {
+            position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
+            border-radius: 50%; background: var(--accent);
+            animation: afgPulse 1.2s ease-in-out infinite;
+        }
+        .afg-empty-icon--loading { animation: afgBreath 2s ease-in-out infinite; }
+        .afg-loading-text::after {
+            content: ""; display: inline-block; width: 1.2em; text-align: left;
+            animation: afgDots 1.4s steps(4, end) infinite;
+        }
+        @keyframes afgSpin { to { transform: rotate(360deg); } }
+        @keyframes afgPulse { 0%, 100% { transform: scale(.6); opacity: .5; } 50% { transform: scale(1.3); opacity: 1; } }
+        @keyframes afgBreath { 0%, 100% { box-shadow: 0 0 0 0 rgba(66, 104, 201, .0); } 50% { box-shadow: 0 0 22px 2px rgba(66, 104, 201, .28); } }
+        @keyframes afgDots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75%, 100% { content: "..."; } }
+        @media (prefers-reduced-motion: reduce) {
+            .afg-spinner-ring, .afg-spinner-dot, .afg-empty-icon--loading, .afg-loading-text::after { animation-duration: 3s; }
         }
 
         .afg-empty-title {
@@ -1973,7 +2068,7 @@
             }
 
 
-.afg-panel.afg-light .afg-user-type--unknown {
+.afg-panel.afg-light .afg-chat-area .afg-user-type--unknown {
     color: #485a70;
     background: #e0e7ee;
     border-color: #b6c4d2;
@@ -2046,25 +2141,25 @@
     border-color: rgba(148, 163, 184, .29);
 }
 
-.afg-panel.afg-light .afg-user-type--student {
+.afg-panel.afg-light .afg-chat-area .afg-user-type--student {
     color: #9b3f4b;
     background: #f4dfe1;
     border-color: #dcadb3;
 }
 
-.afg-panel.afg-light .afg-user-type--teacher {
+.afg-panel.afg-light .afg-chat-area .afg-user-type--teacher {
     color: #176a71;
     background: #d7eff0;
     border-color: #a2d2d4;
 }
 
-.afg-panel.afg-light .afg-user-type--parent {
+.afg-panel.afg-light .afg-chat-area .afg-user-type--parent {
     color: #316b48;
     background: #dcefe3;
     border-color: #acd3ba;
 }
 
-.afg-panel.afg-light .afg-user-type--unknown {
+.afg-panel.afg-light .afg-chat-area .afg-user-type--unknown {
     color: #485a70;
     background: #e0e7ee;
     border-color: #b6c4d2;
@@ -2141,7 +2236,7 @@
 }
 
 /* ===== Оформление как в Userinfo ===== */
-.afg-panel:not(.afg-light) {
+.afg-panel {
     text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
 }
 
@@ -2241,7 +2336,7 @@
     box-shadow: 0 0 0 3px rgba(110, 152, 247, .16);
 }
 
-.afg-panel:not(.afg-light) .afg-input:focus {
+.afg-panel .afg-input:focus {
     background: #142034;
 }
 
@@ -2482,7 +2577,7 @@
     line-height: 1.5;
 }
 
-.afg-panel.afg-light .afg-rp-error {
+.afg-panel.afg-light .afg-chat-area .afg-rp-error {
     color: #9b2335;
     background: #fbe9ec;
     border-color: #f1b9c3;
@@ -2539,11 +2634,11 @@
                     type="button"
                     title="Закрыть панель"
                     aria-label="Закрыть панель"
-                >❌</button>
+                >${ICON.close}</button>
 
                 <div class="afg-brand">
                     <div>
-                        <div class="afg-title">🗄️ История диалогов</div>
+                        <div class="afg-title"><span class="afg-title-ico">${ICON.archive}</span>История диалогов</div>
                         <div class="afg-subtitle" id="afgSubtitle">
                             Поиск и работа с чатами
                         </div>
@@ -2564,7 +2659,7 @@
                         title="Вернуться к результатам"
                         aria-label="Вернуться к результатам"
                         hidden
-                    >⬅️</button>
+                    >${ICON.back}</button>
 
                     <button
                         class="afg-icon-btn"
@@ -2573,7 +2668,7 @@
                         title="Обновить чат"
                         aria-label="Обновить чат"
                         hidden
-                    >♻️</button>
+                    >${ICON.refresh}</button>
 
                     <button
                         class="afg-icon-btn"
@@ -2581,7 +2676,7 @@
                         type="button"
                         title="Сменить тему"
                         aria-label="Сменить тему"
-                    >◐</button>
+                    >${ICON.sun}</button>
                 </div>
             </div>
 
@@ -2609,7 +2704,7 @@
                     type="button"
                     title="Найти"
                     aria-label="Найти"
-                >🔎</button>
+                >${ICON.search}</button>
             </div>
 
             <div class="afg-filters">
@@ -2647,7 +2742,7 @@
                     type="button"
                     title="Обновить операторов"
                     aria-label="Обновить операторов"
-                >♻️</button>
+                >${ICON.refresh}</button>
 
                 <button
                     class="afg-icon-btn"
@@ -2655,7 +2750,7 @@
                     type="button"
                     title="Данные пользователя"
                     aria-label="Данные пользователя"
-                >👤</button>
+                >${ICON.user}</button>
 
                 <button
                     class="afg-icon-btn"
@@ -2663,7 +2758,7 @@
                     type="button"
                     title="Инструкция"
                     aria-label="Инструкция"
-                >📖</button>
+                >${ICON.book}</button>
 
                 <button
                     class="afg-icon-btn"
@@ -2671,7 +2766,7 @@
                     type="button"
                     title="Очистить"
                     aria-label="Очистить"
-                >🧹</button>
+                >${ICON.eraser}</button>
             </div>
         </div>
 
@@ -2695,7 +2790,7 @@
                             title="Ссылка-логинер"
                             aria-label="Скопировать ссылку-логинер"
                             hidden
-                        >🔑</button>
+                        >${ICON.key}</button>
                     </div>
                 </div>
 
@@ -2802,14 +2897,14 @@
         >
             <div class="afg-modal">
                 <div class="afg-modal-head">
-                    <span>🔀 Перевести чат</span>
+                    <span class="afg-modal-title"><span class="afg-title-ico">${ICON.shuffle}</span>Перевести чат</span>
 
                     <button
                         class="afg-icon-btn afg-icon-btn--close"
                         id="hidereassignpicker"
                         type="button"
                         aria-label="Закрыть"
-                    >❌</button>
+                    >${ICON.close}</button>
                 </div>
 
                 <div class="afg-rp-chat" id="afgRpChat"></div>
@@ -2820,7 +2915,7 @@
                         id="afgRpFilter"
                         type="text"
                         autocomplete="off"
-                        placeholder="🔎 Начните вводить имя…"
+                        placeholder="Начните вводить имя…"
                         aria-label="Поиск оператора"
                     >
                     <div class="afg-rp-list" id="afgRpList" role="listbox" aria-label="Операторы ТП"></div>
@@ -2844,7 +2939,7 @@
   function applyTheme() {
     panel.classList.toggle("afg-light", state.theme === "light");
 
-    $("chagetheme").textContent = state.theme === "light" ? "🌙" : "☀️";
+    $("chagetheme").innerHTML = state.theme === "light" ? ICON.moon : ICON.sun;
 
     $("chagetheme").title =
       state.theme === "light"
@@ -2865,7 +2960,8 @@
 
     const symbol = document.createElement("div");
     symbol.className = "afg-empty-icon";
-    symbol.textContent = icon;
+    if (icon instanceof Node) symbol.append(icon);
+    else symbol.textContent = icon;
 
     const heading = document.createElement("div");
     heading.className = "afg-empty-title";
@@ -2882,7 +2978,15 @@
 
   function loading(text) {
     $("afgSectionTitle").textContent = "Загрузка";
-    empty("Немного подождите", text, "◌");
+    const spinner = document.createElement("span");
+    spinner.className = "afg-spinner";
+    spinner.setAttribute("role", "status");
+    spinner.setAttribute("aria-label", "Загрузка");
+    spinner.innerHTML = '<i class="afg-spinner-ring"></i><i class="afg-spinner-ring afg-spinner-ring--2"></i><i class="afg-spinner-dot"></i>';
+    empty("Немного подождите", String(text).replace(/[….]+$/, ""), spinner);
+    const icon = $("infofield").querySelector(".afg-empty-icon");
+    icon?.classList.add("afg-empty-icon--loading");
+    $("infofield").querySelector(".afg-empty-text")?.classList.add("afg-loading-text");
   }
 
   function closeModal() {
@@ -3293,7 +3397,7 @@
     if (button.disabled) return;
 
     setBusy("RefrehOperators", true);
-    button.textContent = "◌";
+    button.innerHTML = ICON.loader;
 
     try {
       const data = await apiJson(`${API}/operators/statistic/currentState`);
@@ -3379,7 +3483,7 @@
       console.error(error);
       notify("Не удалось обновить операторов", "error");
     } finally {
-      button.textContent = "♻️";
+      button.innerHTML = ICON.refresh;
       setBusy("RefrehOperators", false);
     }
   }
@@ -4284,7 +4388,7 @@
 
     btn.classList.remove("is-success", "is-error");
     btn.classList.add("is-loading");
-    btn.textContent = "⏳";
+    btn.innerHTML = ICON.loader;
 
     try {
       if (typeof getLoginLink !== "function") {
@@ -4294,17 +4398,17 @@
       await getLoginLink(id);
 
       btn.classList.add("is-success");
-      btn.textContent = "✅";
-      notify("💾 Ссылка-логинер скопирована", "message");
+      btn.innerHTML = ICON.check;
+      notify("Ссылка-логинер скопирована", "message");
     } catch (error) {
       btn.classList.add("is-error");
-      btn.textContent = "❌";
+      btn.innerHTML = ICON.close;
       notify("Не удалось получить логинер: " + (error?.message || "ошибка"), "error");
     } finally {
       btn.classList.remove("is-loading");
       setTimeout(() => {
         btn.classList.remove("is-success", "is-error");
-        btn.textContent = "🔑";
+        btn.innerHTML = ICON.key;
       }, 2000);
     }
   });

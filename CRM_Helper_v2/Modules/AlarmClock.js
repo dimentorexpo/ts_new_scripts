@@ -142,7 +142,7 @@
         }
         refreshMenuIcon();
 
-        crmToast(text, 'warning', { title: '⏰ Напоминание', sticky: true });
+        crmToast(text, 'warning', { title: 'Напоминание', sticky: true });
         if (typeof crmPlaySound === 'function') crmPlaySound();
     }
 

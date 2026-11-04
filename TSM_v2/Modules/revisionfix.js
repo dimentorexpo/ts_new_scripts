@@ -27,14 +27,14 @@ const win_revisionFix = `
         <label class="tsm-fix-op" data-op="load">
             <span class="tsm-custom-checkbox"><input type="checkbox" id="revfixOpLoad" checked><span class="tsm-checkmark"></span></span>
             <span class="tsm-fix-op-body">
-                <span class="tsm-fix-op-title">↻ Обновить ревизию <code>load-step</code></span>
+                <span class="tsm-fix-op-title">${tsmIcon("refresh", 15)} Обновить ревизию <code>load-step</code></span>
                 <span class="tsm-fix-op-desc">Слайд перезагружается в последней версии. Прогресс и ответы учеников сохраняются.</span>
             </span>
         </label>
         <label class="tsm-fix-op tsm-fix-op-danger" data-op="delete">
             <span class="tsm-custom-checkbox"><input type="checkbox" id="revfixOpDelete"><span class="tsm-checkmark"></span></span>
             <span class="tsm-fix-op-body">
-                <span class="tsm-fix-op-title">⚠ Сбросить ответы <code>delete blocks</code></span>
+                <span class="tsm-fix-op-title">${tsmIcon("alert", 15)} Сбросить ответы <code>delete blocks</code></span>
                 <span class="tsm-fix-op-desc">Удаляет все введённые ответы учеников на выбранных слайдах. Восстановить их нельзя.</span>
             </span>
         </label>
@@ -193,7 +193,7 @@ function revfixRenderSlides() {
         return `<div class="tsm-fix-section">
             <label class="tsm-fix-section-head">
                 <span class="tsm-custom-checkbox tsm-fix-section-toggle" title="Выбрать все слайды раздела"><input type="checkbox"><span class="tsm-checkmark"></span></span>
-                <span class="tsm-fix-section-title">${escapeHTML(title)}</span>
+                <span class="tsm-fix-section-title">${tsmTitleHTML(title, 15)}</span>
                 <span class="tsm-fix-section-count">${slides.length}</span>
             </label>
             ${rows}
@@ -344,9 +344,9 @@ function revfixRenderResults() {
     </tr>`).join("");
 
     box.innerHTML = `<div class="tsm-fix-results-head">
-            ${ops.load ? `<span class="tsm-fix-stat tsm-fix-stat-ok" title="Ревизий обновлено">↻ Ревизии: ${loadOk}</span>` : ""}
-            ${ops.delete ? `<span class="tsm-fix-stat tsm-fix-stat-del" title="Ответов сброшено">⚠ Ответы: ${delOk}</span>` : ""}
-            ${failed ? `<span class="tsm-fix-stat tsm-fix-stat-bad" title="Пар ученик × слайд с ошибками">✕ Ошибки: ${failed}</span>` : ""}
+            ${ops.load ? `<span class="tsm-fix-stat tsm-fix-stat-ok" title="Ревизий обновлено">${tsmIcon("refresh", 13)} Ревизии: ${loadOk}</span>` : ""}
+            ${ops.delete ? `<span class="tsm-fix-stat tsm-fix-stat-del" title="Ответов сброшено">${tsmIcon("alert", 13)} Ответы: ${delOk}</span>` : ""}
+            ${failed ? `<span class="tsm-fix-stat tsm-fix-stat-bad" title="Пар ученик × слайд с ошибками">${tsmIcon("x-circle", 13)} Ошибки: ${failed}</span>` : ""}
             <span class="tsm-toolbar-spacer"></span>
             ${failed && !revfixState.running ? '<button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixRetry">Повторить ошибки</button>' : ""}
             <button type="button" class="tsm-btn tsm-fix-head-btn" id="revfixCopyReport">Отчёт в буфер</button>

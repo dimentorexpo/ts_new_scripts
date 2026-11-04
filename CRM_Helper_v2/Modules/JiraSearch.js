@@ -47,7 +47,7 @@
         })}
         <div class="crm-body">
             <div class="crm-seg" id="control_jira_search" role="tablist">
-                ${PRESETS.map((p) => `<button type="button" id="${p.id}" role="tab">${p.icon} ${p.label}</button>`).join('')}
+                ${PRESETS.map((p) => `<button type="button" id="${p.id}" role="tab">${crmEmojiIcon(p.icon, 15)} ${p.label}</button>`).join('')}
             </div>
 
             <div id="fields_jira_search" style="margin-top:10px">
@@ -237,7 +237,7 @@
     function renderFavs() {
         els.favList.innerHTML = favs.length
             ? favs.map((f) => rowHtml(f, '')).join('')
-            : '<div class="crm-empty">В избранном пусто. Нажмите ☆ у задачи в результатах поиска.</div>';
+            : `<div class="crm-empty">В избранном пусто. Нажмите ${crmIcon('star', 13)} у задачи в результатах поиска.</div>`;
     }
 
     function renderPages(total, start) {

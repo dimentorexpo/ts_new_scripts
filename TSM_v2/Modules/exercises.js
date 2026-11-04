@@ -137,7 +137,7 @@ function categoryStatsHTML(block) {
 
 function collapsibleHTML(title, count, inner, open = false) {
     return `<div class="tsm-collapsible${open ? " active" : ""}" role="button" tabindex="0" aria-expanded="${open}">
-        <span>${escapeHTML(title)}</span>${count != null ? `<span class="tsm-collapsible-count">${count}</span>` : ""}
+        <span class="tsm-collapsible-title">${tsmTitleHTML(title)}</span>${count != null ? `<span class="tsm-collapsible-count">${count}</span>` : ""}
     </div>
     <div class="tsm-slide-box${open ? "" : " tsm-hidden"}">${inner}</div>`;
 }

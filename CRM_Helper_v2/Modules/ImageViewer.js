@@ -86,9 +86,9 @@
     overlay.id = 'crmViewerOverlay';
     overlay.innerHTML = `
         <img id="crmViewerImg" alt="Просмотр изображения" draggable="false">
-        <button class="crm-viewer-btn" id="crmViewerClose" title="Закрыть (Esc)">✕</button>
-        <button class="crm-viewer-btn" id="crmViewerPrev" title="Предыдущее (←)">‹</button>
-        <button class="crm-viewer-btn" id="crmViewerNext" title="Следующее (→)">›</button>
+        <button class="crm-viewer-btn" id="crmViewerClose" title="Закрыть (Esc)">${crmIcon('close', 18)}</button>
+        <button class="crm-viewer-btn" id="crmViewerPrev" title="Предыдущее (←)">${crmIcon('back', 20)}</button>
+        <button class="crm-viewer-btn" id="crmViewerNext" title="Следующее (→)">${crmIcon('next', 20)}</button>
         <span id="crmViewerCaption"></span>
     `;
     document.body.appendChild(overlay);

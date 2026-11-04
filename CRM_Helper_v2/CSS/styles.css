@@ -1228,4 +1228,14 @@ a.crm-screenshot-link:hover img { box-shadow: 0 0 0 2px #2f6db3; }
 }
 
 /* Избранное в Jira: закрашенная звезда */
-.jira-fav.is-on svg { fill: currentColor; }
+
+/* ===== Цветные SVG-иконки (Modules/ColorIcons.js) ===== */
+.crm-cicon { flex: none; display: inline-block; vertical-align: -3px; }
+.crm-cicon-wrap { display: inline-flex; align-items: center; vertical-align: middle; line-height: 0; margin: 0 .15em; }
+.crm-menu-ico svg, .lk-btn-ico svg, .crm-title-ico svg, .crm-toast-icon svg { display: block; }
+.crm-menu-ico, .crm-title-ico { background: transparent; }
+.crm-toast-icon { background: transparent !important; }
+.crm-icon-btn .crm-cicon, .crm-btn .crm-cicon { vertical-align: middle; }
+/* Избранное: выключенная звезда — серая, включённая — цветная */
+.jira-fav:not(.is-on) svg { filter: grayscale(1); opacity: .5; }
+.jira-fav:hover svg { filter: none; opacity: 1; }

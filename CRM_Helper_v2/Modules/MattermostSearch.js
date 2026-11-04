@@ -191,7 +191,7 @@
             if (/^(png|jpe?g|gif|webp|bmp)$/.test(ext)) {
                 return `<a class="mms-file-img" href="${url}" target="_blank" rel="noopener"><img src="${url}" loading="lazy" alt=""><span class="mms-file-name">${crmEsc(f.name || '')}</span></a>`;
             }
-            return `<a class="mms-file-link" href="${url}" target="_blank" rel="noopener">📎 ${crmEsc(f.name || f.id)}</a>`;
+            return `<a class="mms-file-link" href="${url}" target="_blank" rel="noopener">${crmColorIcon('clip', 14)} ${crmEsc(f.name || f.id)}</a>`;
         }).join('')}</div>`;
     }
 
@@ -320,7 +320,7 @@
             const ch = cache.channels[chId] || { displayName: chId };
             const group = document.createElement('div');
             group.className = 'mms-group';
-            group.innerHTML = `<button type="button" class="mms-group-head"><span class="mms-group-arrow">▾</span># ${crmEsc(ch.displayName)}<span class="crm-pill">${posts.length}</span></button><div class="mms-group-body"></div>`;
+            group.innerHTML = `<button type="button" class="mms-group-head"><span class="mms-group-arrow">${crmColorIcon('chevDown', 14)}</span># ${crmEsc(ch.displayName)}<span class="crm-pill">${posts.length}</span></button><div class="mms-group-body"></div>`;
             group.querySelector('.mms-group-head').onclick = () => group.classList.toggle('is-collapsed');
             const body = group.querySelector('.mms-group-body');
             posts.forEach((p) => body.appendChild(renderPost(p, searchTerms)));

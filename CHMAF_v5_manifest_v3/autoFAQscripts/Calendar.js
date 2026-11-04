@@ -116,7 +116,7 @@
             #AF_Calendar .af-calendar-side { flex: 0 0 360px; width: 360px; }
             #AF_Calendar .af-calendar-editor { flex-basis: 350px; width: 350px; }
 
-            /* Шапки: ❌ слева, заголовок, линия-акцент снизу */
+            /* Шапки: крестик слева, заголовок, линия-акцент снизу */
             #AF_Calendar .af-calendar-toolbar,
             #AF_Calendar .af-calendar-nav,
             #AF_Calendar .af-calendar-side-header {
@@ -523,6 +523,34 @@
                 #AF_Calendar .af-calendar-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             }
 
+            /* === Цветные SVG-иконки === */
+            #AF_Calendar .afc-i {
+                width: 17px; height: 17px; display: block; flex: none;
+                fill: none; stroke: var(--ic, currentColor); stroke-width: 1.8;
+                stroke-linecap: round; stroke-linejoin: round;
+                filter: drop-shadow(0 0 3px color-mix(in srgb, var(--ic, currentColor) 45%, transparent));
+            }
+            #AF_Calendar .afc-i-close    { --ic: #fb7185; }
+            #AF_Calendar .afc-i-edit     { --ic: #fb923c; fill: color-mix(in srgb, #fb923c 20%, transparent); }
+            #AF_Calendar .afc-i-calendar { --ic: #818cf8; fill: color-mix(in srgb, #818cf8 20%, transparent); }
+            #AF_Calendar .afc-i-eraser   { --ic: #fb923c; fill: color-mix(in srgb, #fb923c 20%, transparent); }
+            #AF_Calendar .afc-i-refresh  { --ic: #34d399; }
+            #AF_Calendar .afc-i-external { --ic: #7dd3fc; width: 13px; height: 13px; }
+            #AF_Calendar .afc-i-prev,
+            #AF_Calendar .afc-i-next     { --ic: #93c5fd; stroke-width: 2.2; }
+            #AF_Calendar .afc-i-check    { --ic: #4ade80; stroke-width: 2.2; }
+            #AF_Calendar .af-calendar-btn:disabled .afc-i { opacity: .4; filter: none; }
+            #AF_Calendar .af-calendar-btn--icon { display: inline-grid; place-items: center; }
+            #AF_Calendar .af-calendar-btn:has(.afc-i-external) { display: inline-flex; align-items: center; gap: 6px; }
+            #AF_Calendar .afc-title-ico { display: inline-flex; vertical-align: -3px; margin-right: 7px; }
+            #AF_Calendar .afc-title-ico .afc-i { width: 16px; height: 16px; }
+            #AF_Calendar .afc-i-save { --ic: #4ade80; }
+            #AF_Calendar input[type="date"]::-webkit-calendar-picker-indicator {
+                width: 18px; height: 18px; padding: 0; cursor: pointer; opacity: .85;
+                background: center / 16px 16px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2.5'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
+            }
+            #AF_Calendar input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
             @media (prefers-reduced-motion: reduce) {
                 #AF_Calendar *,
                 #AF_Calendar *::before,
@@ -535,6 +563,25 @@
 
         document.head.appendChild(style);
     }
+
+    // ============================================================
+    // SVG-ИКОНКИ (stroke = currentColor; цвет задаётся классом afc-i-<имя>)
+    // ============================================================
+
+    const ICON_PATHS = {
+        close:    '<path d="M6 6l12 12M18 6L6 18"/>',
+        edit:     '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19l-4 1zM14 7l3 3"/>',
+        calendar: '<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+        eraser:   '<path d="M7 21h10M5.5 13.5l7-7a2 2 0 012.8 0l3.2 3.2a2 2 0 010 2.8L11 20H8l-2.5-2.5a2 2 0 010-4zM9 11l5 5"/>',
+        refresh:  '<path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/>',
+        external: '<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h4"/>',
+        prev:     '<path d="M15 5l-7 7 7 7"/>',
+        next:     '<path d="M9 5l7 7-7 7"/>',
+        check:    '<path d="M5 12.5l4.5 4.5L19 7"/>'
+    };
+
+    const ICON = Object.fromEntries(Object.entries(ICON_PATHS).map(([name, body]) =>
+        [name, `<svg class="afc-i afc-i-${name}" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`]));
 
     // ============================================================
     // РАЗМЕТКА
@@ -553,10 +600,10 @@
                         type="button"
                         class="af-calendar-btn af-calendar-btn--danger af-calendar-btn--icon"
                         title="Закрыть редактор"
-                    >❌</button>
+                    >${ICON.close}</button>
 
                     <span class="af-calendar-title">
-                        ✏️ Редактирование слота
+                        <span class="afc-title-ico">${ICON.edit}</span>Редактирование слота
                     </span>
                 </div>
 
@@ -586,29 +633,29 @@
                             type="button"
                             class="af-calendar-btn af-calendar-btn--danger af-calendar-btn--icon"
                             title="Скрыть окно"
-                        >❌</button>
+                        >${ICON.close}</button>
 
-                        <span class="af-calendar-title">📅 Календарь</span>
+                        <span class="af-calendar-title"><span class="afc-title-ico">${ICON.calendar}</span>Календарь</span>
 
                         <button
                             id="clearcalendar"
                             type="button"
                             class="af-calendar-btn af-calendar-btn--icon"
                             title="Очистить"
-                        >🧹</button>
+                        >${ICON.eraser}</button>
 
                         <button
                             id="refreshcalendar"
                             type="button"
                             class="af-calendar-btn af-calendar-btn--icon"
                             title="Обновить"
-                        >♻️</button>
+                        >${ICON.refresh}</button>
 
                         <button
                             id="opendatsy"
                             type="button"
                             class="af-calendar-btn"
-                        >Datsy ↗</button>
+                        >Datsy ${ICON.external}</button>
 
                         <label class="af-calendar-auto" title="Автообновление календаря">
                             <input
@@ -639,7 +686,7 @@
                             type="button"
                             class="af-calendar-btn af-calendar-btn--icon"
                             title="Предыдущий день"
-                        >◀</button>
+                        >${ICON.prev}</button>
 
                         <input
                             id="eventDate"
@@ -653,7 +700,7 @@
                             type="button"
                             class="af-calendar-btn af-calendar-btn--icon"
                             title="Следующий день"
-                        >▶</button>
+                        >${ICON.next}</button>
 
                         <button
                             id="nowDay"
@@ -1773,7 +1820,7 @@
             save.name = 'saveToCalend';
             save.className = 'af-calendar-btn';
             save.title = 'Сохранить';
-            save.textContent = '✓';
+            save.innerHTML = ICON.check;
 
             const remove =
                 document.createElement('button');
@@ -1785,7 +1832,7 @@
                 'af-calendar-btn af-calendar-btn--danger';
 
             remove.title = 'Удалить';
-            remove.textContent = '×';
+            remove.innerHTML = ICON.close;
             remove.disabled = !event?.eventId;
 
             row.append(
@@ -1895,7 +1942,7 @@
             remove.className =
                 'af-calendar-btn af-calendar-btn--danger';
 
-            remove.textContent = '×';
+            remove.innerHTML = ICON.close;
             remove.title = 'Удалить мой слот';
 
             remove.dataset.eventId =

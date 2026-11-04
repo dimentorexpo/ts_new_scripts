@@ -55,8 +55,16 @@ const CRM_ICON_PATHS = {
     thread: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
 };
 
+/** Старые имена иконок → имена в цветном наборе. */
+const CRM_ICON_ALIASES = { clear: 'trash', insert: 'link', thread: 'chat', help: 'question' };
+
 /** SVG-иконка по имени. */
 function crmIcon(name, size = 16) {
+    // Цветные иконки (Modules/ColorIcons.js); линейный набор ниже — запасной вариант.
+    if (typeof crmColorIcon === 'function') {
+        const colored = crmColorIcon(CRM_ICON_ALIASES[name] || name, size);
+        if (colored) return colored;
+    }
     const paths = CRM_ICON_PATHS[name] || '';
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 }
@@ -178,7 +186,7 @@ function crmToast(message, type = 'info', opts = {}) {
     // Не больше пяти уведомлений одновременно.
     while (container.children.length >= 5) container.firstElementChild.remove();
 
-    const icons = { success: '✓', error: '!', warning: '!', info: 'i' };
+    const icons = { success: crmIcon('check', 18), error: crmIcon('exclam', 18), warning: crmIcon('warning', 18), info: crmIcon('info', 18) };
     const titles = { success: 'Готово', error: 'Ошибка', warning: 'Внимание', info: 'Информация' };
     const duration = opts.sticky ? 0 : (opts.duration || (type === 'error' ? 6000 : 3500));
 
@@ -186,12 +194,12 @@ function crmToast(message, type = 'info', opts = {}) {
     toast.className = `crm-toast ${type}`;
     toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
     toast.innerHTML = `
-        <div class="crm-toast-icon">${icons[type] || 'i'}</div>
+        <div class="crm-toast-icon">${icons[type] || icons.info}</div>
         <div class="crm-toast-content">
             <div class="crm-toast-title"></div>
             <div class="crm-toast-msg"></div>
         </div>
-        <button type="button" class="crm-toast-close" title="Закрыть" aria-label="Закрыть">×</button>
+        <button type="button" class="crm-toast-close" title="Закрыть" aria-label="Закрыть">${crmIcon('close', 14)}</button>
         ${duration ? '<div class="crm-toast-progress"></div>' : ''}`;
 
     toast.querySelector('.crm-toast-title').textContent = opts.title || titles[type] || titles.info;
@@ -449,7 +457,7 @@ function hideWindowOnClick(windowId, buttonId) {
 function crmWinHeader({ icon = '', title = '', tools = '', closeId = '', closeTitle = 'Скрыть' }) {
     return `
         <div class="crm-head">
-            <span class="crm-title">${icon ? `<span class="crm-title-ico">${icon}</span>` : ''}<span>${title}</span></span>
+            <span class="crm-title">${icon ? `<span class="crm-title-ico">${crmEmojiIcon(icon, 18)}</span>` : ''}<span>${title}</span></span>
             <span class="crm-head-tools">
                 ${tools}
                 <button type="button" class="crm-icon-btn is-close" id="${closeId}" title="${closeTitle}" aria-label="${closeTitle}">${crmIcon('close')}</button>
@@ -528,7 +536,7 @@ menubarcrm.style.display = 'none';
 menubarcrm.innerHTML =
     CRM_MENU_ITEMS.map(([id, icon, label, hint]) =>
         `<button type="button" class="menubtnsCRM" id="${id}" role="menuitem" title="${crmEsc(hint)}">` +
-        `<span class="crm-menu-ico">${icon}</span><span class="crm-menu-text">${crmEsc(label)}</span></button>`
+        `<span class="crm-menu-ico">${crmEmojiIcon(icon, 16)}</span><span class="crm-menu-text">${crmEsc(label)}</span></button>`
     ).join('') +
     `<div class="crm-menu-sep"></div>
      <div class="crm-menu-foot">
@@ -548,7 +556,7 @@ upmenubtn.title = 'Модули CRMHelper';
 /** Иконка пункта меню (например, индикатор напоминаний). */
 function crmSetMenuIcon(itemId, icon) {
     const el = document.querySelector(`#${itemId} .crm-menu-ico`);
-    if (el) el.textContent = icon;
+    if (el) el.innerHTML = crmEmojiIcon(icon, 16);
 }
 
 function crmCloseMenu() {

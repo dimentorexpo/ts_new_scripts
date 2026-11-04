@@ -47,7 +47,7 @@ const win_getLessonInfo = `
 
     <div class="tsm-action-row">
         <button type="button" id="setstclass" class="tsm-btn" disabled title="Вернуть комнату в статус classwork">▶ Classwork</button>
-        <button type="button" id="setstsucc" class="tsm-btn" disabled title="Перевести комнату в статус success">✓ Success</button>
+        <button type="button" id="setstsucc" class="tsm-btn" disabled title="Перевести комнату в статус success">${tsmIcon("check", 14)} Success</button>
     </div>
 </div>
 

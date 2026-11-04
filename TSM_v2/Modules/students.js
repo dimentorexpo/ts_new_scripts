@@ -38,8 +38,8 @@ const SUBJECT_MAP = {
 };
 
 const KID_STATUS = {
-    sleep: { symbol: "💤", title: "Ученик уснул" },
-    vacation: { symbol: "⛱", title: "Ученик в отпуске" }
+    sleep: { icon: "moon", title: "Ученик уснул" },
+    vacation: { icon: "sun", title: "Ученик в отпуске" }
 };
 
 const KID_CARD_LINKS = {
@@ -88,7 +88,7 @@ function kidSections(data) {
 
 function buildKidCardHTML(kid, subject) {
     const status = KID_STATUS[kid.status];
-    const statusMark = status ? `<span class="tsm-kid-status" title="${status.title}">${status.symbol}</span>` : "";
+    const statusMark = status ? `<span class="tsm-kid-status" title="${status.title}">${tsmIcon(status.icon, 15)}</span>` : "";
     const segmentBadge = kid.segmentBadge ? `<span class="tsm-badge">${escapeHTML(kid.segmentBadge)}</span>` : "";
     const safeId = escapeHTML(kid.id);
     const roomHash = kid.roomInfo?.hash || kid.roomHash || kid.hash || "";
@@ -333,7 +333,8 @@ const STUD_HW_CSS = `
 body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
 .wrap{max-width:960px;margin:0 auto;padding:28px 20px 64px}
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:14px}
-h1{font-size:22px;font-weight:700;margin:0 0 4px}
+h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;margin:0 0 4px}
+svg{flex:0 0 auto;display:block}
 .sub{color:var(--text2);font-size:13px}
 input[type=text],select{background:var(--surface);border:1px solid var(--line2);color:var(--text);border-radius:9px;height:34px;padding:0 12px;outline:none;font-size:13px}
 input[type=text]{width:300px}
@@ -377,7 +378,7 @@ select:disabled{opacity:.45}
 function studHwShell(name) {
     return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>ДЗ — ${escapeHTML(name)}</title><style>${STUD_HW_CSS}</style></head><body>
 <div class="wrap">
-  <header><div><h1>📚 Домашние задания</h1><div class="sub">${escapeHTML(name)}</div></div>
+  <header><div><h1>${tsmIcon("library", 22)} Домашние задания</h1><div class="sub">${escapeHTML(name)}</div></div>
   <input id="q" type="text" placeholder="Поиск по названию урока"></header>
   <div class="filters">
     <label class="f">Тип <select id="typef"><option value="">все</option><option value="hw">Домашние задания</option><option value="tests">Тесты</option></select></label>

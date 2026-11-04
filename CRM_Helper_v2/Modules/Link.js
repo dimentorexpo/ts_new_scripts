@@ -96,11 +96,11 @@
     function linksGridHtml() {
         const base = TP_LINK_BUTTONS.map((b) =>
             `<button type="button" class="lk-btn" id="${b.id}" title="${crmEsc(b.title)}">` +
-            `<span class="lk-btn-ico">${b.icon}</span><span class="lk-btn-text">${crmEsc(b.label)}</span></button>`
+            `<span class="lk-btn-ico">${crmEmojiIcon(b.icon, 16)}</span><span class="lk-btn-text">${crmEsc(b.label)}</span></button>`
         );
         const own = custom.customButtons.map((b) =>
             `<button type="button" class="lk-btn is-custom" data-custom-id="${crmEsc(b.id)}" title="${crmEsc(b.title)} — правый клик: изменить">` +
-            `<span class="lk-btn-ico">${crmEsc(b.icon)}</span><span class="lk-btn-text">${crmEsc(b.title)}</span></button>`
+            `<span class="lk-btn-ico">${crmEmojiIcon(b.icon, 16)}</span><span class="lk-btn-text">${crmEsc(b.title)}</span></button>`
         );
         return `<div class="lk-grid" id="lk-grid">${base.concat(own).join('')}</div>`;
     }

@@ -212,9 +212,9 @@ function addinginfo(pageelement, userid, elemtype, info = processedUserIds.get(u
         navigator.clipboard?.writeText(id).then(() => {
           const badge = pageelement.querySelector(`:scope > .${BADGE_CLASS}`);
           if (!badge) return;
-          const prev = badge.textContent;
-          badge.textContent = '📋';
-          setTimeout(() => { badge.textContent = prev; }, 1200);
+          const prev = Array.from(badge.childNodes);
+          badge.replaceChildren(emojiNodes('📋', 12));
+          setTimeout(() => { badge.replaceChildren(...prev); }, 1200);
         }).catch(() => { });
       });
     }
@@ -809,10 +809,15 @@ const TS_STATS = (() => {
     return value >= meta.good ? 'good' : value >= meta.bad ? 'warn' : 'bad';
   }
 
+  // Эмодзи → цветные SVG (Modules/ColorIcons.js); без библиотеки остаётся обычный текст.
+  const emojiNodes = (text, size) => (typeof crmEmojiFragment === 'function'
+    ? crmEmojiFragment(text, size)
+    : document.createTextNode(String(text ?? '')));
+
   const node = (tag, cls, text) => {
     const n = document.createElement(tag);
     if (cls) n.className = cls;
-    if (text != null) n.textContent = text;
+    if (text != null) n.append(emojiNodes(text));
     return n;
   };
 
@@ -1023,7 +1028,7 @@ if (window.location.href.includes('video-trouble-shooter.skyeng.ru')) {
   const diagBtn = document.createElement('button');
   diagBtn.type = 'button';
   diagBtn.id = 'webrtc-diag-floating-btn';
-  diagBtn.textContent = '🔍';
+  diagBtn.append(emojiNodes('🔍', 20));
   diagBtn.title = 'Диагностика WebRTC';
   diagBtn.setAttribute('aria-label', 'Открыть диагностику WebRTC');
   diagBtn.style.cssText = `
@@ -1131,7 +1136,7 @@ async function runDiagnostics() {
     const result = document.createElement(tag);
 
     if (className) result.className = className;
-    if (text !== undefined) result.textContent = text;
+    if (text !== undefined) result.append(emojiNodes(text));
 
     return result;
   }
@@ -2871,7 +2876,7 @@ async function runDiagnostics() {
   refreshButton.type = "button";
   refreshButton.title = "Обновить данные";
   refreshButton.setAttribute("aria-label", "Обновить данные");
-  refreshButton.append("♻️ ", el("span", "btn-label", "Обновить"));
+  refreshButton.append(emojiNodes("♻️", 15), " ", el("span", "btn-label", "Обновить"));
 
   const closeButton = el("button", "btn btn-close", "❌");
   closeButton.type = "button";
@@ -3224,48 +3229,9 @@ async function runDiagnostics() {
     close.focus();
   }
 
-  // Контурные SVG-иконки для кнопок историй — читаются на тёмном фоне лучше эмодзи
-  const HISTORY_ICON_PATHS = {
-    microphone: [
-      "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z",
-      "M19 11a7 7 0 0 1-14 0",
-      "M12 18v3",
-      "M8.5 21h7"
-    ],
-    camera: [
-      "M4 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z",
-      "M16 10.5l5-3v9l-5-3"
-    ],
-    codecs: [
-      "M4 6h9", "M17 6h3", "M15 4v4",
-      "M4 12h3", "M11 12h9", "M9 10v4",
-      "M4 18h11", "M19 18h1", "M17 16v4"
-    ]
-  };
-
-  function historyIcon(type) {
-    const ns = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(ns, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("width", "18");
-    svg.setAttribute("height", "18");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "1.9");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.setAttribute("aria-hidden", "true");
-    for (const d of HISTORY_ICON_PATHS[type] || []) {
-      const path = document.createElementNS(ns, "path");
-      path.setAttribute("d", d);
-      svg.append(path);
-    }
-    return svg;
-  }
-
   function historyButton(user, type, icon, title) {
     const button = el("button", "icon-btn");
-    button.append(HISTORY_ICON_PATHS[type] ? historyIcon(type) : document.createTextNode(icon));
+    button.append(emojiNodes(icon, 18));
     button.type = "button";
     button.title = title;
     button.setAttribute("aria-label", title);
