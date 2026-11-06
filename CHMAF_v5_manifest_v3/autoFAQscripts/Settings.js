@@ -1358,43 +1358,56 @@ async function init_settings() {
         // PREMIUM BADGE — только для ТП
         if (isTP()) {
             cssRules += `
-            /* ═══ PREMIUM BADGE ═══ */
+            /* ═══ PREMIUM BADGE ═══
+               Стилизуется только «чистый» бейдж (span с текстом). Внешняя обёртка с вложенным
+               бейджем нейтрализуется — раньше рамка и звезда рисовались дважды. */
             span[data-premium-badge="true"],
             span[data-premium-badge="true"][id*="mantine-"] {
-                background-color: rgba(30, 58, 138, 0.95) !important;
-                color: #e3f2fd !important;
-                border: 1px solid rgba(66, 133, 244, 0.8) !important;
-                border-radius: 4px !important;
-                padding: 1px 6px !important;
+                background: linear-gradient(135deg, rgba(30, 58, 138, 0.96) 0%, rgba(55, 48, 163, 0.96) 100%) !important;
+                color: #eaf2ff !important;
+                border: 1px solid rgba(250, 204, 21, 0.55) !important;
+                border-radius: 999px !important;
+                padding: 1px 8px 1px 9px !important;
                 font-weight: 700 !important;
-                font-size: 0.85em !important;
-                letter-spacing: 0.02em !important;
-                box-shadow: 0 0 8px rgba(66, 133, 244, 0.5), inset 0 0 3px rgba(100, 181, 246, 0.3) !important;
+                font-size: 0.82em !important;
+                letter-spacing: 0.05em !important;
+                box-shadow: 0 0 10px rgba(250, 204, 21, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
                 display: inline-flex !important;
                 align-items: center !important;
-                gap: 2px !important;
+                gap: 5px !important;
                 white-space: nowrap !important;
                 text-transform: uppercase !important;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.35) !important;
                 vertical-align: middle !important;
                 word-break: keep-all !important;
                 overflow-wrap: normal !important;
                 line-break: strict !important;
+                transition: box-shadow .2s ease, border-color .2s ease !important;
             }
             span[data-premium-badge="true"]::after,
             span[data-premium-badge="true"][id*="mantine-"]::after {
-                content: "★";
-                color: #ffd700 !important;
-                font-size: 0.9em !important;
-                text-shadow: 0 0 3px rgba(255, 215, 0, 0.8) !important;
-                white-space: nowrap !important;
-                word-break: keep-all !important;
+                content: "" !important;
+                flex: none !important;
+                width: 11px !important;
+                height: 11px !important;
+                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.5l-5.9 3.2 1.2-6.6L2.5 9.5l6.6-.9L12 2.5z' fill='%23fde047' stroke='%23f59e0b' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat !important;
+                filter: drop-shadow(0 0 3px rgba(253, 224, 71, 0.7)) !important;
             }
             span[data-premium-badge="true"]:hover,
             span[data-premium-badge="true"][id*="mantine-"]:hover {
-                box-shadow: 0 0 12px rgba(66, 133, 244, 0.7), inset 0 0 5px rgba(100, 181, 246, 0.4) !important;
-                border-color: rgba(100, 181, 246, 1) !important;
+                box-shadow: 0 0 14px rgba(250, 204, 21, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+                border-color: rgba(253, 224, 71, 0.95) !important;
             }
+            /* Внешняя обёртка вокруг бейджа — без собственного оформления */
+            span[data-premium-badge="true"]:has(span[data-premium-badge="true"]) {
+                background: none !important;
+                border: 0 !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                display: inline-block !important;
+            }
+            span[data-premium-badge="true"]:has(span[data-premium-badge="true"])::after { content: none !important; display: none !important; }
             `;
         }
 
@@ -1610,9 +1623,20 @@ async function init_settings() {
             // Только span'ы с id вида mantine-*-target и содержащие "Premium"
             const spans = doc.querySelectorAll('span[id*="mantine-"][id*="-target"]');
             spans.forEach(span => {
-                if (span.textContent.match(/premium/i) && !span.hasAttribute('data-premium-badge')) {
-                    span.setAttribute('data-premium-badge', 'true');
+                if (!/premium/i.test(span.textContent)) return;
+                // Бейдж ставим на самый вложенный span, который владеет текстом,
+                // чтобы внешняя обёртка не получала рамку/звезду второй раз.
+                let owner = span;
+                const walker = doc.createTreeWalker(span, NodeFilter.SHOW_TEXT);
+                let node;
+                while ((node = walker.nextNode())) {
+                    if (/premium/i.test(node.nodeValue)) {
+                        owner = node.parentElement?.closest('span') || span;
+                        break;
+                    }
                 }
+                if (owner !== span) span.removeAttribute('data-premium-badge');
+                if (!owner.hasAttribute('data-premium-badge')) owner.setAttribute('data-premium-badge', 'true');
             });
         };
         processDoc(document);
@@ -1645,45 +1669,55 @@ async function init_settings() {
         const lightCss = `
         span[data-premium-badge="true"][class*="Typography"],
         span[data-premium-badge="true"][id*="mantine-"] {
-            background: linear-gradient(135deg, #2e1699 0%, #ff3d00 100%) !important;
+            background: linear-gradient(135deg, #4c1d95 0%, #ea580c 100%) !important;
             color: #ffffff !important;
-            border: 2px solid #1215bb !important;
-            border-radius: 6px !important;
-            padding: 2px 8px !important;
+            border: 1px solid rgba(255, 255, 255, 0.45) !important;
+            border-radius: 999px !important;
+            padding: 2px 9px 2px 10px !important;
             font-weight: 800 !important;
             font-size: 0.8em !important;
-            letter-spacing: 0.04em !important;
-            box-shadow: 0 2px 8px rgba(255, 109, 0, 0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+            letter-spacing: 0.05em !important;
+            box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35), inset 0 1px 0 rgba(255,255,255,0.28) !important;
             display: inline-flex !important;
             align-items: center !important;
-            gap: 4px !important;
+            gap: 5px !important;
             white-space: nowrap !important;
             text-transform: uppercase !important;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.25) !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
             vertical-align: middle !important;
             word-break: keep-all !important;
             overflow-wrap: normal !important;
             line-break: strict !important;
+            transition: box-shadow .2s ease, transform .2s ease !important;
         }
 
         span[data-premium-badge="true"][class*="Typography"]::after,
         span[data-premium-badge="true"][id*="mantine-"]::after {
-            content: "★";
-            color: #ffeb3b !important;
-            font-size: 1em !important;
-            text-shadow: 0 0 4px rgba(255, 235, 59, 0.8) !important;
-            white-space: nowrap !important;
-            word-break: keep-all !important;
-            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3)) !important;
+            content: "" !important;
+            flex: none !important;
+            width: 11px !important;
+            height: 11px !important;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.5l-5.9 3.2 1.2-6.6L2.5 9.5l6.6-.9L12 2.5z' fill='%23fde047' stroke='%23f59e0b' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat !important;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)) !important;
         }
 
         span[data-premium-badge="true"][class*="Typography"]:hover,
         span[data-premium-badge="true"][id*="mantine-"]:hover {
-            background: linear-gradient(135deg, #1706b8 0%, #ff5722 100%) !important;
-            box-shadow: 0 4px 14px rgba(255, 109, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.25) !important;
-            border-color: #ffc107 !important;
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.5), inset 0 1px 0 rgba(255,255,255,0.35) !important;
             transform: translateY(-1px) !important;
         }
+
+        /* Внешняя обёртка вокруг бейджа — без собственного оформления */
+        span[data-premium-badge="true"]:has(span[data-premium-badge="true"]) {
+            background: none !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            transform: none !important;
+            display: inline-block !important;
+        }
+        span[data-premium-badge="true"]:has(span[data-premium-badge="true"])::after { content: none !important; display: none !important; }
     `;
 
         const inject = (targetDoc) => injectStyleInto(targetDoc, 'chmaf-premium-light', lightCss);
