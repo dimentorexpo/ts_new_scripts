@@ -51,6 +51,7 @@
 				"/autoFAQscripts/TestUsers.js",
 				"/autoFAQscripts/Themes.js",
 				"/autoFAQscripts/Userinfo.js",
+				"/autoFAQscripts/AFStudentHelper.js",
 				"/autoFAQscripts/Queue.js",
 				"/autoFAQscripts/Timetable.js",
 				"/autoFAQscripts/Nabor.js",

@@ -3269,6 +3269,7 @@ async function init_settings() {
                         <label class="set-toggle"><input type="checkbox" id="dblhidewindow"> Без скрытия по dblclick</label>
                         <label class="set-toggle"><input type="checkbox" id="brnotificatios"> Без push-уведомлений</label>
                         <label class="set-toggle"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
+                        <label class="set-toggle" title="Блок «Вспомогательная информация по У» под кнопками тикета. У ТП по умолчанию выключен"><input type="checkbox" id="afStudentHelperTP"> Доп. инфо по ученику</label>
                     </div>
                 </div>
 
@@ -3402,6 +3403,7 @@ async function init_settings() {
         bindToggle('dblhidewindow', 'dblhidewindow');
         bindToggle('brnotificatios', 'brnotificatios');
         bindToggle('clearlessoninfo', 'clearlessoninfo');
+        bindToggle('afStudentHelperTP', 'afStudentHelperTP'); // читается модулем AFStudentHelper.js
 
         const iconsChanged = () => window.dispatchEvent(new CustomEvent('chmaf:icons-mode'));
         bindToggle('newIconsFab', 'newIconsFab', iconsChanged);
