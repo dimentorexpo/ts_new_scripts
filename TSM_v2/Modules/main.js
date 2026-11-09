@@ -89,15 +89,17 @@ function closeMainMenu() {
 }
 
 document.body.addEventListener("dblclick", (event) => {
-    if (MENU_EXCLUDED_TAGS.has(event.target.tagName)) return;
-    if (event.target.closest(".tsm-window, .tsm-dialog-overlay, [contenteditable], button, a, input, textarea, select, label")) return;
-    if (event.target.closest("b, strong, i, em, code, pre, mark, small, p, span, td, th, li, h1, h2, h3, h4, h5, h6, vim-word, svg, img")) return;
+    /* composedPath()[0] — настоящая цель внутри shadow DOM (event.target ретаргетится на хост) */
+    const target = event.composedPath()[0] || event.target;
+    if (MENU_EXCLUDED_TAGS.has(target.tagName)) return;
+    if (target.closest(".tsm-window, .tsm-dialog-overlay, [contenteditable], button, a, input, textarea, select, label")) return;
+    if (target.closest("b, strong, i, em, code, pre, mark, small, p, span, td, th, li, h1, h2, h3, h4, h5, h6, vim-word, svg, img")) return;
     if (window.getSelection()?.toString().trim()) return;
     openMainMenu(event.clientX, event.clientY);
 });
 
 document.body.addEventListener("click", (event) => {
-    if (wintAddMenu.style.display !== "none" && !wintAddMenu.contains(event.target)) closeMainMenu();
+    if (wintAddMenu.style.display !== "none" && !event.composedPath().includes(wintAddMenu)) closeMainMenu();
 });
 
 document.addEventListener("keydown", (event) => {

@@ -460,6 +460,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return false;
     }
 
+    /* Текст стилей для shadow-корня: из контент-скрипта <link> и fetch режутся
+       CSP страницы, а background живёт в origin расширения — ему CSP не мешает. */
+    if (request.action === "tsmGetCss") {
+        fetch(chrome.runtime.getURL("CSS/styles.css"))
+            .then((r) => r.text())
+            .then((css) => sendResponse({ css }))
+            .catch(() => sendResponse({ css: null }));
+        return true;
+    }
+
     if (request.name === "Ctxt" && request.question === "sendResponse") {
         if (!isAllowedUrl(request.addr)) {
             sendResponse({ error: "Адрес не входит в белый список TSM" });

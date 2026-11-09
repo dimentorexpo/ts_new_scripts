@@ -351,6 +351,9 @@ select:disabled{opacity:.45}
 .f{display:inline-flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;user-select:none}
 .f input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;margin:0}
 .count{color:var(--text3);font-size:12px;margin:0 0 12px 2px}
+.hw-group{margin-bottom:20px}
+.hw-group-head{display:flex;align-items:center;gap:8px;margin:0 2px 9px;font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.02em}
+.hw-group-count{font-size:11px;font-weight:600;color:var(--text3);border:1px solid var(--line2);border-radius:999px;padding:1px 8px}
 .hw{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;transition:border-color .15s ease}
 .hw:hover{border-color:var(--line2)}
 .cover{width:104px;height:74px;border-radius:9px;object-fit:cover;background:var(--raised);flex:none}
@@ -392,6 +395,7 @@ function studHwShell(name) {
   <div class="filters">
     <label class="f">Тип <select id="typef"><option value="">все</option><option value="hw">Домашние задания</option><option value="tests">Тесты</option></select></label>
     <label class="f">Комната <select id="hashf"><option value="">все</option></select></label>
+    <label class="f">Группировка <select id="groupf"><option value="month">по месяцу</option><option value="type">по типу</option><option value="">без группировки</option></select></label>
     <label class="f"><input type="checkbox" id="undonef"> только невыполненные</label>
   </div>
   <div class="count" id="count"></div>
@@ -470,6 +474,17 @@ function studCopyInDoc(doc, text) {
     return clip.writeText(text).then(() => true, () => fallback());
 }
 
+/* Фильтры вкладки ДЗ живут в localStorage её origin (наследуется от страницы-родителя)
+   и переживают закрытие вкладки — у всех учеников общие настройки */
+const STUD_HW_FILTERS_KEY = "tsm_hw_filters_v1";
+
+function studHwMonthLabel(iso) {
+    const d = new Date(iso || "");
+    if (!iso || Number.isNaN(d.getTime())) return "Без даты";
+    const label = d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function setupStudentHomework(doc, items, subject) {
     const sorted = items.filter((item) => item && typeof item === "object")
         .sort((a, b) => new Date(b.startingAt || 0) - new Date(a.startingAt || 0));
@@ -483,6 +498,22 @@ function setupStudentHomework(doc, items, subject) {
         $("hashf").disabled = true;
     }
 
+    let saved = {};
+    try { saved = JSON.parse(doc.defaultView.localStorage.getItem(STUD_HW_FILTERS_KEY)) || {}; } catch {}
+    const saveFilters = () => {
+        try {
+            doc.defaultView.localStorage.setItem(STUD_HW_FILTERS_KEY, JSON.stringify({
+                query: $("q").value, type: $("typef").value, hash: $("hashf").value,
+                undone: $("undonef").checked, group: $("groupf").value
+            }));
+        } catch {}
+    };
+    if (typeof saved.query === "string") $("q").value = saved.query;
+    if (saved.type === "hw" || saved.type === "tests") $("typef").value = saved.type;
+    if (saved.hash && hashes.includes(saved.hash)) $("hashf").value = saved.hash;
+    $("undonef").checked = saved.undone === true;
+    if (["month", "type", ""].includes(saved.group)) $("groupf").value = saved.group;
+
     const undoneTotal = sorted.filter((item) => !studHwDone(item)).length;
 
     function render() {
@@ -490,17 +521,34 @@ function setupStudentHomework(doc, items, subject) {
         const hash = $("hashf").value;
         const type = $("typef").value;
         const onlyUndone = $("undonef").checked;
+        const groupBy = $("groupf").value;
         const rows = sorted.filter((item) => (!query || String(item.name || "").toLowerCase().includes(query))
             && (!hash || item.roomInfo?.hash === hash)
             && (!type || studHwGroup(item.type) === type)
             && (!onlyUndone || !studHwDone(item)));
         $("count").textContent = `Показано ${rows.length} из ${sorted.length} · не выполнено всего: ${undoneTotal}`;
-        $("list").innerHTML = rows.length
-            ? rows.map((item) => studHwRowHTML(item, subject)).join("")
-            : `<div class="empty">${sorted.length ? "Ничего не найдено — измените фильтры" : "У ученика нет домашних заданий и тестов"}</div>`;
+
+        let html;
+        if (!rows.length) {
+            html = `<div class="empty">${sorted.length ? "Ничего не найдено — измените фильтры" : "У ученика нет домашних заданий и тестов"}</div>`;
+        } else if (!groupBy) {
+            html = rows.map((item) => studHwRowHTML(item, subject)).join("");
+        } else {
+            /* Список уже отсортирован по дате убывания — группы идут в том же порядке */
+            const groups = new Map();
+            for (const item of rows) {
+                const key = groupBy === "month" ? studHwMonthLabel(item.startingAt) : (STUD_HW_TYPES[item.type] || item.type || "Другое");
+                if (!groups.has(key)) groups.set(key, []);
+                groups.get(key).push(item);
+            }
+            html = [...groups.entries()].map(([title, groupItems]) =>
+                `<div class="hw-group"><div class="hw-group-head">${escapeHTML(title)}<span class="hw-group-count">${groupItems.length}</span></div>${groupItems.map((item) => studHwRowHTML(item, subject)).join("")}</div>`
+            ).join("");
+        }
+        $("list").innerHTML = html;
     }
 
-    ["q", "hashf", "typef", "undonef"].forEach((id) => $(id).addEventListener(id === "q" ? "input" : "change", render));
+    ["q", "hashf", "typef", "groupf", "undonef"].forEach((id) => $(id).addEventListener(id === "q" ? "input" : "change", () => { render(); saveFilters(); }));
     $("list").addEventListener("click", (event) => {
         const chip = event.target.closest(".chip[data-copy]");
         if (!chip) return;

@@ -51,7 +51,7 @@ const win_getLessonInfo = `
     </div>
 </div>
 
-<!-- Окно переносится в body при первом открытии -->
+<!-- Окно переносится в shadow-корень при первом открытии -->
 <div id="allParticipants" class="tsm-window tsm-window-participants" style="display:none;">
     <div class="tsm-modal-header" id="participantsDragHandle">
         <span class="tsm-modal-title">${tsmIcon("users", 15)} Участники комнаты</span>
@@ -236,7 +236,8 @@ function toggleParticipantsModal() {
         modal.style.display = "none";
         return;
     }
-    if (modal.parentNode !== document.body) document.body.appendChild(modal);
+    /* Из окна — в shadow-корень: у окна backdrop-filter, иначе fixed-позиционирование ломается */
+    if (modal.parentNode !== tsmShadowRoot) tsmShadowRoot.appendChild(modal);
 
     modal.style.display = "block";
     bringToFront(modal);

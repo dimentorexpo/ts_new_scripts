@@ -5,10 +5,66 @@
 const MESSENGER_WEB_LINK = "https://mm-time.skyeng.tech/skyeng/pl/";
 const SERVICE_HOSTS = ["skyeng.autofaq.ai", "crm2.skyeng.ru"];
 const TSM_TOAST_TTL = 3500;
+const TSM_TOAST_ACTION_TTL = 10000;
 const TSM_TOAST_LIMIT = 4;
 
 let token;
 let lastChatIdF = null;
+
+/* ---------- Shadow DOM: UI изолирован от стилей страницы ---------- */
+/* Окна, тосты и диалоги живут в собственном слое: стили Skyeng не протекают
+   внутрь, наши — наружу. Обращения document.* из модулей прозрачно находят
+   элементы TSM в shadow-корне (сначала всегда проверяется страница). */
+const tsmShadowHost = document.createElement("div");
+tsmShadowHost.id = "tsm-shadow-host";
+tsmShadowHost.style.cssText = "position:fixed;inset:0;z-index:2147483000;pointer-events:none;visibility:hidden;";
+const tsmShadowRoot = tsmShadowHost.attachShadow({ mode: "open" });
+document.body.appendChild(tsmShadowHost);
+
+(function loadTsmShadowStyles() {
+    const ready = () => { tsmShadowHost.style.visibility = "visible"; };
+    /* CSP страницы блокирует и <link>, и fetch к chrome-extension: из контент-скрипта,
+       поэтому текст CSS забираем через background, а применяем constructed stylesheet —
+       он от CSP страницы не зависит. */
+    sendRuntimeMessage({ action: "tsmGetCss" }).then((response) => {
+        if (!response?.css) throw new Error("css unavailable");
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(response.css);
+        tsmShadowRoot.adoptedStyleSheets = [sheet];
+        ready();
+    }).catch(() => {
+        /* Резерв: вдруг messaging недоступен, а link CSP страницы пропускает */
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = chrome.runtime.getURL("CSS/styles.css");
+        link.onload = ready;
+        link.onerror = ready;
+        tsmShadowRoot.appendChild(link);
+    });
+    setTimeout(ready, 2500);
+})();
+
+const tsmNativeGetElementById = document.getElementById.bind(document);
+const tsmNativeQuerySelector = document.querySelector.bind(document);
+const tsmNativeQuerySelectorAll = document.querySelectorAll.bind(document);
+/* В shadow проваливаемся только для «адресных» селекторов (id/класс/атрибут) —
+   общие селекторы страницы («div», «a») не должны доставать элементы TSM. */
+const tsmSpecificSelector = /[.#\[]/;
+
+document.getElementById = (id) => tsmNativeGetElementById(id) || tsmShadowRoot.getElementById(id);
+document.querySelector = (selector) => tsmNativeQuerySelector(selector)
+    || (tsmSpecificSelector.test(selector) ? tsmShadowRoot.querySelector(selector) : null);
+document.querySelectorAll = (selector) => {
+    const found = tsmNativeQuerySelectorAll(selector);
+    return found.length || !tsmSpecificSelector.test(selector) ? found : tsmShadowRoot.querySelectorAll(selector);
+};
+
+/* Фокус внутри shadow-retarget'ится на хост — для диалогов нужен настоящий элемент */
+function tsmActiveElement() {
+    let active = document.activeElement;
+    while (active?.shadowRoot?.activeElement) active = active.shadowRoot.activeElement;
+    return active;
+}
 
 /* ---------- Общие утилиты ---------- */
 
@@ -216,7 +272,7 @@ function getToastStack() {
         stack.className = "tsm-toast-stack";
         stack.setAttribute("role", "status");
         stack.setAttribute("aria-live", "polite");
-        document.body.appendChild(stack);
+        tsmShadowRoot.appendChild(stack);
     }
     return stack;
 }
@@ -228,7 +284,7 @@ function dismissToast(toast) {
     setTimeout(() => toast.remove(), 220);
 }
 
-function createToast(content, type = "info", isHTML = false, ttl = TSM_TOAST_TTL) {
+function createToast(content, type = "info", isHTML = false, ttl = TSM_TOAST_TTL, action = null) {
     const stack = getToastStack();
     const live = stack.querySelectorAll(".tsm-toast:not([data-leaving])");
     if (live.length >= TSM_TOAST_LIMIT) dismissToast(live[0]);
@@ -256,7 +312,20 @@ function createToast(content, type = "info", isHTML = false, ttl = TSM_TOAST_TTL
     countdownBar.className = "tsm-countdown-bar";
     countdownBar.style.animationDuration = `${ttl}ms`;
 
-    toast.append(icon, body, closeBtn, countdownBar);
+    let actionBtn = null;
+    if (action) {
+        actionBtn = document.createElement("button");
+        actionBtn.type = "button";
+        actionBtn.className = "tsm-toast-action";
+        actionBtn.textContent = action.label;
+        actionBtn.addEventListener("click", (event) => {
+            event.stopPropagation();
+            dismissToast(toast);
+            action.onClick();
+        });
+    }
+
+    toast.append(...[icon, body, actionBtn, closeBtn, countdownBar].filter(Boolean));
 
     /* Наведение приостанавливает обратный отсчёт — текст можно спокойно прочитать */
     let remaining = ttl;
@@ -282,8 +351,8 @@ function createToast(content, type = "info", isHTML = false, ttl = TSM_TOAST_TTL
     return toast;
 }
 
-function createNotify(text, result = "message") {
-    createToast(text, result === "error" ? "error" : "ok", false);
+function createNotify(text, result = "message", action = null) {
+    createToast(text, result === "error" ? "error" : "ok", false, action ? TSM_TOAST_ACTION_TTL : TSM_TOAST_TTL, action);
 }
 
 /* ---------- Копируемые по клику значения ---------- */
@@ -364,7 +433,7 @@ function buildTsmDialog({ title, message, okText, cancelText, inputMode }) {
             </div>
         </div>`;
 
-    document.body.appendChild(overlay);
+    tsmShadowRoot.appendChild(overlay);
     requestAnimationFrame(() => overlay.classList.add("tsm-dialog-visible"));
     return overlay;
 }
@@ -375,18 +444,19 @@ function cycleDialogFocus(event, overlay) {
     if (!focusables.length) return;
     const first = focusables[0];
     const last = focusables[focusables.length - 1];
-    const outside = !overlay.contains(document.activeElement);
-    if (event.shiftKey && (document.activeElement === first || outside)) {
+    const active = tsmActiveElement();
+    const outside = !overlay.contains(active);
+    if (event.shiftKey && (active === first || outside)) {
         event.preventDefault();
         last.focus();
-    } else if (!event.shiftKey && (document.activeElement === last || outside)) {
+    } else if (!event.shiftKey && (active === last || outside)) {
         event.preventDefault();
         first.focus();
     }
 }
 
 function restoreFocusToOpener(opener) {
-    if (opener instanceof HTMLElement && document.contains(opener)) opener.focus();
+    if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
 }
 
 function closeTsmDialog(overlay, onKeyDown) {
@@ -397,7 +467,7 @@ function closeTsmDialog(overlay, onKeyDown) {
 
 function tsmConfirm({ title = "", message = "", okText = "OK", cancelText = "Отмена", danger = false } = {}) {
     return new Promise((resolve) => {
-        const opener = document.activeElement;
+        const opener = tsmActiveElement();
         const overlay = buildTsmDialog({ title, message, okText, cancelText });
         const okBtn = overlay.querySelector(".tsm-dialog-btn-ok");
         const cancelBtn = overlay.querySelector(".tsm-dialog-btn-cancel");
@@ -414,7 +484,7 @@ function tsmConfirm({ title = "", message = "", okText = "OK", cancelText = "О�
                 close(false);
             } else if (event.key === "Tab") {
                 cycleDialogFocus(event, overlay);
-            } else if (event.key === "Enter" && document.activeElement !== cancelBtn) {
+            } else if (event.key === "Enter" && tsmActiveElement() !== cancelBtn) {
                 event.preventDefault();
                 close(true);
             }
@@ -433,7 +503,7 @@ function tsmConfirm({ title = "", message = "", okText = "OK", cancelText = "О�
 
 function tsmPrompt({ title = "", message = "", value = "", placeholder = "", okText = "OK", cancelText = "Отмена", multiline = false, danger = false } = {}) {
     return new Promise((resolve) => {
-        const opener = document.activeElement;
+        const opener = tsmActiveElement();
         const overlay = buildTsmDialog({ title, message, okText, cancelText, inputMode: multiline ? "multiline" : "text" });
         const input = overlay.querySelector(".tsm-dialog-input");
         const okBtn = overlay.querySelector(".tsm-dialog-btn-ok");
@@ -558,7 +628,7 @@ function createTSMWindow(id, topKey, leftKey, content) {
     windowElement.style.cssText = `display:none; top:${top}px; left:${left}px;`;
     windowElement.id = id;
     windowElement.innerHTML = content;
-    document.body.append(windowElement);
+    tsmShadowRoot.append(windowElement);
 
     /* При каждом показе — поверх остальных окон TSM и в пределах экрана.
        Реагируем только на переход «скрыто → видно», иначе собственные правки style

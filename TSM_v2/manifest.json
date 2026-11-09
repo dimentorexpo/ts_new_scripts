@@ -18,6 +18,16 @@
   "background": {
     "service_worker": "app.js"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["CSS/styles.css"],
+      "matches": [
+        "*://skyeng.autofaq.ai/*",
+        "*://*.skyeng.ru/*",
+        "*://*.skyeng.tech/*"
+      ]
+    }
+  ],
   "action": {
     "default_icon": {
       "32": "/Icons/32.png"

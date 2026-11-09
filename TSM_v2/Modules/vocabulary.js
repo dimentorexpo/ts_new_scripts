@@ -145,7 +145,7 @@ async function runConcurrentPool({ items, limit = 6, taskId, worker }) {
 
 /* ---------- Универсальный батч-раннер ---------- */
 
-async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, successMessage, request }) {
+async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, successMessage, request, undo = null }) {
     if (isTaskRunning) {
         createNotify("Дождитесь окончания текущей операции", "error");
         return false;
@@ -170,6 +170,7 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
     const studentId = vocabStudentId;
     let failed = 0;
     let completed = 0;
+    const succeededIds = [];
     const total = targetIds.length;
     const taskId = startTask(tone, `0 / ${total}`);
 
@@ -187,6 +188,7 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
                     res = await request(wordId, studentId);
                 }
                 if (!res.ok) failed++;
+                else succeededIds.push(wordId);
             } catch (err) {
                 failed++;
                 console.error(`[TSM Словарь] Ошибка операции над словом ${wordId}:`, err);
@@ -203,10 +205,50 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
     if (isTaskStale(taskId)) return false;
 
     finishTask(failed ? `${doneLabel}, ошибок: ${failed}` : doneLabel);
-    createNotify(failed ? `${successMessage}, но ${failed} из ${total} не обработаны` : successMessage, failed ? "error" : "message");
+    const message = failed ? `${successMessage}, но ${failed} из ${total} не обработаны` : successMessage;
+    const undoIds = undo ? succeededIds.filter((id) => undo.eligible.has(id)) : [];
+    createNotify(message, failed ? "error" : "message", undoIds.length
+        ? { label: "Вернуть", onClick: () => runVocabUndo(undoIds, studentId, undo) }
+        : null);
     selectedWordIds.clear();
     await getwordsets(studentId);
     return true;
+}
+
+/* Откат массовой операции: тот же пул с прогрессом, но без подтверждения —
+   кнопка «Вернуть» в тосте уже является явным действием пользователя */
+async function runVocabUndo(ids, studentId, undo) {
+    if (isTaskRunning) {
+        createNotify("Дождитесь окончания текущей операции", "error");
+        return;
+    }
+    let failed = 0;
+    let completed = 0;
+    const taskId = startTask("warn", `Возврат: 0 / ${ids.length}`);
+
+    await runConcurrentPool({
+        items: ids,
+        limit: 6,
+        taskId,
+        worker: async (wordId) => {
+            try {
+                const res = await undo.request(wordId, studentId);
+                if (!res.ok) failed++;
+            } catch (err) {
+                failed++;
+                console.error(`[TSM Словарь] Ошибка возврата слова ${wordId}:`, err);
+            }
+            completed++;
+            if (!isTaskStale(taskId)) {
+                setProgress(Math.round((completed / ids.length) * 100), `Возврат: ${completed} / ${ids.length}${failed ? ` · ошибок: ${failed}` : ""}`);
+            }
+        }
+    });
+
+    if (isTaskStale(taskId)) return;
+    finishTask(failed ? `Возврат, ошибок: ${failed}` : "Возвращено");
+    createNotify(failed ? `${undo.successMessage}, но ${failed} из ${ids.length} не обработаны` : undo.successMessage, failed ? "error" : "message");
+    if (vocabStudentId === studentId) await getwordsets(studentId);
 }
 
 const WORD_OPERATIONS = {
@@ -246,13 +288,21 @@ function learnSelectedWords() {
         createNotify("Отметьте слова, которые нужно сделать выученными", "error");
         return;
     }
+    /* Откат доступен только для слов, которые не были выучены до операции:
+       API отката — сброс прогресса, и у ранее выученных слов он стёр бы их законный прогресс */
+    const learnedBefore = new Set(allWordSets.flatMap((set) => set.words.filter((w) => w.isLearned).map((w) => String(w.meaningId))));
     return runBatchOperation({
         targetIds,
         confirmMessage: `Отметить выученными выбранные слова: ${targetIds.length} шт.`,
         tone: "ok",
         doneLabel: "Выучено",
         successMessage: "Выбранные слова отмечены выученными",
-        request: WORD_OPERATIONS.learn
+        request: WORD_OPERATIONS.learn,
+        undo: {
+            eligible: new Set(targetIds.filter((id) => !learnedBefore.has(id))),
+            request: WORD_OPERATIONS.resetProgress,
+            successMessage: "Отметка «выучено» снята"
+        }
     });
 }
 
