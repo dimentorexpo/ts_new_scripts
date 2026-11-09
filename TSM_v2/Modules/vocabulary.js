@@ -75,7 +75,9 @@ wintVocabulary.className = "tsm-window tsm-window-vocabulary";
 function setProgress(percent, label, tone) {
     const bar = document.getElementById("dynamicProgressBar");
     bar.style.width = `${percent}%`;
+    /* FIX: пустой тон раньше не снимал старый data-tone — после удаления полоса оставалась красной */
     if (tone) bar.dataset.tone = tone;
+    else delete bar.dataset.tone;
     document.getElementById("tsm-progress-label").textContent = label;
 }
 
@@ -427,7 +429,7 @@ function renderWordSets(wordSets, isSearch = false) {
                 <div class="tsm-word-text" title="${escapeHTML(word.text)}">${escapeHTML(word.text)}</div>
                 <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS" aria-label="Скопировать ссылку в CMS">${tsmIcon("link", 14)}</button>
                 <div class="tsm-word-id tsm-word-stat">${id}</div>
-                <div class="tsm-word-stat">${escapeHTML(word.progress)}%</div>
+                <div class="tsm-word-stat tsm-word-progress" title="Прогресс заучивания"><span>${escapeHTML(word.progress)}%</span><span class="tsm-word-progress-track"><i style="width:${Math.max(0, Math.min(100, Number(word.progress) || 0))}%"></i></span></div>
                 <div class="tsm-learned-status" title="${word.isLearned ? "Выучено" : "Не выучено"}">${word.isLearned ? tsmIcon("check", 14) : "·"}</div>
             </div>`;
         }).join("");

@@ -10,6 +10,9 @@
 .tsm-toast-stack,
 .tsm-dialog-overlay,
 #reactcachebtn {
+  /* Нативные контролы (селекты, чекбоксы, скроллбары) — в тёмной схеме */
+  color-scheme: dark;
+
   /* Поверхности */
   --tsm-surface: rgba(18, 23, 34, 0.96);
   --tsm-surface-raised: rgba(255, 255, 255, 0.035);
@@ -225,11 +228,16 @@
 
 .tsm-btn-primary {
   color: #0d1a29;
-  background: var(--tsm-accent);
+  background: linear-gradient(180deg, #96cfff 0%, var(--tsm-accent) 100%);
   border-color: var(--tsm-accent);
   font-weight: 650;
+  box-shadow: 0 2px 10px -3px rgba(124, 196, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
-.tsm-btn-primary:hover { background: #9ad2ff; border-color: #9ad2ff; }
+.tsm-btn-primary:hover {
+  background: linear-gradient(180deg, #add8ff 0%, #8fcdff 100%);
+  border-color: #8fcdff;
+  box-shadow: 0 3px 14px -3px rgba(124, 196, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
 .tsm-btn-danger { color: var(--tsm-bad); border-color: rgba(240, 122, 126, 0.35); background: transparent; }
 .tsm-btn-danger:hover { background: var(--tsm-bad-soft); border-color: var(--tsm-bad); }
 
@@ -254,6 +262,11 @@
   border-radius: 50%;
   animation: tsm-spin 700ms linear infinite;
 }
+/* На акцентной кнопке спиннер тёмный, на красной — белый: иначе сливается с фоном */
+.tsm-btn.tsm-btn-primary.is-loading { background: var(--tsm-accent); border-color: var(--tsm-accent); box-shadow: none; }
+.tsm-btn.tsm-btn-primary.is-loading::after { border-color: #0d1a29; border-right-color: transparent; }
+.tsm-fix-run.tsm-fix-run-danger.is-loading::after,
+.tsm-fix-run.tsm-btn-stop.is-loading::after { border-color: #fff; border-right-color: transparent; }
 @keyframes tsm-spin { to { transform: rotate(360deg); } }
 
 .tsm-action-row { display: flex; gap: 8px; }
@@ -385,8 +398,9 @@
   font-weight: 750;
   letter-spacing: 0.06em;
   color: #0d1a29;
-  background: var(--tsm-accent);
+  background: linear-gradient(135deg, var(--tsm-accent) 0%, var(--tsm-violet) 100%);
   border-radius: 6px;
+  box-shadow: 0 2px 8px -2px rgba(124, 196, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 .tsm-menu-hotkey {
   font-family: var(--tsm-font-mono);
@@ -397,7 +411,11 @@
   border-bottom-width: 2px;
   border-radius: 5px;
 }
-.tsm-menu { display: flex; flex-direction: column; gap: 2px; }
+.tsm-menu { display: flex; flex-direction: column; gap: 2px; animation: tsm-menu-in 150ms var(--tsm-ease); }
+@keyframes tsm-menu-in {
+  from { opacity: 0; transform: translateX(5px); }
+  to   { opacity: 1; transform: none; }
+}
 
 .tsm-menu-item {
   appearance: none;
@@ -415,9 +433,10 @@
   border: 0;
   border-radius: var(--tsm-r-control);
   cursor: pointer;
-  transition: background-color 100ms var(--tsm-ease);
+  transition: background-color 100ms var(--tsm-ease), transform 100ms var(--tsm-ease);
 }
 .tsm-menu-item:hover { background: var(--tsm-surface-hover); }
+.tsm-menu-item:active { transform: scale(0.98); }
 .tsm-menu-item:hover .tsm-menu-icon { background: var(--tsm-accent-soft); border-color: var(--tsm-accent-line); }
 .tsm-menu-icon {
   display: inline-grid;
@@ -775,14 +794,16 @@
   border: 1px solid var(--tsm-line);
   border-radius: 11px;
   transition: border-color 120ms var(--tsm-ease);
-  animation: tsm-card-in 220ms var(--tsm-ease) backwards;
 }
-.tsm-info-bar-kids > *:nth-child(2) { animation-delay: 20ms; }
-.tsm-info-bar-kids > *:nth-child(3) { animation-delay: 40ms; }
-.tsm-info-bar-kids > *:nth-child(4) { animation-delay: 60ms; }
-.tsm-info-bar-kids > *:nth-child(5) { animation-delay: 80ms; }
-.tsm-info-bar-kids > *:nth-child(6) { animation-delay: 100ms; }
-.tsm-info-bar-kids > *:nth-child(n+7) { animation-delay: 120ms; }
+/* Каскадное появление — только при свежей загрузке, не на каждый keystroke поиска */
+.tsm-cards-enter .tsm-kid-card { animation: tsm-card-in 220ms var(--tsm-ease) backwards; }
+.tsm-cards-enter > *:nth-child(2) { animation-delay: 20ms; }
+.tsm-cards-enter > *:nth-child(3) { animation-delay: 40ms; }
+.tsm-cards-enter > *:nth-child(4) { animation-delay: 60ms; }
+.tsm-cards-enter > *:nth-child(5) { animation-delay: 80ms; }
+.tsm-cards-enter > *:nth-child(6) { animation-delay: 100ms; }
+.tsm-cards-enter > *:nth-child(n+7) { animation-delay: 120ms; }
+.tsm-info-bar-kids .tsm-skeleton-stack { grid-column: 1 / -1; }
 .tsm-kid-card:hover { border-color: var(--tsm-line-strong); }
 .tsm-kid-card.sleep { border-left: 3px solid var(--tsm-text-3); }
 .tsm-kid-card.vacation { border-left: 3px solid var(--tsm-warn); }
@@ -834,8 +855,9 @@
   border: 1px solid var(--tsm-line);
   border-radius: 10px;
   cursor: pointer;
-  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease);
+  transition: background-color 120ms var(--tsm-ease), border-color 120ms var(--tsm-ease), transform 100ms var(--tsm-ease);
 }
+.tsm-btn-vertical:active { transform: scale(0.97); }
 .tsm-btn-vertical .tsm-btn-vertical-icon { display: inline-flex; color: var(--tsm-text-2); transition: color 120ms var(--tsm-ease); }
 .tsm-btn-vertical:hover .tsm-btn-vertical-icon { color: var(--tsm-accent); }
 .tsm-btn-vertical:hover { background: var(--tsm-surface-hover); border-color: var(--tsm-accent-line); }
@@ -885,6 +907,12 @@
 .tsm-word-row-header:hover { background: rgba(255, 255, 255, 0.02); }
 .tsm-word-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tsm-word-stat { font-size: 12px; text-align: right; color: var(--tsm-text-2); }
+.tsm-word-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.tsm-word-progress-track { width: 40px; height: 3px; border-radius: 2px; background: rgba(148, 163, 184, 0.18); overflow: hidden; }
+.tsm-word-progress-track i { display: block; height: 100%; border-radius: 2px; background: var(--tsm-accent); }
+.tsm-word-row.is-learned { background: rgba(98, 210, 157, 0.045); }
+.tsm-word-row.is-learned:hover { background: rgba(98, 210, 157, 0.08); }
+.tsm-word-row.is-learned .tsm-word-progress-track i { background: var(--tsm-ok); }
 .tsm-word-id { font-family: var(--tsm-font-mono); font-size: 11px; color: var(--tsm-text-3); }
 .tsm-learned-status { text-align: center; color: var(--tsm-text-3); }
 .tsm-word-row.is-learned .tsm-learned-status { color: var(--tsm-ok); font-weight: 700; }
@@ -1061,6 +1089,14 @@
 button:hover > .tsm-icon,
 .tsm-menu-item:hover .tsm-icon { transform: scale(1.1); filter: saturate(1.25) brightness(1.1); }
 button:disabled > .tsm-icon { filter: grayscale(0.7); opacity: 0.55; }
+/* Временный статус на кнопке после копирования/сброса — лёгкий «выстрел» масштабом */
+.tsm-flash-ok,
+.tsm-flash-bad { animation: tsm-flash-pop 260ms var(--tsm-ease); }
+@keyframes tsm-flash-pop {
+  0% { transform: scale(0.5); opacity: 0.4; }
+  55% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(1); }
+}
 .tsm-collapsible-title,
 .tsm-fix-op-title,
 .tsm-fix-section-title,
@@ -1096,7 +1132,9 @@ button:disabled > .tsm-icon { filter: grayscale(0.7); opacity: 0.55; }
   font-weight: 500;
   line-height: 1.45;
   color: var(--tsm-text);
-  background: #1b2232;
+  background: var(--tsm-surface);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--tsm-line-strong);
   border-left: 3px solid var(--tsm-ok);
   border-radius: 10px;
@@ -1141,9 +1179,11 @@ button:disabled > .tsm-icon { filter: grayscale(0.7); opacity: 0.55; }
   left: 0;
   bottom: 0;
   height: 2px;
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(98, 210, 157, 0.45);
   animation: tsm-countdown 3.5s linear forwards;
 }
+.tsm-toast--error .tsm-countdown-bar { background: rgba(240, 122, 126, 0.45); }
+.tsm-toast--info .tsm-countdown-bar { background: rgba(124, 196, 255, 0.45); }
 @keyframes tsm-countdown { from { width: 100%; } to { width: 0; } }
 
 /* ─── Диалоги ─── */
@@ -1193,6 +1233,10 @@ button:disabled > .tsm-icon { filter: grayscale(0.7); opacity: 0.55; }
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 }
+.tsm-dialog-message::-webkit-scrollbar { width: 8px; }
+.tsm-dialog-message::-webkit-scrollbar-track { background: transparent; }
+.tsm-dialog-message::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+.tsm-dialog-message::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.45); }
 .tsm-dialog-input {
   all: unset;
   display: block;
@@ -1235,8 +1279,8 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
 .tsm-dialog-btn-cancel:hover { background: var(--tsm-surface-hover); }
 .tsm-dialog-btn-ok { color: #0d1a29; background: var(--tsm-accent); }
 .tsm-dialog-btn-ok:hover { background: #9ad2ff; }
-.tsm-dialog-btn-ok.tsm-dialog-btn-danger { color: #fff; background: #c9474d; }
-.tsm-dialog-btn-ok.tsm-dialog-btn-danger:hover { background: #d9565c; }
+.tsm-dialog-btn-ok.tsm-dialog-btn-danger { color: #fff; background: linear-gradient(180deg, #d65a60, #c9474d); box-shadow: 0 2px 10px -3px rgba(201, 71, 77, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+.tsm-dialog-btn-ok.tsm-dialog-btn-danger:hover { background: linear-gradient(180deg, #e0696f, #d9565c); }
 
 /* ─── Кнопка сброса кэша (встраивается в шапку ЛКП) ─── */
 #reactcachebtn {
@@ -1254,14 +1298,14 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
   font-weight: 600;
   white-space: nowrap;
   color: #0d1a29;
-  background: var(--tsm-accent);
+  background: linear-gradient(180deg, #96cfff 0%, var(--tsm-accent) 100%);
   border: 0;
   border-radius: 999px;
-  box-shadow: 0 6px 16px -6px rgba(29, 116, 196, 0.6);
+  box-shadow: 0 6px 16px -6px rgba(29, 116, 196, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   cursor: pointer;
   transition: background-color 120ms var(--tsm-ease), opacity 120ms var(--tsm-ease);
 }
-#reactcachebtn:hover { background: #9ad2ff; }
+#reactcachebtn:hover { background: linear-gradient(180deg, #add8ff 0%, #8fcdff 100%); }
 #reactcachebtn .tsm-reactcache-icon { font-size: 15px; line-height: 1; }
 #reactcachebtn.tsm-reactcache-busy { opacity: 0.6; cursor: progress; pointer-events: none; }
 #reactcachebtn.tsm-reactcache-busy .tsm-reactcache-icon { animation: tsm-spin 800ms linear infinite; }
@@ -1348,8 +1392,8 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
 
 /* Окно в режиме сброса ответов: красная кромка сверху, красная кнопка запуска */
 .tsm-window-revfix.tsm-revfix-danger { border-color: rgba(240, 122, 126, 0.5); box-shadow: var(--tsm-shadow), inset 0 3px 0 var(--tsm-bad); }
-.tsm-fix-run.tsm-fix-run-danger { color: #fff; background: #c9474d; border-color: #c9474d; }
-.tsm-fix-run.tsm-fix-run-danger:hover { background: #d9565c; border-color: #d9565c; }
+.tsm-fix-run.tsm-fix-run-danger { color: #fff; background: linear-gradient(180deg, #d65a60, #c9474d); border-color: #c9474d; box-shadow: 0 2px 10px -3px rgba(201, 71, 77, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+.tsm-fix-run.tsm-fix-run-danger:hover { background: linear-gradient(180deg, #e0696f, #d9565c); border-color: #d9565c; }
 .tsm-fix-head-btn { height: 28px; padding: 0 10px; font-size: 12px; }
 .tsm-fix-stat-del { color: var(--tsm-warn); background: var(--tsm-warn-soft); }
 .tsm-fix-ok { font-family: var(--tsm-font-mono); font-size: 12px; color: var(--tsm-ok); }
@@ -1462,9 +1506,9 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
 .tsm-textarea::placeholder { color: var(--tsm-text-3); }
 .tsm-fix-hint { margin: 6px 0 10px; font-size: 11px; line-height: 1.45; color: var(--tsm-text-3); }
 .tsm-fix-run { width: 100%; height: 38px; }
-.tsm-fix-run.tsm-btn-stop { color: #fff; background: #c9474d; border-color: #c9474d; }
-.tsm-fix-run.tsm-btn-stop:hover { background: #d9565c; border-color: #d9565c; }
-.tsm-btn-primary:disabled { color: var(--tsm-text-2); background: var(--tsm-surface-raised); border-color: var(--tsm-line-strong); opacity: 1; }
+.tsm-fix-run.tsm-btn-stop { color: #fff; background: linear-gradient(180deg, #d65a60, #c9474d); border-color: #c9474d; }
+.tsm-fix-run.tsm-btn-stop:hover { background: linear-gradient(180deg, #e0696f, #d9565c); border-color: #d9565c; }
+.tsm-btn-primary:disabled { color: var(--tsm-text-2); background: var(--tsm-surface-raised); border-color: var(--tsm-line-strong); box-shadow: none; opacity: 1; }
 
 .tsm-fix-progress { margin-top: 12px; display: flex; }
 
@@ -1523,4 +1567,4 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
   cursor: pointer;
   transition: background-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease);
 }
-.tsm-btn-homework:hover { background: var(--tsm-accent); color: var(--tsm-surface); }
+.tsm-btn-homework:hover { background: var(--tsm-accent); color: #0d1a29; }

@@ -120,9 +120,10 @@ function buildSectionHTML(key, kids) {
         + kids.map((kid) => buildKidCardHTML(kid, key)).join("");
 }
 
-function renderKids(html) {
+function renderKids(html, animate = false) {
     const container = document.getElementById("infobarskysmart");
     container.innerHTML = html;
+    container.classList.toggle("tsm-cards-enter", animate);
     container.querySelectorAll(".tsm-id-badge[data-copy]").forEach((badge) => {
         markCopyable(badge, badge.dataset.copy);
     });
@@ -146,7 +147,7 @@ document.getElementById("infobarskysmart").addEventListener("click", (event) => 
     if (kidId && builder) window.open(builder(kidId), "_blank", "noopener");
 });
 
-function renderStudentsView() {
+function renderStudentsView(animate = false) {
     const query = document.getElementById("usersearchskysmart").value.toLowerCase().trim();
     const selected = document.getElementById("listofsubjects").value;
     const sections = kidSections(studentsState.data)
@@ -157,7 +158,7 @@ function renderStudentsView() {
         .filter(([, kids]) => kids.length > 0);
 
     if (sections.length) {
-        renderKids(sections.map(([key, kids]) => buildSectionHTML(key, kids)).join(""));
+        renderKids(sections.map(([key, kids]) => buildSectionHTML(key, kids)).join(""), animate);
     } else if (query) {
         renderKids(tsmEmptyState("user", `По запросу «${query}» никого не найдено`, "Измените запрос или раздел"));
     } else {
@@ -188,7 +189,7 @@ async function loadStudents() {
         sections.forEach(([key, kids]) => addOption(select, `${labelForSubject(key)} (${kids.length})`, key));
 
         if (sections.length) {
-            renderStudentsView();
+            renderStudentsView(true);
         } else {
             const keys = raw && typeof raw === "object" ? Object.keys(raw).join(", ") : typeof raw;
             console.log("[TSM Ученики] ответ API без учеников:", raw);
@@ -328,15 +329,21 @@ async function fetchStudentHomework(kid, subject) {
 
 /* Стили вкладки ДЗ: та же палитра Graphite & Ice, страница своя — :root здесь безопасен */
 const STUD_HW_CSS = `
-:root{--bg:#0e131c;--surface:#121722;--raised:rgba(255,255,255,.035);--sunken:rgba(0,0,0,.28);--line:rgba(148,163,184,.14);--line2:rgba(148,163,184,.28);--text:#e7ecf3;--text2:#9ba7b9;--text3:#8a95a8;--accent:#7cc4ff;--accent-soft:rgba(124,196,255,.12);--accent-line:rgba(124,196,255,.45);--ok:#62d29d;--warn:#f1b84f;--bad:#f07a7e;}
+:root{color-scheme:dark;--bg:#0e131c;--surface:#121722;--raised:rgba(255,255,255,.035);--sunken:rgba(0,0,0,.28);--line:rgba(148,163,184,.14);--line2:rgba(148,163,184,.28);--text:#e7ecf3;--text2:#9ba7b9;--text3:#8a95a8;--accent:#7cc4ff;--accent-soft:rgba(124,196,255,.12);--accent-line:rgba(124,196,255,.45);--ok:#62d29d;--warn:#f1b84f;--bad:#f07a7e;}
 *{box-sizing:border-box}
+html{scrollbar-width:thin;scrollbar-color:rgba(148,163,184,.3) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(148,163,184,.25);border-radius:6px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background-color:rgba(148,163,184,.45)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-.wrap{max-width:960px;margin:0 auto;padding:28px 20px 64px}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:14px}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 64px}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;background:rgba(14,19,28,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:18px 0 14px;margin-bottom:14px}
 h1{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:700;margin:0 0 4px}
 svg{flex:0 0 auto;display:block}
 .sub{color:var(--text2);font-size:13px}
-input[type=text],select{background:var(--surface);border:1px solid var(--line2);color:var(--text);border-radius:9px;height:34px;padding:0 12px;outline:none;font-size:13px}
+input[type=text],select{background:var(--surface);border:1px solid var(--line2);color:var(--text);border-radius:9px;height:34px;padding:0 12px;outline:none;font-size:13px;max-width:100%}
 input[type=text]{width:300px}
 input:focus,select:focus{border-color:var(--accent-line)}
 select:disabled{opacity:.45}
@@ -344,7 +351,7 @@ select:disabled{opacity:.45}
 .f{display:inline-flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;user-select:none}
 .f input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;margin:0}
 .count{color:var(--text3);font-size:12px;margin:0 0 12px 2px}
-.hw{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.hw{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;transition:border-color .15s ease}
 .hw:hover{border-color:var(--line2)}
 .cover{width:104px;height:74px;border-radius:9px;object-fit:cover;background:var(--raised);flex:none}
 .hbody{flex:1;min-width:0}
@@ -368,15 +375,17 @@ select:disabled{opacity:.45}
 .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn{display:inline-flex;align-items:center;height:30px;padding:0 14px;border-radius:8px;border:1px solid var(--line2);color:var(--text);text-decoration:none;font-size:12.5px}
 .btn:hover{border-color:var(--accent-line);color:var(--accent);background:var(--accent-soft)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#0b1220;font-weight:600}
+.btn.primary{background:linear-gradient(180deg,#96cfff,var(--accent));border-color:var(--accent);color:#0b1220;font-weight:600;box-shadow:0 2px 10px -3px rgba(124,196,255,.5),inset 0 1px 0 rgba(255,255,255,.35)}
 .btn.primary:hover{filter:brightness(1.08);color:#0b1220}
 .records{display:flex;flex-direction:column;gap:6px;margin-top:10px}.rec{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text3)}.rec span{width:64px;flex:none}audio{height:32px;width:320px;max-width:100%}
 .empty{text-align:center;color:var(--text3);padding:70px 0}
 .spin{width:26px;height:26px;margin:60px auto;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite}
-@keyframes s{to{transform:rotate(360deg)}}`;
+@keyframes s{to{transform:rotate(360deg)}}
+@media (max-width:640px){header{padding:12px 0 10px}h1{font-size:18px}input[type=text]{width:100%}.hw{flex-direction:column}.cover{width:100%;height:120px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:1ms!important;transition-duration:1ms!important}}`;
 
 function studHwShell(name) {
-    return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>ДЗ — ${escapeHTML(name)}</title><style>${STUD_HW_CSS}</style></head><body>
+    return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ДЗ — ${escapeHTML(name)}</title><style>${STUD_HW_CSS}</style></head><body>
 <div class="wrap">
   <header><div><h1>${tsmIcon("library", 22)} Домашние задания</h1><div class="sub">${escapeHTML(name)}</div></div>
   <input id="q" type="text" placeholder="Поиск по названию урока"></header>
