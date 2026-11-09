@@ -34,6 +34,7 @@
         services: (id) => `${BACKEND}/persons/${id}/education-services/`,
         general: (id, sid) => `${BACKEND}/students/${id}/education-services/${sid}/general/`,
         promocode: (sid) => `${BACKEND}/v2/students/education-services/${sid}/promocode/active/`,
+        tasks: (id) => `https://customer-support.skyeng.ru/task/user/${id}`,
         history: (id) => `${BACKEND}/students/${id}/timetable/lessons-history/?page=0`,
         future: (id) => `${BACKEND}/students/${id}/timetable/future-lessons/`,
         credit: (sid) => `${BACKEND}/v2/students/education-services/${sid}/credit/active/`,
@@ -49,7 +50,8 @@
     // чатов сразу: данные каждого хранятся отдельно, при возврате в чат запросов нет.
     const cache = new Map();
     const newEntry = () => ({ id: null, role: null, data: null, loading: false, pending: false, error: null, collapsed: false, reqToken: 0, tplBrand: null, tplOpen: null, tplFloat: false, tblOpen: null });
-    let state = newEntry();      // запись текущего чата (на неё смотрят renderBody/renderBlock)
+    let state = newEntry();
+    let curMode = 'full'; // 'tp' — краткая панель для ТП, 'full' — полная      // запись текущего чата (на неё смотрят renderBody/renderBlock)
     let currentKey = null;
     let stab = { sig: '', n: 0 };
     let staleId = null;          // ученик предыдущего чата: пока DOM показывает его же, чат мог ещё не перерисоваться
@@ -134,6 +136,8 @@
         tag: '<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="8" cy="8" r="1.4"/>',
         refresh: '<path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/>',
         chevron: '<path d="M6 9l6 6 6-6"/>',
+        phoneOut: '<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2zM15 3h6v6M21 3l-7 7"/>',
+        layers2: '<path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/>',
         student: '<path d="M2 9l10-5 10 5-10 5L2 9zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6"/>',
         users: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0114 0M16 4.5a3.5 3.5 0 010 7M18 20a7 7 0 00-3-5.7"/>'
     };
@@ -184,7 +188,7 @@
     #${BLOCK_ID} .sth-more[open]>summary::before{content:'▾ '}
     #${BLOCK_ID} .sth-list{margin:4px 0 0;padding:0;list-style:none;display:grid;gap:2px}
     #${BLOCK_ID} .sth-list li{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:500}
-    #${BLOCK_ID} .sth-list li span:first-child{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+    #${BLOCK_ID} .sth-list li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
     #${BLOCK_ID} .sth-list b{font-variant-numeric:tabular-nums}
     #${BLOCK_ID} .sth-list b.neg{color:#fca5a5}
     #${BLOCK_ID} .sth-list b.zero{color:#94a3b8}
@@ -226,6 +230,24 @@
     #${BLOCK_ID} .sth-evbtn{display:inline-block;margin:0 5px 4px 0;padding:3px 10px;border-radius:8px;border:1px solid rgba(251,191,36,.55);background:rgba(251,191,36,.16);color:#fde68a;font-size:12px;font-weight:600;cursor:pointer}
     #${BLOCK_ID} .sth-evbtn:hover{background:rgba(251,191,36,.3)}
     #${BLOCK_ID} .sth-evbtn.done{background:rgba(134,239,172,.25);border-color:rgba(134,239,172,.6);color:#bbf7d0}
+    #${BLOCK_ID} .sth-lsvc{color:#e2e8f0;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+    #${BLOCK_ID} .sth-task{--g:100,116,139;--g1:#94a3b8;--g2:#64748b;--gt:#0f172a}
+    #${BLOCK_ID} .sth-task.out{--g:52,211,153;--g1:#10b981;--g2:#047857;--gt:#ffffff}
+    #${BLOCK_ID} .sth-task.l2{--g:56,189,248;--g1:#0ea5e9;--g2:#0369a1;--gt:#ffffff}
+    #${BLOCK_ID} li.sth-task{position:relative;list-style:none;margin:8px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(var(--g),.45);background:linear-gradient(100deg,rgba(var(--g),.16),rgba(18,23,33,.96) 45%),#161b27;box-shadow:0 0 0 1px rgba(var(--g),.35);overflow:hidden}
+    #${BLOCK_ID} li.sth-task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--g1),var(--g2));box-shadow:0 0 12px rgba(var(--g),.7)}
+    #${BLOCK_ID} .sth-grp{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 9px;border-radius:999px;font-size:12.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--gt,#fff);text-shadow:0 1px 2px rgba(0,0,0,.45);background:linear-gradient(135deg,var(--g1,#64748b),var(--g2,#475569));box-shadow:0 2px 10px rgba(var(--g,100,116,139),.45);margin:0 6px 2px 0;vertical-align:middle}
+    #${BLOCK_ID} .sth-grp .sth-i{--ic:currentColor;width:14px;height:14px}
+    #${BLOCK_ID} li.sth-task,#${BLOCK_ID} li.sth-task b{color:#f8fafc}
+    #${BLOCK_ID} li.sth-task .sth-tmeta,#${BLOCK_ID} li.sth-task .sth-cm-short{color:#dbe4f0 !important;font-size:12.5px}
+    #${BLOCK_ID} li.sth-task .sth-cm-toggle{color:#e0f2fe;background:rgba(var(--g),.28);border-color:rgba(var(--g),.6)}
+    #${BLOCK_ID} .sth-tmeta{margin-top:3px;color:var(--mut)}
+    #${BLOCK_ID} .sth-wait{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700;font-size:11.5px;color:#fff;background:rgba(239,68,68,.55);border:1px solid rgba(252,165,165,.8)}
+    #${BLOCK_ID} .sth-cm-full{display:none;white-space:pre-wrap;word-break:break-word;margin-top:4px;padding:7px 9px;border-radius:8px;background:rgba(0,0,0,.2);color:var(--txt);font-size:12.5px;max-height:320px;overflow:auto}
+    #${BLOCK_ID} .sth-cm-full a{color:#7dd3fc}
+    #${BLOCK_ID} li.open .sth-cm-full{display:block}
+    #${BLOCK_ID} li.open .sth-cm-short{display:none}
+    #${BLOCK_ID} .sth-cm-toggle{margin-top:4px;border:1px solid var(--line);background:rgba(125,211,252,.1);color:#bae6fd;border-radius:8px;padding:2px 10px;font-size:12px;cursor:pointer}
     #${BLOCK_ID} .sth-tpl-svcs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
     #${BLOCK_ID} .sth-svc{display:inline-flex;align-items:baseline;gap:6px;padding:3px 9px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-left:3px solid #64748b;font-size:12.5px;line-height:1.3;max-width:100%}
     #${BLOCK_ID} .sth-svc.ad{border-left-color:#60a5fa}
@@ -339,13 +361,15 @@
         };
     }
 
-    async function loadService(studentId, base) {
+    async function loadService(studentId, base, light = false) {
         const sid = base.id;
+        // Краткий режим (ТП): промокод и отпуск не нужны — не запрашиваем
+        const skip = Promise.resolve(null);
         const [gen, promo, credit, vac] = (await Promise.allSettled([
             getJson(SOURCES.general(studentId, sid)),
-            getJson(SOURCES.promocode(sid)),
+            light ? skip : getJson(SOURCES.promocode(sid)),
             getJson(SOURCES.credit(sid)),
-            getJson(SOURCES.vacation(sid))
+            light ? skip : getJson(SOURCES.vacation(sid))
         ])).map((r) => settled(r));
 
         const g = gen.ok ? (gen.v?.data ?? gen.v ?? {}) : {};
@@ -406,7 +430,22 @@
         }
     }
 
-    async function loadAll(id) {
+    const mskDay = (t) => new Date(t).toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+    function todayLessons(fut) {
+        const day = mskDay(Date.now());
+        return fut.filter((l) => !isNaN(ts(l)) && mskDay(ts(l)) === day)
+            .sort((a, b) => ts(a) - ts(b))
+            .map((l) => ({
+                at: l.startedAt,
+                type: l.lessonType,
+                sid: String(l.educationService?.id ?? l.educationServiceId ?? ''),
+                key: l.educationService?.serviceTypeKey || '',
+                teacher: [l.teacher?.general?.name, l.teacher?.general?.surname].filter(Boolean).join(' ')
+            }));
+    }
+
+    async function loadAll(id, mode = 'full') {
+        const light = mode === 'tp';
         const listRes = await getJson(SOURCES.services(id));
         const everything = Array.isArray(listRes?.data) ? listRes.data : [];
         // В списке персоны есть и услуги, которые она только оплачивает (ученик другой человек) — их не берём
@@ -419,12 +458,33 @@
         const isClosed = (s) => s.stage === 'lost' || !isEmpty(s.incorrectnessReason);
         const open = all.filter((s) => !isClosed(s));
         const take = open.slice(0, MAX_SERVICES);
-        const services = await Promise.all(take.map((b) => loadService(id, b)));
+        const services = await Promise.all(take.map((b) => loadService(id, b, light)));
         // Уроки по ученику: история (прошедшие) и расписание (будущие). Сбой запроса = «неизвестно» (null)
         const [hr, fr] = await Promise.allSettled([getJson(SOURCES.history(id)), getJson(SOURCES.future(id))]);
         const arr = (r) => r.status === 'fulfilled' ? (Array.isArray(r.value?.data) ? r.value.data : []) : null;
-        applyLessons(services, arr(hr), arr(fr));
+        const futArr = arr(fr);
+        applyLessons(services, arr(hr), futArr);
+        // Только для ТП: уроки на сегодня и задачи ТП Исход / 2ЛТП
+        let today = null, tasks = null;
+        if (light) {
+            if (futArr) {
+                today = todayLessons(futArr);
+                // Услуга и преподаватель: из урока, а если там пусто — из списка услуг ученика
+                for (const l of today) {
+                    const sv = services.find((x) => String(x.id) === l.sid);
+                    if (sv) {
+                        l.key = l.key || sv.key;
+                        l.teacher = l.teacher || sv.teacherName || (sv.tempName ? sv.tempName + ' (врем.)' : '');
+                    }
+                }
+            }
+            try {
+                const tr = await getJson(SOURCES.tasks(id));
+                tasks = Array.isArray(tr?.data) ? tr.data : [];
+            } catch { tasks = null; }
+        }
         return {
+            today, tasks,
             totalCount: all.length,
             foreignCount: foreign,
             closedCount: all.length - open.length,
@@ -604,6 +664,47 @@
     // Для склеенной группы убираем из подсказки номера баланса конкретной услуги
     const g_op = (t) => t.svcs.length > 1 ? t.op.replace(/\s*\(\d+\)/, '') : t.op;
 
+    const LESSON_TYPES = { regular: 'Регулярный', single: 'Одиночный', trial: 'Пробный' };
+    const hhmm = (iso) => new Date(iso).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+    function lessonsCard(d) {
+        if (!d.today) return card('wide mute', 'info', 'Уроки сегодня', 'Нет данных');
+        if (!d.today.length) return card('wide ok', 'info', 'Уроки сегодня', 'Нет');
+        const rows = d.today.map((l) => {
+            const svc = l.sid || l.key ? `${l.sid ? '#' + l.sid + ' ' : ''}${l.key || ''}`.trim() : 'услуга не указана';
+            return `<li><span><b>${esc(hhmm(l.at))}</b> · ${esc(LESSON_TYPES[l.type] || l.type || '')} · <b class="sth-lsvc">${esc(svc)}</b></span><b>${esc(l.teacher || 'без преподавателя')}</b></li>`;
+        });
+        return card('wide warn', 'info', 'Уроки сегодня (МСК)', `${d.today.length} шт.`, '', `<ul class="sth-list">${rows.join('')}</ul>`);
+    }
+    const TASK_GROUPS = /technical_support_(second_line|outgoing)/i;
+    const TASK_GROUP_TITLES = /исход|2-?я\s+линия|2\s*лтп/i;
+    const TASK_DONE = /^(completed|complete|done|closed|canceled|cancelled|resolved|finished)$/i;
+    // Текст комментария с кликабельными ссылками (экранирование до разметки)
+    const linkify = (t) => esc(t).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+    const groupKind = (t) => {
+        const n = t.operatorGroup?.name || '', ti = t.operatorGroup?.title || '';
+        if (/outgoing/i.test(n) || /исход/i.test(ti)) return 'out';
+        if (/second_line/i.test(n) || /2-?я\s+линия|2\s*лтп/i.test(ti)) return 'l2';
+        return '';
+    };
+    function tasksCard(d) {
+        if (!d.tasks) return card('wide mute', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет данных');
+        const mine = d.tasks.filter((t) => (TASK_GROUPS.test(t.operatorGroup?.name || '') || TASK_GROUP_TITLES.test(t.operatorGroup?.title || '')) && !TASK_DONE.test(t.status || ''));
+        if (!mine.length) return card('wide ok', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет');
+        const waiting = mine.filter((t) => t.status === 'waiting').length;
+        const rows = mine.map((t) => {
+            const when = t.activeOn ? `${fmtDate(t.activeOn)} ${hhmm(t.activeOn)}` : '';
+            const raw = String(t.extra?.comment || '').trim();
+            const cm = raw.replace(/\s+/g, ' ');
+            const long = cm.length > 140 || raw.includes('\n');
+            return `<li class="sth-task ${groupKind(t)}" style="display:block"><div><span class="sth-grp ${groupKind(t)}">${groupKind(t) === 'out' ? ico('phoneOut') : groupKind(t) === 'l2' ? ico('layers2') : ''}${esc(t.operatorGroup?.title || t.operatorGroup?.name || '')}</span> <b>#${esc(t.id)}</b> · ${esc(t.type?.label || t.type?.name || '')}</div>
+                <div class="sth-tmeta">${t.status === 'waiting' ? '<span class="sth-wait">не взята в работу</span>' : esc(t.status || '')}${t.operator?.name ? ' · ' + esc(t.operator.name) : ''}${when ? ' · на ' + esc(when) : ''}${t.extra?.requestSubtopicLabel ? ' · ' + esc(t.extra.requestSubtopicLabel) : ''}</div>
+                ${cm ? `<div class="sth-cm-short" style="color:var(--mut)">${esc(cm.length > 140 ? cm.slice(0, 138) + '…' : cm)}</div>
+                    <div class="sth-cm-full">${linkify(raw)}</div>
+                    ${long ? '<button type="button" class="sth-cm-toggle" data-more="Показать полностью" data-less="Свернуть">Показать полностью</button>' : ''}` : ''}</li>`;
+        });
+        return card('wide ' + (waiting ? 'bad' : 'warn'), 'tag', 'Задачи ТП Исход / 2ЛТП', waiting ? `Не взято в работу: ${waiting} из ${mine.length}` : `Активных: ${mine.length}`, '', `<ul class="sth-list">${rows.join('')}</ul>`);
+    }
+
     function renderBody() {
         if (state.loading || state.pending) return `<div class="sth-load" style="grid-column:1/-1"><i class="sth-spin"></i>Загружаю данные ученика…</div>`;
         if (state.error) return `<div class="sth-err">Не удалось загрузить: ${esc(state.error)}</div>`;
@@ -611,7 +712,8 @@
         if (!d) return '';
         const sv = d.services;
         if (!sv.length) {
-            return card('mute', 'info', 'Услуги', 'Рабочих услуг нет', `всего: ${d.totalCount}, закрытых (lost / некорректных): ${d.closedCount}`);
+            return card('mute', 'info', 'Услуги', 'Рабочих услуг нет', `всего: ${d.totalCount}, закрытых (lost / некорректных): ${d.closedCount}`)
+                + (state.mode === 'tp' ? lessonsCard(d) + tasksCard(d) : '');
         }
         const unk = (x) => x && x.unknown;
         const foot = `всего услуг: ${d.totalCount}${d.closedCount ? `, закрытых: ${d.closedCount}` : ''}${d.skipped ? `, не показано: ${d.skipped}` : ''}${d.foreignCount ? `, чужих (оплачивает): ${d.foreignCount}` : ''}`;
@@ -643,6 +745,8 @@
         const crCard = cr.length
             ? card('warn', 'coins', 'Рассрочка', 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', '))
             : card(crUnknown ? 'mute' : 'ok', 'coins', 'Рассрочка', crUnknown ? 'Нет данных' : 'Нет активной');
+
+        if (state.mode === 'tp') return [kmCard, crCard, lessonsCard(d), tasksCard(d)].join('');
 
         // 4. Промокод
         const pr = sv.filter((x) => !unk(x.promo) && x.promo);
@@ -736,6 +840,19 @@
                 if (k) state[k] = e.target.open;
             }, true);
             block.addEventListener('click', (e) => {
+                if (e.target.closest('.sth-dbg')) {
+                    e.stopPropagation();
+                    const next = dbgMode() === 'tp' ? 'full' : dbgMode() === 'full' ? '' : 'tp';
+                    try { next ? localStorage.setItem(DBG_KEY, next) : localStorage.removeItem(DBG_KEY); } catch { /* ignore */ }
+                    tick();
+                    return;
+                }
+                const cmt = e.target.closest('.sth-cm-toggle');
+                if (cmt) {
+                    const li = cmt.closest('li'); li.classList.toggle('open');
+                    cmt.textContent = li.classList.contains('open') ? cmt.dataset.less : cmt.dataset.more;
+                    return;
+                }
                 if (e.target.closest('a')) return; // клик по ссылке (CRM, услуга, «Подробнее») ничего не сворачивает
                 if (e.target.closest('.sth-refresh')) { refresh(true); return; }
                 if (e.target.closest('.sth-float-btn, .sth-tplbtn')) { e.stopPropagation(); state.tplFloat = true; renderBlock(doc); return; }
@@ -788,7 +905,8 @@
                 ${state.data?.services?.some((x) => x.corp) ? `<span class="sth-role corp" title="Есть корпоративная услуга: general.corporate или paymentAgreement.companyContract">${ico('tag')}Корпоративный</span>` : ''}
                 <a class="sth-crm" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}" target="_blank" rel="noopener" title="Открыть ученика в CRM">CRM ↗</a>
                 <span class="sth-spacer"></span>
-                ${state.data && state.data.services?.length ? `<button class="sth-btn sth-tplbtn" type="button" title="Шаблоны поверх интерфейса">${ico('tag')}Шаблоны</button>` : ''}
+                ${state.mode !== 'tp' && state.data && state.data.services?.length ? `<button class="sth-btn sth-tplbtn" type="button" title="Шаблоны поверх интерфейса">${ico('tag')}Шаблоны</button>` : ''}
+                ${dbgMode() ? `<button class="sth-btn sth-dbg" type="button" style="width:auto;padding:0 8px;font-size:11px;color:#fca5a5;border-color:rgba(248,113,113,.5)" title="Отладка: режим панели принудительный. Клик — переключить ТП → полная → авто">DEBUG: ${dbgMode() === 'tp' ? 'ТП' : 'полная'}</button>` : ''}
                 <button class="sth-btn sth-refresh" type="button" title="Обновить данные">${ico('refresh')}</button>
                 <span class="sth-btn sth-chev-wrap" style="border:0;background:none">${ico('chevron', 'sth-chev')}</span>
             </div>
@@ -804,11 +922,12 @@
         const doc = getFrameDoc();
         if (!doc || !entry.id) return;
         const token = ++entry.reqToken;
+        entry.mode = curMode;
         entry.loading = true; entry.pending = false; entry.error = null;
         if (force) entry.data = null;
         renderBlock(doc);
         try {
-            const data = await loadAll(entry.id);
+            const data = await loadAll(entry.id, entry.mode);
             if (token !== entry.reqToken) return; // запись сброшена/перезапущена, пока грузили
             entry.data = data;
         } catch (e) {
@@ -838,14 +957,19 @@
         if (nm) return /^ТП(\s*ОС)?\s*[-–—]/i.test(nm) ? 'tp' : 'other';
         return null;
     }
-    // ТП: показываем, только если включено в Settings (ключ afStudentHelperTP = 1). Остальные отделы — всегда.
-    function enabledForOperator() {
+    // Режим панели: 'tp' — краткая (КМ, рассрочка, уроки сегодня, задачи ТП); 'full' — полная; null — отдел ещё не определён.
+    // ТП по умолчанию видит краткую; ключ afStudentHelperTP = 1 в Settings включает для ТП полную. Остальные отделы — полная.
+    const DBG_KEY = 'afStudentHelperDebugMode'; // '' (авто) | 'tp' | 'full' — ручное переключение для отладки
+    const dbgMode = () => { try { const v = localStorage.getItem(DBG_KEY); return v === 'tp' || v === 'full' ? v : ''; } catch { return ''; } };
+    function viewMode() {
+        const dbg = dbgMode();
+        if (dbg) return dbg;
         const kind = operatorKind();
         if (kind === 'tp') {
-            try { return localStorage.getItem('afStudentHelperTP') === '1'; } catch { return false; }
+            try { return localStorage.getItem('afStudentHelperTP') === '1' ? 'full' : 'tp'; } catch { return 'tp'; }
         }
-        if (kind === 'other') return true;
-        return Date.now() - T0 > 15000; // отдел ещё не определён — подождём, чтобы ТП не увидел панель на старте
+        if (kind === 'other') return 'full';
+        return Date.now() - T0 > 15000 ? 'full' : null; // подождём, чтобы ТП не увидел полную панель на старте
     }
 
     function tickInner() {
@@ -856,7 +980,9 @@
 
         // Не на экране диалога — блок убираем
         if (!header) { block?.remove(); return; }
-        if (!enabledForOperator()) { block?.remove(); return; }
+        const mode = viewMode();
+        if (!mode) { block?.remove(); return; }
+        curMode = mode;
         ensureStyle(doc);
 
         // Панель нужна только для ученика/родителя. Нет текста userType или teacher — панели нет вовсе.
@@ -878,6 +1004,9 @@
             else if (state.error && !state.loading) { refresh(); return; }
             renderBlock(doc); // сразу показываем данные нового чата (кеш или «загрузка»), а не старого
         }
+
+        // Режим сменился (например, ТП включил полную панель) — данные другого состава, грузим заново
+        if (state.id && state.mode && state.mode !== curMode && !state.loading) { state.id = null; state.data = null; state.error = null; state.reqToken++; state.pending = true; }
 
         // DOM после смены чата может ещё показывать предыдущего ученика — верим ему после нескольких одинаковых тиков
         const sig = id + '|' + role;

@@ -3269,13 +3269,21 @@ async function init_settings() {
                         <label class="set-toggle"><input type="checkbox" id="dblhidewindow"> Без скрытия по dblclick</label>
                         <label class="set-toggle"><input type="checkbox" id="brnotificatios"> Без push-уведомлений</label>
                         <label class="set-toggle"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
-                        <label class="set-toggle" title="Блок «Вспомогательная информация по У» под кнопками тикета. У ТП по умолчанию выключен"><input type="checkbox" id="afStudentHelperTP"> Доп. инфо по ученику</label>
+                        <label class="set-toggle" title="Панель под кнопками тикета. ТП по умолчанию видит краткую (КМ, рассрочка, корп., уроки сегодня, задачи Исход / 2ЛТП). Включите, чтобы видеть полную."><input type="checkbox" id="afStudentHelperTP"> Полная панель по ученику</label>
                     </div>
                 </div>
 
                 <!-- 🏢 Отдел -->
                 <div class="set-section-title">🏢 Отдел</div>
                 <div class="set-group">
+                    <div class="set-row">
+                        <span class="set-label" title="Только для отладки: принудительно показывает краткую (ТП) или полную панель по ученику, независимо от отдела">🐞 Панель по ученику</span>
+                        <select class="set-input" id="afStudentHelperDebugMode">
+                            <option value="">Авто (по отделу)</option>
+                            <option value="tp">Краткая (как у ТП)</option>
+                            <option value="full">Полная (как у других)</option>
+                        </select>
+                    </div>
                     <div class="set-row">
                         <span class="set-label">Шаблоны отдела</span>
                         <div class="set-segment">
@@ -3404,6 +3412,14 @@ async function init_settings() {
         bindToggle('brnotificatios', 'brnotificatios');
         bindToggle('clearlessoninfo', 'clearlessoninfo');
         bindToggle('afStudentHelperTP', 'afStudentHelperTP'); // читается модулем AFStudentHelper.js
+        const dbgSel = document.getElementById('afStudentHelperDebugMode'); // отладка: режим панели по ученику
+        if (dbgSel) {
+            dbgSel.value = localStorage.getItem('afStudentHelperDebugMode') || '';
+            dbgSel.onchange = () => {
+                if (dbgSel.value) localStorage.setItem('afStudentHelperDebugMode', dbgSel.value);
+                else localStorage.removeItem('afStudentHelperDebugMode');
+            };
+        }
 
         const iconsChanged = () => window.dispatchEvent(new CustomEvent('chmaf:icons-mode'));
         bindToggle('newIconsFab', 'newIconsFab', iconsChanged);
