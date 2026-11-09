@@ -137,27 +137,48 @@ window.chmafCopyDiagnostics = async function chmafCopyDiagnostics() {
 // ============================================================
 const UI_PREFIX = 'usinf';
 
+// SVG-иконки вместо эмодзи: линейные, цвет берут из --acc кнопки (currentColor)
+const UI_ICONS = {
+    student:  '<path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/>',
+    teacher:  '<path d="M12 3C7.6 3 4.5 6.4 4.5 10.2c0 4.3 3.2 8 7.5 10.8 4.3-2.8 7.5-6.5 7.5-10.8C19.5 6.4 16.4 3 12 3z"/><path d="M6.8 9.6c2 .1 3.6 1.4 4 3.1-2.1.2-3.9-.9-4-3.1zM17.2 9.6c-2 .1-3.6 1.4-4 3.1 2.1.2 3.9-.9 4-3.1z" fill="currentColor"/><path d="M10.6 16.6h2.8"/>',
+    unknown:  '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 015 .5c0 1.6-2.5 2-2.5 3.5M12 17h.01"/>',
+    key:      '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2"/>',
+    pulse:    '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+    history:  '<path d="M3 12a9 9 0 109-9 9 9 0 00-6.4 2.6L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+    idcard:   '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.8-2 3-2s2.4.6 3 2M15 10h3M15 14h3"/>',
+    pencil:   '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>',
+    copy:     '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
+    check:    '<path d="M5 12.5l5 5 9-11"/>'
+};
+// Свой цвет иконки (иначе берётся цвет кнопки): инопланетянин — зелёный
+const UI_ICON_COLOR = { teacher: '#7ee787' };
+function svgIcon(name, size = 18) {
+    const d = UI_ICONS[name] || UI_ICONS.unknown;
+    const col = UI_ICON_COLOR[name] ? ` style="color:${UI_ICON_COLOR[name]}"` : '';
+    return `<svg${col} viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+}
+
 const usersConfig = [
     {
         rowId: 'currUserRow', rowVisible: true,
         buttons: [
-            { id: 'CurrUser',       content: '👨‍🎓', label: 'CRM',            accent: '#4f8cff' },
-            { id: 'CurUsLoginer',   content: '🔑', label: 'Логинер',        accent: '#f5b300' },
-            { id: 'CurUstroublesh', content: '🕵️‍♀️', label: 'Troubleshooter', accent: '#a66bff' },
-            { id: 'CurUsChatHis',   content: '☢️', label: 'История',        accent: '#ff8a3d' },
-            { id: 'CurUsUserInf',   content: '⚜️', label: 'Инфо',           accent: '#e0a526' },
-            { id: 'CurUsAdminka',   content: '✏️', label: 'Админка',        accent: '#ff5d73' }
+            { id: 'CurrUser',       content: 'student', label: 'CRM',            accent: '#4f8cff' },
+            { id: 'CurUsLoginer',   content: 'key', label: 'Логинер',        accent: '#f5b300' },
+            { id: 'CurUstroublesh', content: 'pulse', label: 'Troubleshooter', accent: '#a66bff' },
+            { id: 'CurUsChatHis',   content: 'history', label: 'История',        accent: '#ff8a3d' },
+            { id: 'CurUsUserInf',   content: 'idcard', label: 'Инфо',           accent: '#e0a526' },
+            { id: 'CurUsAdminka',   content: 'pencil', label: 'Админка',        accent: '#ff5d73' }
         ]
     },
     {
         rowId: 'nextUsersp', rowVisible: false,
         buttons: [
-            { id: 'NextUser',        content: '👽', label: 'CRM',            accent: '#4f8cff' },
-            { id: 'NextUsLoginer',   content: '🔑', label: 'Логинер',        accent: '#f5b300' },
-            { id: 'NextUstroublesh', content: '🕵️‍♀️', label: 'Troubleshooter', accent: '#a66bff' },
-            { id: 'NextUsChatHis',   content: '☢️', label: 'История',        accent: '#ff8a3d' },
-            { id: 'NextUsUserInf',   content: '⚜️', label: 'Инфо',           accent: '#e0a526' },
-            { id: 'NextUsAdminka',   content: '✏️', label: 'Админка',        accent: '#ff5d73' }
+            { id: 'NextUser',        content: 'teacher', label: 'CRM',            accent: '#4f8cff' },
+            { id: 'NextUsLoginer',   content: 'key', label: 'Логинер',        accent: '#f5b300' },
+            { id: 'NextUstroublesh', content: 'pulse', label: 'Troubleshooter', accent: '#a66bff' },
+            { id: 'NextUsChatHis',   content: 'history', label: 'История',        accent: '#ff8a3d' },
+            { id: 'NextUsUserInf',   content: 'idcard', label: 'Инфо',           accent: '#e0a526' },
+            { id: 'NextUsAdminka',   content: 'pencil', label: 'Админка',        accent: '#ff5d73' }
         ]
     }
 ];
@@ -211,8 +232,8 @@ const glassmorphismCSS = `
     padding: 0 !important;
     margin: 0 !important;
     border-radius: 50% !important;
-    border: 1px solid rgba(127,127,127,0.22);
-    background: rgba(127,127,127,0.12);   /* без !important: тема из Settings.js может перекрасить */
+    border: 1px solid color-mix(in srgb, var(--acc) 38%, transparent);
+    background: color-mix(in srgb, var(--acc) 14%, transparent);   /* без !important: тема из Settings.js может перекрасить */
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -235,10 +256,14 @@ const glassmorphismCSS = `
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 17px !important;
     line-height: 1 !important;
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+    color: var(--acc) !important;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--acc) 55%, transparent));
 }
+.${UI_PREFIX}-icon-box svg { display: block !important; }
+.${UI_PREFIX}-btn-glass:hover .${UI_PREFIX}-icon-box { color: #fff !important; }
+.${UI_PREFIX}-btn-glass:hover { background: color-mix(in srgb, var(--acc) 38%, transparent); }
+.${UI_PREFIX}-copy svg { display: block !important; }
 
 /* Подсказка */
 .${UI_PREFIX}-label-text {
@@ -311,7 +336,7 @@ const glassmorphismCSS = `
     align-items: center !important;
     justify-content: center !important;
     vertical-align: middle !important;
-    font-size: 13px !important;
+    color: #9aa9ff !important;
     line-height: 1 !important;
     cursor: pointer !important;
     border: 1px solid rgba(127,127,127,0.25) !important;
@@ -339,7 +364,7 @@ function buildBtn(cfg) {
     const accent = cfg.accent ? ` style="--acc:${cfg.accent}"` : '';
     return `
     <button class="${UI_PREFIX}-btn-glass" id="${cfg.id}" aria-label="${cfg.label}"${accent}>
-        <div class="${UI_PREFIX}-icon-box"><span>${cfg.content}</span></div>
+        <div class="${UI_PREFIX}-icon-box"><span>${svgIcon(cfg.content)}</span></div>
         <span class="${UI_PREFIX}-label-text">${cfg.label}</span>
     </button>`;
 }
@@ -565,7 +590,7 @@ function buildUsersPanel(iframeDoc, usernameField) {
 
     // 💾 копировать ссылку на карточку в CRM
     const copyCrmFromName = iframeDoc.createElement('span');
-    copyCrmFromName.textContent = '💾';
+    copyCrmFromName.innerHTML = svgIcon('copy', 14);
     copyCrmFromName.className = `${UI_PREFIX}-copy`;
     copyCrmFromName.title = 'Скопировать ссылку на CRM';
     copyCrmFromName.id = 'diskettocopy';
@@ -577,12 +602,12 @@ function buildUsersPanel(iframeDoc, usernameField) {
         createAndShowButton('💾 Cкопировано', 'message');
 
         clearTimeout(copyResetTimer);
-        copyCrmFromName.textContent = '✔️';
+        copyCrmFromName.innerHTML = svgIcon('check', 14);
         copyCrmFromName.classList.remove('is-done');
         void copyCrmFromName.offsetWidth; // перезапуск анимации
         copyCrmFromName.classList.add('is-done');
         copyResetTimer = setTimeout(() => {
-            copyCrmFromName.textContent = '💾';
+            copyCrmFromName.innerHTML = svgIcon('copy', 14);
             copyCrmFromName.classList.remove('is-done');
         }, 1200);
     };
@@ -594,7 +619,7 @@ function buildUsersPanel(iframeDoc, usernameField) {
 /** Иконка+подпись для кнопки Curr/Next панели. */
 function setUserIcon(iframeDoc, buttonId, icon, label) {
     const iconEl = iframeDoc.querySelector(`#${buttonId} .usinf-icon-box span`);
-    if (iconEl) iconEl.textContent = icon;
+    if (iconEl) iconEl.innerHTML = svgIcon(icon);
 
     if (label) {
         const labelEl = iframeDoc.querySelector(`#${buttonId} .usinf-label-text`);
@@ -631,9 +656,9 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
         else tplWarnOnce('noNextUsersp', 'paintUserTypeBadge: блок #nextUsersp не найден в панели UsersInfo');
     };
 
-    const ICON_TEACHER = '👽';
+    const ICON_TEACHER = 'teacher';
     const LABEL_TEACHER = 'CRM П';
-    const ICON_STUDENT = '👨‍🎓';
+    const ICON_STUDENT = 'student';
     const LABEL_STUDENT = 'CRM У';
 
     if (usertypeis === 'teacher') {
@@ -655,7 +680,7 @@ function paintUserTypeBadge(iframeDoc, usertypeis) {
             showNextRow();
         }
     } else {
-        setUserIcon(iframeDoc, 'CurrUser', '❓', null);
+        setUserIcon(iframeDoc, 'CurrUser', 'unknown', null);
     }
 }
 
