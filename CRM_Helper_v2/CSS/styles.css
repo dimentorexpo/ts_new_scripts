@@ -1239,3 +1239,10 @@ a.crm-screenshot-link:hover img { box-shadow: 0 0 0 2px #2f6db3; }
 /* Избранное: выключенная звезда — серая, включённая — цветная */
 .jira-fav:not(.is-on) svg { filter: grayscale(1); opacity: .5; }
 .jira-fav:hover svg { filter: none; opacity: 1; }
+
+/* ===== Выбор отдела (первый запуск) ===== */
+.crm-dept-choices { display: grid; gap: 8px; margin: 14px 0 12px; }
+.crm-dept-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; padding: 10px 12px; text-align: left; font: inherit; color: var(--crm-text); background: var(--crm-bg-3); border: 1px solid var(--crm-line-strong); border-radius: 8px; cursor: pointer; transition: background .12s ease, border-color .12s ease; }
+.crm-dept-choice:hover, .crm-dept-choice:focus-visible { background: var(--crm-bg-hover); border-color: var(--crm-accent); outline: none; }
+.crm-dept-choice b { font-size: 13px; font-weight: 600; }
+.crm-dept-choice span { font-size: 12px; color: var(--crm-text-2); }

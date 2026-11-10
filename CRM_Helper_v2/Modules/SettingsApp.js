@@ -7,7 +7,7 @@
     'use strict';
 
     // Значения по умолчанию.
-    const DEFAULTS = { splinterCRM: '3', audioCRMvol: '1', audioCRM: '1', repeatsound: '0', skyauto_enabled: '1' };
+    const DEFAULTS = { splinterCRM: '3', audioCRMvol: '1', audioCRM: '1', repeatsound: '0', skyauto_enabled: '1', crmsth_enabled: '1' };
     Object.entries(DEFAULTS).forEach(([key, value]) => {
         if (localStorage.getItem(key) === null) localStorage.setItem(key, value);
     });
@@ -53,6 +53,22 @@
                 <span>Автовзятие задач (SkyAuto)</span>
             </label>
             <div class="crm-hint" style="margin-top:6px">Работает на странице /customer-support/start в статусе «В работе».</div>
+        </div>
+
+        <div class="crm-section">
+            <div class="crm-section-title">Отдел и данные по ученику</div>
+            <div class="crm-row">
+                <span class="crm-label" style="width:110px">Мой отдел</span>
+                <select class="crm-select crm-grow" id="crmDeptSelectCRM" title="От отдела зависит вид полосы на странице пользователя">
+                    <option value="" disabled hidden>Не выбран</option>
+                    ${Object.entries(CRM_DEPARTMENTS).map(([key, label]) => `<option value="${key}">${label}</option>`).join('')}
+                </select>
+            </div>
+            <label class="crm-switch" style="margin-top:8px" title="Полоса под верхним меню на странице ученика или родителя">
+                <input type="checkbox" id="crmSthEnabledCRM"><span class="crm-switch-track"></span>
+                <span>Полоса «Вспомогательная информация по У»</span>
+            </label>
+            <div class="crm-hint" style="margin-top:6px">ТП — компактный вид: КМ, рассрочка, задачи, уроки сегодня. Другие отделы — подробный: услуги, баланс, преподаватель, последний урок.</div>
         </div>
 
         <div class="crm-section">
@@ -237,6 +253,26 @@
         localStorage.setItem('skyauto_enabled', e.target.checked ? '1' : '0');
     });
 
+    /* ---------- Отдел и полоса по ученику ---------- */
+
+    function syncDepartment() {
+        $('crmDeptSelectCRM').value = crmGetDepartment() || '';
+    }
+
+    $('crmDeptSelectCRM').addEventListener('change', async (e) => {
+        const dept = e.target.value;
+        const saved = await crmSetDepartment(dept);
+        if (saved) crmToast(CRM_DEPARTMENTS[dept], 'success', { title: 'Отдел сохранён' });
+        else crmToast('Отдел запомнен только в этом браузере: хранилище расширения не отвечает', 'warning');
+    });
+
+    // Отдел могли выбрать или сменить в другой вкладке.
+    crmOnDepartmentChange(syncDepartment);
+
+    $('crmSthEnabledCRM').addEventListener('change', (e) => {
+        localStorage.setItem('crmsth_enabled', e.target.checked ? '1' : '0');
+    });
+
     /* ---------- Тема TroubleShooter ---------- */
 
     // Хранится в chrome.storage.local: страница TroubleShooter — другой домен,
@@ -296,7 +332,7 @@
     // Старые ключи remindertextCRM* и т. п. оставлены: резервные копии, сделанные
     // до перехода на crm_reminders_v2, при импорте всё ещё восстанавливаются
     // (AlarmClock мигрирует их в новый формат).
-    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
+    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|crm_department|crmsth_enabled|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
 
     $('savesettingstofileCRM').onclick = () => {
         const data = {};
@@ -350,6 +386,8 @@
             if (!ok) return;
 
             entries.forEach(([k, v]) => localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)));
+            // Отдел живёт ещё и в chrome.storage — переносим туда восстановленное значение.
+            crmSetDepartment(localStorage.getItem('crm_department'));
             crmToast('Настройки загружены. Перезагружаю страницу…', 'success', { title: 'Импорт' });
             setTimeout(() => location.reload(), 1200);
         };
@@ -429,6 +467,8 @@
         $('repeatsoundselectCRM').checked = localStorage.getItem('repeatsound') === '1';
         $('soundplayintervalCRM').value = localStorage.getItem('splinterCRM') || '3';
         $('skyautoEnabledCRM').checked = localStorage.getItem('skyauto_enabled') !== '0';
+        $('crmSthEnabledCRM').checked = localStorage.getItem('crmsth_enabled') !== '0';
+        syncDepartment();
         $('test_stdCRM').value = localStorage.getItem('test_studCRM') || '';
         $('test_teachCRM').value = localStorage.getItem('test_teachCRM') || '';
         $('rangeCRM').value = audioCRM.volume;

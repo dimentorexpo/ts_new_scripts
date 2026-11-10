@@ -297,6 +297,154 @@ function crmConfirm({ title = 'Подтвердите действие', message
 }
 
 /* ============================================================
+ *  ОТДЕЛ ОПЕРАТОРА
+ * ============================================================ */
+
+/**
+ * Отдел пользователя: 'tp' (Техподдержка) или 'other' (другие отделы).
+ * От него зависит вид полосы «Вспомогательная информация по У».
+ *
+ * Хранение: chrome.storage.local (общее для всех страниц расширения) +
+ * зеркало в localStorage 'crm_department'. Если одно хранилище очистят,
+ * значение восстановится из другого. Пока отдел нигде не задан, на crm2
+ * один раз показывается окно выбора.
+ *
+ *   crmGetDepartment()         — 'tp' | 'other' | null (не выбран или ещё не загружен);
+ *   crmSetDepartment(dept)     — сохранить, Promise<boolean> (false — не записалось в chrome.storage);
+ *   crmOnDepartmentChange(fn)  — подписка на смену, в том числе из другой вкладки.
+ */
+const CRM_DEPT_KEY = 'crmDepartment';
+const CRM_DEPT_MIRROR_KEY = 'crm_department';
+const CRM_DEPARTMENTS = { tp: 'Техподдержка (ТП)', other: 'Другие отделы' };
+
+let crmDeptValue = null;
+let crmDeptDialog = null;
+const crmDeptListeners = new Set();
+
+const crmValidDept = (v) => (typeof v === 'string' && Object.prototype.hasOwnProperty.call(CRM_DEPARTMENTS, v) ? v : null);
+const crmReadDeptMirror = () => { try { return crmValidDept(localStorage.getItem(CRM_DEPT_MIRROR_KEY)); } catch (_) { return null; } };
+const crmWriteDeptMirror = (dept) => { try { localStorage.setItem(CRM_DEPT_MIRROR_KEY, dept); } catch (_) { /* localStorage недоступен */ } };
+
+function crmGetDepartment() { return crmDeptValue; }
+
+function crmOnDepartmentChange(fn) {
+    crmDeptListeners.add(fn);
+    return () => crmDeptListeners.delete(fn);
+}
+
+function crmCloseDeptDialog() {
+    if (!crmDeptDialog) return;
+    crmDeptDialog.remove();
+    crmDeptDialog = null;
+}
+
+function crmApplyDepartment(dept) {
+    crmCloseDeptDialog(); // выбрали в другой вкладке — окно больше не нужно
+    if (dept === crmDeptValue) return;
+    crmDeptValue = dept;
+    crmDeptListeners.forEach((fn) => {
+        try { fn(dept); } catch (e) { console.warn('[CRMHelper] department listener', e); }
+    });
+}
+
+function crmSetDepartment(dept) {
+    const value = crmValidDept(dept);
+    if (!value) return Promise.resolve(false);
+    crmWriteDeptMirror(value);
+    crmApplyDepartment(value);
+    return new Promise((resolve) => {
+        try {
+            chrome.storage.local.set({ [CRM_DEPT_KEY]: value }, () => resolve(!chrome.runtime.lastError));
+        } catch (_) {
+            resolve(false);
+        }
+    });
+}
+
+/** Окно первого запуска: без выбора не закрывается (Esc и клик по фону отключены). */
+function crmAskDepartment() {
+    if (crmDeptDialog || crmDeptValue) return;
+    if (!document.body) {
+        document.addEventListener('DOMContentLoaded', crmAskDepartment, { once: true });
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'crm-scope crm-dialog-overlay';
+    overlay.innerHTML = `
+        <div class="crm-dialog" role="dialog" aria-modal="true" aria-labelledby="crmDeptTitle">
+            <div class="crm-dialog-body">
+                <div class="crm-dialog-title" id="crmDeptTitle">Из какого вы отдела?</div>
+                <div class="crm-dialog-msg">Выбор нужен один раз: от него зависит, какие данные покажет полоса «Вспомогательная информация по У» на странице пользователя. Позже отдел можно сменить в «Настройках».</div>
+                <div class="crm-dept-choices">
+                    <button type="button" class="crm-dept-choice" data-dept="tp">
+                        <b>${CRM_DEPARTMENTS.tp}</b>
+                        <span>Компактно: КМ, рассрочка, задачи ТП, уроки сегодня</span>
+                    </button>
+                    <button type="button" class="crm-dept-choice" data-dept="other">
+                        <b>${CRM_DEPARTMENTS.other}</b>
+                        <span>Подробно: услуги, баланс, преподаватель, промокод, последний урок</span>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    overlay.querySelectorAll('.crm-dept-choice').forEach((btn) => {
+        btn.onclick = async () => {
+            const dept = btn.dataset.dept;
+            const saved = await crmSetDepartment(dept);
+            crmToast(
+                saved
+                    ? 'Изменить отдел можно в «Настройках».'
+                    : 'Отдел запомнен только в этом браузере: хранилище расширения не отвечает.',
+                saved ? 'success' : 'warning',
+                { title: `Отдел: ${CRM_DEPARTMENTS[dept]}` }
+            );
+        };
+    });
+    // Esc не закрывает окно: без отдела полоса не знает, что показывать.
+    overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') e.stopPropagation(); }, true);
+
+    crmDeptDialog = overlay;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.crm-dept-choice').focus();
+}
+
+(function initDepartment() {
+    const resolveDepartment = (stored) => {
+        const dept = crmValidDept(stored) || crmReadDeptMirror();
+        if (dept) {
+            crmWriteDeptMirror(dept);
+            // Одно хранилище пустое, другое нет — восстанавливаем.
+            if (dept !== stored) {
+                try { chrome.storage.local.set({ [CRM_DEPT_KEY]: dept }); } catch (_) { /* ignore */ }
+            }
+            crmApplyDepartment(dept);
+        } else if (location.hostname === 'crm2.skyeng.ru') {
+            crmAskDepartment(); // отдел нигде не задан — спрашиваем
+        }
+    };
+
+    try {
+        chrome.storage.local.get(CRM_DEPT_KEY, (res) => {
+            resolveDepartment(chrome.runtime.lastError ? null : res?.[CRM_DEPT_KEY]);
+        });
+    } catch (_) {
+        resolveDepartment(null); // контекст расширения недоступен — работаем на зеркале
+    }
+
+    try {
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== 'local' || !changes[CRM_DEPT_KEY]) return;
+            const dept = crmValidDept(changes[CRM_DEPT_KEY].newValue);
+            if (!dept) return;
+            crmWriteDeptMirror(dept);
+            crmApplyDepartment(dept);
+        });
+    } catch (_) { /* ignore */ }
+})();
+
+/* ============================================================
  *  ОКНА
  * ============================================================ */
 

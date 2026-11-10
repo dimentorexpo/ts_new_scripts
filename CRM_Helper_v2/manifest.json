@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CRMHelper",
-    "version": "2.0.42",
+    "version": "2.0.43",
     "description": "Твой мультитул в работе с обращениями",
     "background": {
         "service_worker": "bg.js"
@@ -25,6 +25,7 @@
         {
             "js": [
                 "/Modules/AlarmClock.js",
+                "/Modules/CRMStudentHelper.js",
                 "/Modules/GrList.js",
                 "/Modules/JiraSearch.js",
                 "/Modules/LessonStatus.js",
