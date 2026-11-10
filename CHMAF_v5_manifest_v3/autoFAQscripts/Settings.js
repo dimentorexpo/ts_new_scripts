@@ -3276,7 +3276,7 @@ async function init_settings() {
                 <div class="set-section-title">🏢 Отдел</div>
                 <div class="set-group">
                     <div class="set-row">
-                        <span class="set-label" title="Панель под кнопками тикета и полоса на странице пользователя в CRM. Краткая: КМ, рассрочка, уроки сегодня, задачи Исход / 2ЛТП">🧑‍🎓 Панель по ученику: ТП</span>
+                        <span class="set-label" style="white-space:normal;line-height:1.25" title="Панель под кнопками тикета и полоса на странице пользователя в CRM. Краткая: КМ, рассрочка, уроки сегодня, задачи Исход / 2ЛТП">🧑‍🎓 Панель ученика: ТП</span>
                         <select class="set-input" id="afSthModeTP">
                             <option value="tp">Краткая</option>
                             <option value="full">Полная</option>
@@ -3284,19 +3284,11 @@ async function init_settings() {
                         </select>
                     </div>
                     <div class="set-row">
-                        <span class="set-label" title="Для КЦ, Prem, Sales. Teachers Care панель не видит">🧑‍🎓 Панель по ученику: КЦ / Prem / Sales</span>
+                        <span class="set-label" style="white-space:normal;line-height:1.25" title="Для КЦ, Prem, Sales. Teachers Care панель не видит">🧑‍🎓 Панель ученика: КЦ / Prem / Sales</span>
                         <select class="set-input" id="afSthModeOther">
                             <option value="full">Полная</option>
                             <option value="tp">Краткая</option>
                             <option value="off">Не показывать</option>
-                        </select>
-                    </div>
-                    <div class="set-row">
-                        <span class="set-label" title="Только для отладки: принудительно показывает краткую (ТП) или полную панель по ученику, независимо от отдела">🐞 Панель по ученику</span>
-                        <select class="set-input" id="afStudentHelperDebugMode">
-                            <option value="">Авто (по отделу)</option>
-                            <option value="tp">Краткая (как у ТП)</option>
-                            <option value="full">Полная (как у других)</option>
                         </select>
                     </div>
                     <div class="set-row">
@@ -3435,14 +3427,7 @@ async function init_settings() {
             el.value = cur || def;
             el.addEventListener('change', () => localStorage.setItem(id, el.value));
         });
-        const dbgSel = document.getElementById('afStudentHelperDebugMode'); // отладка: режим панели по ученику
-        if (dbgSel) {
-            dbgSel.value = localStorage.getItem('afStudentHelperDebugMode') || '';
-            dbgSel.onchange = () => {
-                if (dbgSel.value) localStorage.setItem('afStudentHelperDebugMode', dbgSel.value);
-                else localStorage.removeItem('afStudentHelperDebugMode');
-            };
-        }
+        try { localStorage.removeItem('afStudentHelperDebugMode'); } catch { /* ignore */ } // отладочный режим панели убран
 
         const iconsChanged = () => window.dispatchEvent(new CustomEvent('chmaf:icons-mode'));
         bindToggle('newIconsFab', 'newIconsFab', iconsChanged);

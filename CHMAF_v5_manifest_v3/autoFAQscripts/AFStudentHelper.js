@@ -201,6 +201,18 @@
     #${BLOCK_ID} .sth-promoopen .sth-i{--ic:currentColor;width:12px;height:12px;margin:0}
     #${BLOCK_ID} .sth-promoopen:hover{background:rgba(244,114,182,.32)}
     #${BLOCK_ID} .sth-promoopen.done{background:rgba(74,222,128,.25);border-color:#4ade80;color:#86efac}
+    #${BLOCK_ID} .sth-hchips{display:inline-flex;gap:6px;flex-wrap:wrap;align-items:center}
+    #${BLOCK_ID} .sth-hchip{font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid;white-space:nowrap}
+    #${BLOCK_ID} .sth-hchip.bad{color:#fecaca;background:rgba(239,68,68,.3);border-color:rgba(252,165,165,.7)}
+    #${BLOCK_ID} .sth-hchip.warn{color:#fde68a;background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.55)}
+    #${BLOCK_ID} .sth-hchip.info{color:#bae6fd;background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5)}
+    #${BLOCK_ID}.tp .sth-body{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    #${BLOCK_ID}.tp .sth-body:empty{display:none}
+    #${BLOCK_ID}.tp.collapsed .sth-body{display:none}
+    #${BLOCK_ID}.tp .sth-card.wide{flex:1 1 100%}
+    #${BLOCK_ID}.tp .sth-card:not(.wide){flex:0 0 auto;padding:5px 10px;display:flex;align-items:center;gap:8px;border-radius:8px}
+    #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-lbl{margin:0;white-space:nowrap}
+    #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-sub{display:none}
     @keyframes sthKmPulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.55),0 4px 22px rgba(239,68,68,.7)}}
     #${BLOCK_ID} .sth-card.vac{background:linear-gradient(135deg,#b45309,#f59e0b);border:1px solid #fde68a;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(251,191,36,.35),0 4px 18px rgba(245,158,11,.45)}
     #${BLOCK_ID} .sth-card.warn.vac .sth-lbl{color:#fffbeb!important}
@@ -746,6 +758,7 @@
         state.tpl = list;
         return `<div class="sth-ov"><div class="sth-ov-panel">
             <div class="sth-ov-h">${ico('tag')}<b>Шаблоны ученику (${list.length})</b><span class="sth-chip">${esc(d.brand)}</span><span class="sth-id">${esc(state.id || '')}</span>
+                ${state.mode === 'tp' ? tpChips(state.data) : ''}
                 <span class="sth-spacer"></span><button type="button" class="sth-ov-close" title="Закрыть (Esc)">✕</button></div>
             <div class="sth-ov-list">${tplCards(list, br, list.length <= 2)}</div></div></div>`;
     }
@@ -755,13 +768,10 @@
     const LESSON_TYPES = { regular: 'Регулярный', single: 'Одиночный', trial: 'Пробный' };
     const hhmm = (iso) => new Date(iso).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
     function lessonsCard(d) {
-        if (!d.today) return card('wide mute', 'info', 'Уроки сегодня', 'Нет данных');
-        if (!d.today.length) return card('wide ok', 'info', 'Уроки сегодня', 'Нет');
-        const rows = d.today.map((l) => {
-            const svc = l.sid || l.key ? `${l.sid ? '#' + l.sid + ' ' : ''}${l.key || ''}`.trim() : 'услуга не указана';
-            return `<li><span><b>${esc(hhmm(l.at))}</b> · ${esc(LESSON_TYPES[l.type] || l.type || '')} · <b class="sth-lsvc">${esc(svc)}</b></span><b>${esc(l.teacher || 'без преподавателя')}</b></li>`;
-        });
-        return card('wide warn', 'info', 'Уроки сегодня (МСК)', `${d.today.length} шт.`, '', `<ul class="sth-list">${rows.join('')}</ul>`);
+        // Компактно и только если уроки сегодня есть: время через запятую, детали (тип, услуга, преподаватель) — в подсказке
+        if (!d.today || !d.today.length) return '';
+        const tip = d.today.map((l) => `${hhmm(l.at)} · ${LESSON_TYPES[l.type] || l.type || ''} · ${l.sid || l.key ? `${l.sid ? '#' + l.sid + ' ' : ''}${l.key || ''}`.trim() : 'услуга не указана'} · ${l.teacher || 'без преподавателя'}`).join('\n');
+        return `<div class="sth-card warn" title="${esc(tip)}"><div class="sth-lbl">${ico('clock')}Уроки сегодня (МСК)</div><div class="sth-val">${d.today.length} шт.: ${esc(d.today.map((l) => hhmm(l.at)).join(', '))}</div></div>`;
     }
     const TASK_GROUPS = /technical_support_(second_line|outgoing)/i;
     const TASK_GROUP_TITLES = /исход|2-?я\s+линия|2\s*лтп/i;
@@ -775,9 +785,9 @@
         return '';
     };
     function tasksCard(d) {
-        if (!d.tasks) return card('wide mute', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет данных');
+        if (!d.tasks) return '';
         const mine = d.tasks.filter((t) => (TASK_GROUPS.test(t.operatorGroup?.name || '') || TASK_GROUP_TITLES.test(t.operatorGroup?.title || '')) && !TASK_DONE.test(t.status || ''));
-        if (!mine.length) return card('wide ok', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет');
+        if (!mine.length) return '';
         const waiting = mine.filter((t) => t.status === 'waiting').length;
         const rows = mine.map((t) => {
             const when = t.activeOn ? `${fmtDate(t.activeOn)} ${hhmm(t.activeOn)}` : '';
@@ -793,6 +803,20 @@
         return card('wide ' + (waiting ? 'bad' : 'warn'), 'tag', 'Задачи ТП Исход / 2ЛТП', waiting ? `Не взято в работу: ${waiting} из ${mine.length}` : `Активных: ${mine.length}`, '', `<ul class="sth-list">${rows.join('')}</ul>`);
     }
 
+    const tpTasks = (d) => (d?.tasks || []).filter((t) => (TASK_GROUPS.test(t.operatorGroup?.name || '') || TASK_GROUP_TITLES.test(t.operatorGroup?.title || '')) && !TASK_DONE.test(t.status || ''));
+    // Плашки в заголовке (краткий режим ТП): видно главное, пока панель свёрнута
+    function tpChips(d) {
+        if (!d || !d.services) return '';
+        const out = [];
+        const km = d.services.filter((x) => x.km);
+        if (km.length) out.push(`<span class="sth-hchip bad" title="Кризисное сопровождение">КМ · ${km.length}</span>`);
+        if (d.services.some((x) => x.credit && !x.credit.unknown)) out.push('<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
+        if (d.today?.length) out.push(`<span class="sth-hchip info" title="Уроки сегодня (МСК): ${esc(d.today.map((l) => hhmm(l.at)).join(', '))}">Уроки сегодня: ${d.today.length}</span>`);
+        const mine = tpTasks(d), wait = mine.filter((t) => t.status === 'waiting').length;
+        if (mine.length) out.push(`<span class="sth-hchip ${wait ? 'bad' : 'warn'}" title="Задачи ТП Исход / 2ЛТП${wait ? ': не взято в работу ' + wait : ''}">Задачи ТП: ${mine.length}</span>`);
+        return out.length ? `<span class="sth-hchips">${out.join('')}</span>` : '';
+    }
+
     function renderBody() {
         if (state.loading || state.pending) return `<div class="sth-load" style="grid-column:1/-1"><i class="sth-spin"></i>Загружаю данные ученика…</div>`;
         if (state.error) return `<div class="sth-err">Не удалось загрузить: ${esc(state.error)}</div>`;
@@ -800,7 +824,7 @@
         if (!d) return '';
         const sv = d.services;
         if (!sv.length) {
-            return card('mute', 'info', 'Услуги', 'Рабочих услуг нет', `всего: ${d.totalCount}, закрытых (lost / некорректных): ${d.closedCount}`)
+            return (state.mode === 'tp' ? '' : card('mute', 'info', 'Услуги', 'Рабочих услуг нет', `всего: ${d.totalCount}, закрытых (lost / некорректных): ${d.closedCount}`))
                 + (state.mode === 'tp' ? lessonsCard(d) + tasksCard(d) : '');
         }
         const unk = (x) => x && x.unknown;
@@ -992,7 +1016,7 @@
                     return;
                 }
                 if (e.target.closest('.sth-head')) {
-                    state.collapsed = !state.collapsed;
+                    state.collapsed = !state.collapsed; state.userToggled = true;
                     block.classList.toggle('collapsed', state.collapsed);
                 }
             });
@@ -1004,7 +1028,10 @@
             block._movedAt = now;
             try { header.insertAdjacentElement('afterend', block); } catch { return; }
         }
+        // ТП: по умолчанию свёрнуто, раскрывается само, только если есть активная задача ТП Исход / 2ЛТП (пока пользователь не переключил вручную)
+        if (state.mode === 'tp' && !state.userToggled) state.collapsed = !tpTasks(state.data).length;
         block.classList.toggle('collapsed', state.collapsed);
+        block.classList.toggle('tp', state.mode === 'tp');
 
         const role = roleLabel(state.role);
         const roleIco = role.kind === 'parent' ? 'users' : 'student';
@@ -1017,7 +1044,6 @@
                 <a class="sth-crm" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}" target="_blank" rel="noopener" title="Открыть ученика в CRM">CRM ↗</a>
                 <span class="sth-spacer"></span>
                 ${state.mode !== 'tp' && state.data && state.data.services?.length ? `<button class="sth-btn sth-tplbtn" type="button" title="Шаблоны поверх интерфейса">${ico('tag')}Шаблоны</button>` : ''}
-                ${dbgMode() ? `<button class="sth-btn sth-dbg" type="button" style="width:auto;padding:0 8px;font-size:11px;color:#fca5a5;border-color:rgba(248,113,113,.5)" title="Отладка: режим панели принудительный. Клик — переключить ТП → полная → авто">DEBUG: ${dbgMode() === 'tp' ? 'ТП' : 'полная'}</button>` : ''}
                 <button class="sth-btn sth-refresh" type="button" title="Обновить данные">${ico('refresh')}</button>
                 <span class="sth-btn sth-chev-wrap" style="border:0;background:none">${ico('chevron', 'sth-chev')}</span>
             </div>
@@ -1071,7 +1097,7 @@
     }
     // Режим панели по отделам (Settings): 'tp' — краткая, 'full' — полная, 'off' — не показывать. Teachers Care — всегда off.
     const DBG_KEY = 'afStudentHelperDebugMode'; // '' (авто) | 'tp' | 'full' — ручное переключение для отладки
-    const dbgMode = () => { try { const v = localStorage.getItem(DBG_KEY); return v === 'tp' || v === 'full' ? v : ''; } catch { return ''; } };
+    const dbgMode = () => ''; // отладочное переключение убрано
     const pickMode = (key, def) => { try { const v = localStorage.getItem(key); return v === 'tp' || v === 'full' || v === 'off' ? v : def; } catch { return def; } };
     function deptMode(kind) {
         if (kind === 'tc') return 'off';
