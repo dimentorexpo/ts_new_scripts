@@ -3269,13 +3269,28 @@ async function init_settings() {
                         <label class="set-toggle"><input type="checkbox" id="dblhidewindow"> Без скрытия по dblclick</label>
                         <label class="set-toggle"><input type="checkbox" id="brnotificatios"> Без push-уведомлений</label>
                         <label class="set-toggle"><input type="checkbox" id="clearlessoninfo"> Не очищать LessonInfo</label>
-                        <label class="set-toggle" title="Панель под кнопками тикета. ТП по умолчанию видит краткую (КМ, рассрочка, корп., уроки сегодня, задачи Исход / 2ЛТП). Включите, чтобы видеть полную."><input type="checkbox" id="afStudentHelperTP"> Полная панель по ученику</label>
                     </div>
                 </div>
 
                 <!-- 🏢 Отдел -->
                 <div class="set-section-title">🏢 Отдел</div>
                 <div class="set-group">
+                    <div class="set-row">
+                        <span class="set-label" title="Панель под кнопками тикета и полоса на странице пользователя в CRM. Краткая: КМ, рассрочка, уроки сегодня, задачи Исход / 2ЛТП">🧑‍🎓 Панель по ученику: ТП</span>
+                        <select class="set-input" id="afSthModeTP">
+                            <option value="tp">Краткая</option>
+                            <option value="full">Полная</option>
+                            <option value="off">Не показывать</option>
+                        </select>
+                    </div>
+                    <div class="set-row">
+                        <span class="set-label" title="Для КЦ, Prem, Sales. Teachers Care панель не видит">🧑‍🎓 Панель по ученику: КЦ / Prem / Sales</span>
+                        <select class="set-input" id="afSthModeOther">
+                            <option value="full">Полная</option>
+                            <option value="tp">Краткая</option>
+                            <option value="off">Не показывать</option>
+                        </select>
+                    </div>
                     <div class="set-row">
                         <span class="set-label" title="Только для отладки: принудительно показывает краткую (ТП) или полную панель по ученику, независимо от отдела">🐞 Панель по ученику</span>
                         <select class="set-input" id="afStudentHelperDebugMode">
@@ -3411,7 +3426,15 @@ async function init_settings() {
         bindToggle('dblhidewindow', 'dblhidewindow');
         bindToggle('brnotificatios', 'brnotificatios');
         bindToggle('clearlessoninfo', 'clearlessoninfo');
-        bindToggle('afStudentHelperTP', 'afStudentHelperTP'); // читается модулем AFStudentHelper.js
+        // Панель по ученику: режим по отделам (читается AFStudentHelper.js и, через chrome.storage, модулем на странице CRM)
+        [['afSthModeTP', 'tp'], ['afSthModeOther', 'full']].forEach(([id, def]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            let cur = localStorage.getItem(id);
+            if (!cur && id === 'afSthModeTP' && localStorage.getItem('afStudentHelperTP') === '1') cur = 'full';
+            el.value = cur || def;
+            el.addEventListener('change', () => localStorage.setItem(id, el.value));
+        });
         const dbgSel = document.getElementById('afStudentHelperDebugMode'); // отладка: режим панели по ученику
         if (dbgSel) {
             dbgSel.value = localStorage.getItem('afStudentHelperDebugMode') || '';

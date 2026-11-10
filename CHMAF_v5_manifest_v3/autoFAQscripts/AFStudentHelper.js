@@ -34,6 +34,8 @@
         services: (id) => `${BACKEND}/persons/${id}/education-services/`,
         general: (id, sid) => `${BACKEND}/students/${id}/education-services/${sid}/general/`,
         promocode: (sid) => `${BACKEND}/v2/students/education-services/${sid}/promocode/active/`,
+        person: (id) => `${BACKEND}/persons/${id}?crm2=true&debugParam=profile-page`,
+        autoPlan: (sid) => `https://teachers-schedule.skyeng.ru/api/education-services/${sid}/auto-schedule/is-available/`,
         tasks: (id) => `https://customer-support.skyeng.ru/task/user/${id}`,
         history: (id) => `${BACKEND}/students/${id}/timetable/lessons-history/?page=0`,
         future: (id) => `${BACKEND}/students/${id}/timetable/future-lessons/`,
@@ -130,12 +132,20 @@
         info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/>',
         shield: '<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6l8-3z"/><path d="M12 8v4M12 15v.5"/>',
         coin: '<circle cx="12" cy="12" r="9"/><path d="M14.8 9.2c-.5-.8-1.5-1.2-2.8-1.2-1.7 0-2.8.8-2.8 2 0 3 5.6 1.4 5.6 4.2 0 1.2-1.1 2-2.8 2-1.3 0-2.4-.5-3-1.4M12 6v2M12 16v2"/>',
-        plane: '<path d="M3 17l18-6L3 5l3 6-3 6zM6 11h8"/>',
+        plane: '<path d="M7 22h10" stroke="#fbbf24" stroke-width="2"/><path d="M12.6 22c-.3-4.2 0-8 1.2-12.2" stroke="#b45309" stroke-width="2.2" fill="none"/><path d="M13.6 9.6c-2.6-3.7-7.2-3.7-9.8-1 3.1-.9 6.4.1 9.8 1z" fill="#22c55e" stroke="#15803d" stroke-width="1"/><path d="M13.6 9.6c2.6-3.7 7.2-3.7 9.8-1-3.1-.9-6.4.1-9.8 1z" fill="#22c55e" stroke="#15803d" stroke-width="1"/><path d="M13.6 9.6c-1.7-2.6-1.7-5.3 0-8 1.7 2.7 1.7 5.4 0 8z" fill="#4ade80" stroke="#15803d" stroke-width="1"/><path d="M13.6 9.6c3.1.5 5.6 2.5 6.6 5.6-2.1-2.3-4.6-3.3-6.6-3.6z" fill="#16a34a" stroke="#15803d" stroke-width="1"/><path d="M13.6 9.6c-3.1.5-5.6 2.5-6.6 5.6 2.1-2.3 4.6-3.3 6.6-3.6z" fill="#16a34a" stroke="#15803d" stroke-width="1"/><circle cx="12.3" cy="11.2" r="1.1" fill="#92400e" stroke="none"/><circle cx="14.7" cy="11.4" r="1.1" fill="#92400e" stroke="none"/>',
         teacher: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>',
         coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M15 11c3.3 0 6 1.3 6 3v3c0 1.7-2.7 3-6 3-1.2 0-2.3-.2-3.2-.5"/>',
         tag: '<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="8" cy="8" r="1.4"/>',
         refresh: '<path d="M20 11a8 8 0 00-14.9-3M4 4v4h4M4 13a8 8 0 0014.9 3M20 20v-4h-4"/>',
         chevron: '<path d="M6 9l6 6 6-6"/>',
+        check: '<path d="M5 12.5l4.5 4.5L19 7.5" stroke="#4ade80" stroke-width="3"/>',
+        help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.5 2.5 0 015 .6c0 1.7-2.6 2-2.6 3.6M12 17v.2"/>',
+        copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
+        spark: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z"/><path d="M19 15v4M17 17h4"/>',
+        wallet: '<path d="M3 7a2 2 0 012-2h13v4"/><path d="M3 7v11a2 2 0 002 2h15a1 1 0 001-1v-9a1 1 0 00-1-1H5a2 2 0 01-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/>',
+        clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+        doc: '<path d="M7 3h7l5 5v13H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M9.5 13h6M9.5 17h6"/>',
+        ext: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
         phoneOut: '<path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L8.1 9.9a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.7 2zM15 3h6v6M21 3l-7 7"/>',
         layers2: '<path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/>',
         student: '<path d="M2 9l10-5 10 5-10 5L2 9zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6"/>',
@@ -157,12 +167,16 @@
     #${BLOCK_ID} .sth-crm{font-size:12px;font-weight:600;color:#7dd3fc;text-decoration:none;padding:1px 9px;border-radius:999px;border:1px solid rgba(125,211,252,.4);background:rgba(125,211,252,.1)}
     #${BLOCK_ID} .sth-crm:hover,#${BLOCK_ID} .sth-lnk:hover b{text-decoration:underline}
     #${BLOCK_ID} .sth-lnk{color:inherit;text-decoration:none}
+    #${BLOCK_ID} .sth-lnk b{color:#7dd3fc}
+    #${BLOCK_ID} .sth-open{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 7px;border-radius:6px;border:1px solid rgba(125,211,252,.55);background:rgba(56,189,248,.12);color:#7dd3fc!important;font-size:11px;font-weight:600;text-decoration:none!important;white-space:nowrap;vertical-align:middle}
+    #${BLOCK_ID} .sth-open:hover{background:rgba(56,189,248,.28);color:#e0f2fe!important}
+    #${BLOCK_ID} .sth-open .sth-i{--ic:currentColor;width:13.8px;height:13.8px}
     #${BLOCK_ID} .sth-role.corp{--ic:#d8b4fe;color:#d8b4fe;background:rgba(192,132,252,.14);border-color:rgba(192,132,252,.5)}
     #${BLOCK_ID} .sth-role.unknown{--ic:#94a3b8;color:#94a3b8;background:rgba(148,163,184,.1);border-color:rgba(148,163,184,.3)}
     #${BLOCK_ID} .sth-spacer{flex:1}
     #${BLOCK_ID} .sth-btn{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--mut);cursor:pointer;padding:0}
     #${BLOCK_ID} .sth-btn:hover{background:rgba(255,255,255,.1);color:var(--txt)}
-    #${BLOCK_ID} .sth-btn .sth-i{--ic:currentColor;width:14px;height:14px}
+    #${BLOCK_ID} .sth-btn .sth-i{--ic:currentColor;width:16.1px;height:16.1px}
     #${BLOCK_ID} .sth-chev{transition:transform .2s}
     #${BLOCK_ID}.collapsed .sth-chev{transform:rotate(-90deg)}
     #${BLOCK_ID}.collapsed .sth-body{display:none}
@@ -173,6 +187,25 @@
     #${BLOCK_ID} .sth-card.warn{--ic:#fbbf24}
     #${BLOCK_ID} .sth-card.bad{--ic:#f87171}
     #${BLOCK_ID} .sth-card.mute{--ic:#64748b}
+    #${BLOCK_ID} .sth-card.km{background:linear-gradient(135deg,#991b1b,#dc2626);border:1px solid #fca5a5;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 18px rgba(220,38,38,.45);animation:sthKmPulse 2.4s ease-in-out infinite}
+    #${BLOCK_ID} .sth-card.bad.km .sth-lbl{color:#fee2e2!important}
+    #${BLOCK_ID} .sth-card.bad.km .sth-val{color:#fff!important;font-size:14px;font-weight:800;letter-spacing:.2px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+    #${BLOCK_ID} .sth-card.bad.km .sth-sub{color:#fecaca!important}
+    #${BLOCK_ID} .sth-apcopy{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;width:24px;height:22px;padding:0;border-radius:6px;border:1px solid rgba(167,139,250,.55);background:rgba(167,139,250,.14);color:#c4b5fd;cursor:pointer;vertical-align:middle}
+    #${BLOCK_ID} .sth-apcopy .sth-i{--ic:currentColor;width:13px;height:13px}
+    #${BLOCK_ID} .sth-apcopy:hover{background:rgba(167,139,250,.32)}
+    #${BLOCK_ID} .sth-apcopy.done{background:rgba(74,222,128,.25);border-color:#4ade80;color:#86efac}
+    #${BLOCK_ID} .sth-aphelp{cursor:help}
+    #${BLOCK_ID} .sth-pill .sth-i{width:13px;height:13px;margin-right:3px}
+    #${BLOCK_ID} .sth-promoopen{display:inline-flex;align-items:center;gap:4px;margin-left:6px;padding:1px 8px;border-radius:6px;border:1px solid rgba(244,114,182,.6);background:rgba(244,114,182,.14);color:#f9a8d4;font-size:11px;font-weight:600;cursor:pointer;vertical-align:middle;white-space:nowrap}
+    #${BLOCK_ID} .sth-promoopen .sth-i{--ic:currentColor;width:12px;height:12px;margin:0}
+    #${BLOCK_ID} .sth-promoopen:hover{background:rgba(244,114,182,.32)}
+    #${BLOCK_ID} .sth-promoopen.done{background:rgba(74,222,128,.25);border-color:#4ade80;color:#86efac}
+    @keyframes sthKmPulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.55),0 4px 22px rgba(239,68,68,.7)}}
+    #${BLOCK_ID} .sth-card.vac{background:linear-gradient(135deg,#b45309,#f59e0b);border:1px solid #fde68a;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(251,191,36,.35),0 4px 18px rgba(245,158,11,.45)}
+    #${BLOCK_ID} .sth-card.warn.vac .sth-lbl{color:#fffbeb!important}
+    #${BLOCK_ID} .sth-card.warn.vac .sth-val{color:#fff!important;font-size:14px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+    #${BLOCK_ID} .sth-card.warn.vac .sth-sub{color:#fef3c7!important}
     #${BLOCK_ID} .sth-lbl{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
     #${BLOCK_ID} .sth-lbl .sth-i{--ic:var(--ic)}
     #${BLOCK_ID} .sth-val{font-weight:700;font-size:13px}
@@ -197,7 +230,27 @@
     #${BLOCK_ID} .sth-tablewrap{overflow-x:auto;margin-top:6px}
     #${BLOCK_ID} .sth-table{width:100%;border-collapse:collapse;font-size:12px}
     #${BLOCK_ID} .sth-table th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mut);padding:2px 8px 6px 0;white-space:nowrap}
-    #${BLOCK_ID} .sth-table td{padding:6px 8px 6px 0;border-top:1px solid var(--line);vertical-align:top;white-space:nowrap}
+    #${BLOCK_ID} .sth-th{display:inline-flex;align-items:center;gap:5px;vertical-align:middle}
+    #${BLOCK_ID} .sth-table td .sth-pill,#${BLOCK_ID} .sth-table td .sth-evbtn{vertical-align:middle}
+    #${BLOCK_ID} .sth-table td.ev{display:table-cell}
+    #${BLOCK_ID} .sth-table td{line-height:1.2}
+    #${BLOCK_ID} .sth-table td .sth-pill{display:inline-flex;align-items:center;line-height:1.3;margin:0}
+    #${BLOCK_ID} .sth-table td .sth-evbtn{margin:2px 5px 2px 0;line-height:1.3;vertical-align:middle}
+    #${BLOCK_ID} .sth-table td.bal{line-height:1.3}
+    #${BLOCK_ID} .sth-th .sth-i{--ic:#7dd3fc;width:14.9px;height:14.9px}
+    #${BLOCK_ID} .sth-th .c-layers2{--ic:#60a5fa}
+    #${BLOCK_ID} .sth-th .c-wallet{--ic:#fbbf24}
+    #${BLOCK_ID} .sth-th .c-shield{--ic:#fb7185}
+    #${BLOCK_ID} .sth-th .c-teacher{--ic:#c4b5fd}
+    #${BLOCK_ID} .sth-th .c-tag{--ic:#f472b6}
+    #${BLOCK_ID} .sth-th .c-coins{--ic:#facc15}
+    #${BLOCK_ID} .sth-th .c-spark{--ic:#a78bfa}
+    #${BLOCK_ID} .sth-th .c-clock{--ic:#38bdf8}
+    #${BLOCK_ID} .sth-th .c-doc{--ic:#34d399}
+    #${BLOCK_ID} .sth-i{filter:drop-shadow(0 1px 0 rgba(255,255,255,.28)) drop-shadow(0 2px 2px rgba(0,0,0,.65))}
+    #${BLOCK_ID} .sth-th .sth-i{stroke-width:2.1;filter:drop-shadow(0 1px 0 rgba(255,255,255,.35)) drop-shadow(0 2px 2px rgba(0,0,0,.7)) drop-shadow(0 0 5px var(--ic))}
+    #${BLOCK_ID} .sth-lbl .sth-i,#${BLOCK_ID} .sth-title .sth-i{stroke-width:2;filter:drop-shadow(0 1px 0 rgba(255,255,255,.3)) drop-shadow(0 2px 2px rgba(0,0,0,.65)) drop-shadow(0 0 4px var(--ic))}
+    #${BLOCK_ID} .sth-table td{padding:6px 8px 6px 0;border-top:1px solid var(--line);vertical-align:middle;white-space:nowrap}
     #${BLOCK_ID} .sth-table td.svc{white-space:normal;min-width:190px;max-width:340px}
     #${BLOCK_ID} .svc-name{white-space:normal;word-break:break-all}
     #${BLOCK_ID} .sth-tplbox.tpl-hot{border-color:rgba(251,191,36,.55);border-left-color:#fbbf24;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(251,191,36,.03));box-shadow:0 0 0 1px rgba(251,191,36,.15),0 4px 16px rgba(251,191,36,.08)}
@@ -237,7 +290,7 @@
     #${BLOCK_ID} li.sth-task{position:relative;list-style:none;margin:8px 0;padding:10px 12px;border-radius:12px;border:1px solid rgba(var(--g),.45);background:linear-gradient(100deg,rgba(var(--g),.16),rgba(18,23,33,.96) 45%),#161b27;box-shadow:0 0 0 1px rgba(var(--g),.35);overflow:hidden}
     #${BLOCK_ID} li.sth-task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--g1),var(--g2));box-shadow:0 0 12px rgba(var(--g),.7)}
     #${BLOCK_ID} .sth-grp{display:inline-flex;align-items:center;gap:6px;padding:3px 12px 3px 9px;border-radius:999px;font-size:12.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--gt,#fff);text-shadow:0 1px 2px rgba(0,0,0,.45);background:linear-gradient(135deg,var(--g1,#64748b),var(--g2,#475569));box-shadow:0 2px 10px rgba(var(--g,100,116,139),.45);margin:0 6px 2px 0;vertical-align:middle}
-    #${BLOCK_ID} .sth-grp .sth-i{--ic:currentColor;width:14px;height:14px}
+    #${BLOCK_ID} .sth-grp .sth-i{--ic:currentColor;width:16.1px;height:16.1px}
     #${BLOCK_ID} li.sth-task,#${BLOCK_ID} li.sth-task b{color:#f8fafc}
     #${BLOCK_ID} li.sth-task .sth-tmeta,#${BLOCK_ID} li.sth-task .sth-cm-short{color:#dbe4f0 !important;font-size:12.5px}
     #${BLOCK_ID} li.sth-task .sth-cm-toggle{color:#e0f2fe;background:rgba(var(--g),.28);border-color:rgba(var(--g),.6)}
@@ -282,7 +335,7 @@
     #${BLOCK_ID} .sth-chip.brand{background:rgba(125,211,252,.14);color:#7dd3fc}
     #${BLOCK_ID} .sth-chip.corp{background:rgba(192,132,252,.16);color:#d8b4fe}
     #${BLOCK_ID} .sth-chip.bf{background:rgba(250,204,21,.16);color:#fde047}
-    #${BLOCK_ID} .sth-i{width:15px;height:15px;flex:none;fill:none;stroke:var(--ic,currentColor);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    #${BLOCK_ID} .sth-i{width:17.2px;height:17.2px;flex:none;fill:none;stroke:var(--ic,currentColor);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     #${BLOCK_ID} .sth-load{display:flex;align-items:center;gap:8px;color:var(--mut);padding:8px 0 2px}
     #${BLOCK_ID} .sth-spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(125,211,252,.25);border-top-color:#7dd3fc;animation:sthSpin .8s linear infinite}
     #${BLOCK_ID} .sth-err{color:#fca5a5;padding:6px 0 0;grid-column:1/-1}
@@ -365,11 +418,12 @@
         const sid = base.id;
         // Краткий режим (ТП): промокод и отпуск не нужны — не запрашиваем
         const skip = Promise.resolve(null);
-        const [gen, promo, credit, vac] = (await Promise.allSettled([
+        const [gen, promo, credit, vac, ap] = (await Promise.allSettled([
             getJson(SOURCES.general(studentId, sid)),
             light ? skip : getJson(SOURCES.promocode(sid)),
             getJson(SOURCES.credit(sid)),
-            light ? skip : getJson(SOURCES.vacation(sid))
+            light ? skip : getJson(SOURCES.vacation(sid)),
+            light ? skip : getJson(SOURCES.autoPlan(sid))
         ])).map((r) => settled(r));
 
         const g = gen.ok ? (gen.v?.data ?? gen.v ?? {}) : {};
@@ -394,6 +448,8 @@
             title: src.serviceTypeKey || '—',
             noTeacherNeeded: NO_TEACHER_RE.test(src.serviceTypeKey || ''),
             stage: src.stage,
+            // Автоподбор (АП): доступен ли, ссылка в кабинет подбора и причины недоступности; сбой запроса = «неизвестно»
+            ap: ap.ok ? (ap.v?.data ? { avail: ap.v.data.isAvailable === true, link: String(ap.v.data.linkToTas || ''), reasons: Array.isArray(ap.v.data.reasons) ? ap.v.data.reasons.map((r) => String(r).replace(/^\d+:\s*/, '')) : [] } : { unknown: true }) : { unknown: true },
             // Первая оплата: true/false, либо undefined, если поля нет
             firstPaid: typeof src.hasFirstPayment === 'boolean' ? src.hasFirstPayment : (typeof src.isFirstPaymentReceived === 'boolean' ? src.isFirstPaymentReceived : undefined),
             balance: toNum(src.balance),
@@ -402,7 +458,7 @@
             tempName: personName(src.temporaryTeacher),
             replacement: src.isTeacherReplacementInProgress === true,
             vacation: vac.ok ? vacationInfo(vac.v, src.stage) : { unknown: true },
-            promo: promo.ok ? (pd ? { name: promoName, expiredAt: pd.expiredAt, expired: promoExpired, bf: /черн\S*\s+пятниц/i.test(promoName.toLowerCase().replace(/ё/g, 'е')) } : null) : { unknown: true },
+            promo: promo.ok ? (pd ? { name: promoName, expiredAt: pd.expiredAt, expired: promoExpired, offer: pd.promocodeOffer?.offerId ?? null, bf: /черн\S*\s+пятниц/i.test(promoName.toLowerCase().replace(/ё/g, 'е')) } : null) : { unknown: true },
             credit: credit.ok ? (credit.v ? { stages: Array.isArray(creditStages) ? creditStages : [] } : null) : { unknown: true }
         };
     }
@@ -425,6 +481,10 @@
             }
             if (h) {
                 const past = h.filter((l) => l.lessonType === 'regular' && ts(l) <= now).sort((a, b) => ts(b) - ts(a));
+                // Последний урок: прошедший со статусом «Прошёл» (success) или «Пропущен студентом» (missed_by_student); по странице 0 истории
+                const done = h.filter((l) => ts(l) <= now && !isNaN(ts(l)) && (l.status === 'success' || l.status === 'missed_by_student')).sort((a, b) => ts(b) - ts(a));
+                x.lessons.last = done[0]?.startedAt || null;
+                x.lessons.lastStatus = done[0]?.status || null;
                 x.lessons.missed2 = past.length >= 2 && MISS.includes(past[0].status) && MISS.includes(past[1].status);
             }
         }
@@ -444,8 +504,33 @@
             }));
     }
 
+    // Полных лет по дате рождения (YYYY-MM-DD); null — даты нет
+    function ageOf(bd) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(bd || ''));
+        if (!m) return null;
+        const now = new Date();
+        let a = now.getFullYear() - +m[1];
+        if (now.getMonth() + 1 < +m[2] || (now.getMonth() + 1 === +m[2] && now.getDate() < +m[3])) a--;
+        return a >= 0 && a < 120 ? a : null;
+    }
+    // «Нужно взросление» (только не ТП): КЛП с 9 полных лет; КЛП и junior с 18 полных лет
+    const KLP_MAX_AGE = 9, ADULT_AGE = 18;
+    // Кнопка: скопировать ID оффера промокода и открыть страницу проверки промокодов (оператор вставит ID в поле «Оффер»)
+    const promoBtn = (offer) => offer ? `<button type="button" class="sth-promoopen" data-offer="${esc(offer)}" title="Скопировать ID оффера (${esc(offer)}) и открыть проверку промокодов">${ico('ext')}Оффер</button>` : '';
+    function growCard(d) {
+        if (!d || d.age == null || !d.services || operatorKind() === 'tp') return '';
+        const g = d.services.filter((x) => {
+            const k = String(x.key || '').toLowerCase();
+            const klp = /(^|_)klp(_|$)/.test(k), jun = /(^|_)junior(_|$)/.test(k);
+            return (klp && d.age >= KLP_MAX_AGE) || ((klp || jun) && d.age >= ADULT_AGE);
+        });
+        if (!g.length) return '';
+        return card('warn', 'info', 'Нужно взросление', `Возраст: ${d.age}`, g.map((x) => `#${esc(x.id)} ${esc(x.key)}`).join('<br>'));
+    }
+
     async function loadAll(id, mode = 'full') {
         const light = mode === 'tp';
+        const personP = getJson(SOURCES.person(id)).catch(() => null);
         const listRes = await getJson(SOURCES.services(id));
         const everything = Array.isArray(listRes?.data) ? listRes.data : [];
         // В списке персоны есть и услуги, которые она только оплачивает (ученик другой человек) — их не берём
@@ -483,7 +568,10 @@
                 tasks = Array.isArray(tr?.data) ? tr.data : [];
             } catch { tasks = null; }
         }
+        const person = await personP;
+        const age = ageOf(person?.data?.birthday);
         return {
+            age,
             today, tasks,
             totalCount: all.length,
             foreignCount: foreign,
@@ -721,7 +809,7 @@
         // 1. Кризисное сопровождение (сводка; по каждой услуге — в таблице)
         const km = sv.filter((x) => x.km);
         const kmCard = km.length
-            ? card('bad', 'shield', 'Кризисное сопровождение', `Да — на КМ: ${km.length} из ${sv.length}`, km.map((x) => `#${esc(x.id)}: ${esc(x.kmReason)}`).join('<br>'))
+            ? card('bad km', 'shield', 'Кризисное сопровождение', `Да — на КМ: ${km.length} из ${sv.length}`, km.map((x) => `#${esc(x.id)}: ${esc(x.kmReason)}`).join('<br>'))
             : card('ok', 'shield', 'Кризисное сопровождение', 'Нет', `по ${sv.length} рабочим услугам`);
 
         // 2. Отпуск / каникулы
@@ -731,7 +819,7 @@
         let vacCard;
         if (vac.length) {
             const v = vac[0].vacation;
-            vacCard = card('warn', 'plane', 'Ученик в отпуске', esc(v.title) + (v.to ? ` до ${fmtDate(v.to)}` : ''), vac.map((x) => `#${esc(x.id)}`).join(', '));
+            vacCard = card('warn vac', 'plane', 'Ученик в отпуске', esc(v.title) + (v.to ? ` до ${fmtDate(v.to)}` : ''), vac.map((x) => `#${esc(x.id)}`).join(', '));
         } else if (vacFut.length) {
             const v = vacFut[0].vacation;
             vacCard = card('ok', 'plane', 'Ученик в отпуске', 'Нет', `запланирован ${esc(v.title.toLowerCase())}: ${fmtDate(v.from)} — ${fmtDate(v.to)}`);
@@ -772,10 +860,13 @@
         // Таблица по каждой рабочей (не lost и не некорректной) услуге
         const cell = (text, cls = '') => `<td class="${cls}">${text}</td>`;
         const shown = sv.filter((x) => !x.noTeacherNeeded); // life_adult / self_study в таблицу не выводим
+        // Для не-ТП: сверху услуги со свежим последним уроком, без уроков — внизу (порядок остальных сохраняется)
+        if (operatorKind() !== 'tp') shown.sort((x, y) => (Date.parse(y.lessons?.last) || 0) - (Date.parse(x.lessons?.last) || 0));
         const hiddenN = sv.length - shown.length;
         const evAll = buildTemplates(d);
         state.tplEv = evAll;
         const evBr = d.brand === 'Skysmart' ? 'skysmart' : 'skyeng';
+        const showLast = operatorKind() !== 'tp'; // колонка «Последний урок» — для всех отделов, кроме ТП
         const rows = shown.map((x) => {
             const mySvc = `#${x.id} ${x.title}`;
             const evCell = evAll.map((t, j) => ({ t, j })).filter(({ t }) => t.svc === mySvc)
@@ -795,20 +886,27 @@
             let pCell = '<span class="sth-pill mute">—</span>';
             if (unk(x.promo)) pCell = '<span class="sth-pill mute">?</span>';
             else if (x.promo) pCell = `<span class="sth-pill ${x.promo.expired ? 'warn' : 'ok'}" title="${esc(x.promo.name)}">${x.promo.bf ? 'Чёрная пятница' : 'акция'}${x.promo.expiredAt ? ' до ' + fmtDate(x.promo.expiredAt) : ''}</span>`;
+            if (x.promo && !unk(x.promo) && x.promo.offer) pCell += promoBtn(x.promo.offer);
             let cCell = '<span class="sth-pill mute">—</span>';
             if (unk(x.credit)) cCell = '<span class="sth-pill mute">?</span>';
             else if (x.credit) cCell = '<span class="sth-pill warn">активна</span>';
+            let apCell = '<span class="sth-pill mute" title="Не удалось проверить автоподбор">?</span>';
+            if (x.ap && !x.ap.unknown) {
+                apCell = x.ap.avail
+                    ? `<span class="sth-pill ok" title="Автоподбор доступен">${ico('check')}доступен</span>${x.ap.link ? `<button type="button" class="sth-apcopy" data-link="${esc(x.ap.link)}" title="Скопировать ссылку на автоподбор">${ico('copy')}</button>` : ''}`
+                    : `<span class="sth-pill warn sth-aphelp" title="${esc(x.ap.reasons.length ? 'Автоподбор недоступен: ' + x.ap.reasons.join('; ') : 'Автоподбор недоступен')}">${ico('help')}недоступен</span>`;
+            }
             return `<tr>
-                <td class="svc"><div class="svc-name" title="${esc(x.title)}"><a class="sth-lnk" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}/services/${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="Открыть услугу в CRM"><b>#${esc(x.id)}</b></a> ${esc(x.title)}</div>
+                <td class="svc"><div class="svc-name" title="${esc(x.title)}"><a class="sth-lnk" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}/services/${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="Открыть услугу в CRM"><b>#${esc(x.id)}</b></a> ${esc(x.title)}<a class="sth-open" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}/services/${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="Открыть услугу в новой вкладке">${ico('ext')}Услуга</a></div>
                     <div class="svc-tags">${chip(brandOf([x.key]), 'brand')}${cat ? chip(cat) : ''}${x.corp ? chip('корп', 'corp') : ''}${x.stage ? chip(x.stage) : ''}</div></td>
                 ${cell(x.balance === null ? '—' : esc(x.balance) + (x.balance === 0 && !unk(x.credit) && x.credit ? ' · рассрочка' : ''), 'bal ' + bCls)}
-                ${cell(kmCell)}${cell(tCell)}${cell(vCell)}${cell(pCell)}${cell(cCell)}${cell(evCell, 'ev')}
+                ${cell(kmCell)}${cell(tCell)}${cell(vCell)}${cell(pCell)}${cell(cCell)}${cell(apCell)}${showLast ? cell(x.lessons?.last ? `<span class="sth-pill ${new Date(x.lessons.last).getFullYear() < new Date().getFullYear() ? 'mute' : x.lessons.lastStatus === 'success' ? 'ok' : 'warn'}" title="Последний урок: ${x.lessons.lastStatus === 'success' ? 'проведён' : 'пропущен студентом'} (МСК)">${fmtDate(x.lessons.last)} ${esc(hhmm(x.lessons.last))} · ${x.lessons.lastStatus === 'success' ? 'Прошёл' : 'Пропущен студентом'}</span>` : '<span class="sth-pill mute">—</span>') : ''}${cell(evCell, 'ev')}
             </tr>`;
         }).join('');
         const table = `<div class="sth-card wide mute"><details class="sth-fold" data-k="tblOpen"${state.tblOpen !== false ? ' open' : ''}><summary class="sth-lbl">${ico('info')}По каждой рабочей услуге (${esc(foot)}${hiddenN ? esc(', скрыто (life/self/talks): ' + hiddenN) : ''})</summary>
-            <div class="sth-tablewrap"><table class="sth-table"><thead><tr><th>Услуга</th><th>Баланс</th><th>КМ</th><th>Преподаватель</th><th>Отпуск</th><th>Промокод</th><th>Рассрочка</th><th>Шаблоны</th></tr></thead><tbody>${rows}</tbody></table></div></details></div>`;
+            <div class="sth-tablewrap"><table class="sth-table"><thead><tr><th><span class="sth-th">${ico('layers2','c-layers2')}Услуга</span></th><th><span class="sth-th">${ico('wallet','c-wallet')}Баланс</span></th><th><span class="sth-th">${ico('shield','c-shield')}КМ</span></th><th><span class="sth-th">${ico('teacher','c-teacher')}Преподаватель</span></th><th><span class="sth-th">${ico('plane')}Отпуск</span></th><th><span class="sth-th">${ico('tag','c-tag')}Промокод</span></th><th><span class="sth-th">${ico('coins','c-coins')}Рассрочка</span></th><th><span class="sth-th">${ico('spark','c-spark')}Автоподбор</span></th>${showLast ? `<th><span class="sth-th">${ico('clock','c-clock')}Последний урок</span></th>` : ''}<th><span class="sth-th">${ico('doc','c-doc')}Шаблоны</span></th></tr></thead><tbody>${rows}</tbody></table></div></details></div>`;
 
-        return [kmCard, vacCard, crCard, prCard, tCard, kmBanner(d), table].join('');
+        return [growCard(d), kmCard, vacCard, crCard, prCard, tCard, kmBanner(d), table].join('');
     }
 
     function copyText(doc, text) {
@@ -857,6 +955,19 @@
                 if (e.target.closest('.sth-refresh')) { refresh(true); return; }
                 if (e.target.closest('.sth-float-btn, .sth-tplbtn')) { e.stopPropagation(); state.tplFloat = true; renderBlock(doc); return; }
                 if (e.target.closest('.sth-ov-close') || e.target.classList.contains('sth-ov')) { state.tplFloat = false; renderBlock(doc); return; }
+                const po = e.target.closest('.sth-promoopen');
+                if (po) {
+                    copyText(doc, po.dataset.offer || '');
+                    try { window.open('https://billing-marketing.skyeng.ru/promocode/list', '_blank', 'noopener'); } catch { /* ignore */ }
+                    po.classList.add('done'); setTimeout(() => po.classList.remove('done'), 1500);
+                    return;
+                }
+                const apc = e.target.closest('.sth-apcopy');
+                if (apc) {
+                    copyText(doc, apc.dataset.link || '');
+                    apc.classList.add('done'); setTimeout(() => apc.classList.remove('done'), 1200);
+                    return;
+                }
                 const ev = e.target.closest('.sth-evbtn');
                 if (ev) {
                     const t = state.tplEv?.[+ev.dataset.j];
@@ -947,28 +1058,47 @@
         try { tickInner(); } catch (e) { console.warn('[AFStudentHelper]', e); }
     }
 
-    // Отдел оператора: 'tp' | 'other' | null (ещё не определён)
+    // Отдел оператора: 'tp' | 'tc' (Teachers Care) | 'other' (КЦ, Prem, Sales…) | null (ещё не определён)
     const T0 = Date.now();
+    const kindOf = (str) => /^Teachers\s*Care/i.test(str) ? 'tc' : /^ТП/i.test(str) ? 'tp' : 'other';
     function operatorKind() {
         let sec = '';
         try { sec = typeof getOpSection === 'function' ? getOpSection() : ''; } catch { /* ignore */ }
-        if (sec) return sec.startsWith('ТП') ? 'tp' : 'other';
+        if (sec) return kindOf(sec);
         const nm = document.querySelector('.user_menu-dropdown-user_name')?.textContent?.trim() || '';
-        if (nm) return /^ТП(\s*ОС)?\s*[-–—]/i.test(nm) ? 'tp' : 'other';
+        if (nm) return kindOf(nm);
         return null;
     }
-    // Режим панели: 'tp' — краткая (КМ, рассрочка, уроки сегодня, задачи ТП); 'full' — полная; null — отдел ещё не определён.
-    // ТП по умолчанию видит краткую; ключ afStudentHelperTP = 1 в Settings включает для ТП полную. Остальные отделы — полная.
+    // Режим панели по отделам (Settings): 'tp' — краткая, 'full' — полная, 'off' — не показывать. Teachers Care — всегда off.
     const DBG_KEY = 'afStudentHelperDebugMode'; // '' (авто) | 'tp' | 'full' — ручное переключение для отладки
     const dbgMode = () => { try { const v = localStorage.getItem(DBG_KEY); return v === 'tp' || v === 'full' ? v : ''; } catch { return ''; } };
+    const pickMode = (key, def) => { try { const v = localStorage.getItem(key); return v === 'tp' || v === 'full' || v === 'off' ? v : def; } catch { return def; } };
+    function deptMode(kind) {
+        if (kind === 'tc') return 'off';
+        if (kind === 'tp') {
+            let legacy = null; try { legacy = localStorage.getItem('afStudentHelperTP') === '1' ? 'full' : null; } catch { /* ignore */ }
+            return pickMode('afSthModeTP', legacy || 'tp');
+        }
+        return pickMode('afSthModeOther', 'full');
+    }
+    // Общая настройка для модуля на странице CRM (другой origin → через chrome.storage)
+    let lastShared = '';
+    function syncShared(kind, mode) {
+        try {
+            if (!kind || typeof chrome === 'undefined' || !chrome.storage?.local) return;
+            const m = dbgMode() || deptMode(kind);
+            const v = JSON.stringify({ kind, mode: m });
+            if (v === lastShared) return;
+            lastShared = v;
+            chrome.storage.local.set({ afSthShared: { kind, mode: m } });
+        } catch { /* ignore */ }
+    }
     function viewMode() {
+        const kind = operatorKind();
+        if (kind) syncShared(kind);
         const dbg = dbgMode();
         if (dbg) return dbg;
-        const kind = operatorKind();
-        if (kind === 'tp') {
-            try { return localStorage.getItem('afStudentHelperTP') === '1' ? 'full' : 'tp'; } catch { return 'tp'; }
-        }
-        if (kind === 'other') return 'full';
+        if (kind) return deptMode(kind);
         return Date.now() - T0 > 15000 ? 'full' : null; // подождём, чтобы ТП не увидел полную панель на старте
     }
 
@@ -981,7 +1111,7 @@
         // Не на экране диалога — блок убираем
         if (!header) { block?.remove(); return; }
         const mode = viewMode();
-        if (!mode) { block?.remove(); return; }
+        if (!mode || mode === 'off') { block?.remove(); return; }
         curMode = mode;
         ensureStyle(doc);
 

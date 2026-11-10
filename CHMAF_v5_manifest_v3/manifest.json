@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "ChMAF",
-	"version": "5.0.187",
+	"version": "5.0.188",
 	"description": "Твой мультитул в работе с чатами",
 	"background": {
 		"service_worker": "bg.js"
@@ -92,7 +92,8 @@
 		},
 		{
 			"js": [
-				"/OtherScripts/CRMbtns.js"
+				"/OtherScripts/CRMbtns.js",
+				"/OtherScripts/CRMStudentHelper.js"
 			],
 			"css": [
 				"/CSS/crmstyles.css"
