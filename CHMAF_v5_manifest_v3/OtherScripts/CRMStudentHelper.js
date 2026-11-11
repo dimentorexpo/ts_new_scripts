@@ -220,6 +220,12 @@
     #${BLOCK_ID} .sth-stg.bad{color:#fecaca;background:rgba(239,68,68,.25);border-color:rgba(252,165,165,.6)}
     #${BLOCK_ID} .sth-stg.warn{color:#fde68a;background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5)}
     #${BLOCK_ID} .sth-table td.cr{white-space:normal;min-width:230px}
+    #${BLOCK_ID}.tp .sth-body{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:8px;align-items:start}
+    #${BLOCK_ID}.tp.collapsed .sth-body{display:none}
+    #${BLOCK_ID}.tp .sth-body:empty{display:none}
+    #${BLOCK_ID}.tp .sth-card,#${BLOCK_ID}.tp .sth-card.wide,#${BLOCK_ID}.tp .sth-card:not(.wide){display:block;flex:none;grid-column:auto;padding:8px 12px;border-radius:10px}
+    #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-lbl{margin-bottom:3px}
+    #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-sub{display:block}
     @keyframes sthKmPulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.55),0 4px 22px rgba(239,68,68,.7)}}
     #${BLOCK_ID} .sth-card.vac{background:linear-gradient(135deg,#b45309,#f59e0b);border:1px solid #fde68a;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(251,191,36,.35),0 4px 18px rgba(245,158,11,.45)}
     #${BLOCK_ID} .sth-card.warn.vac .sth-lbl{color:#fffbeb!important}
@@ -1097,6 +1103,7 @@
             } else state.collapsed = pk !== 'profile';
         }
         block.classList.toggle('collapsed', state.collapsed);
+        block.classList.toggle('tp', state.mode === 'tp'); // краткий вид (ТП): карточки в несколько столбцов
 
         const role = roleLabel(state.role);
         const roleIco = role.kind === 'parent' ? 'users' : 'student';
