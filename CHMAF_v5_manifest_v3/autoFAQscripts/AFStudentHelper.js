@@ -546,18 +546,22 @@
     const promoBtn = (offer) => offer ? `<button type="button" class="sth-promoopen" data-offer="${esc(offer)}" title="Скопировать ID оффера (${esc(offer)}) и открыть проверку промокодов">${ico('ext')}Оффер</button>` : '';
     // Рассрочка: этапы (оплачен / предстоит / просрочен, даты, суммы) и ссылка на саму рассрочку по UUID
     const fmtMoney = (n, cur) => `${Number(n).toLocaleString('ru-RU')} ${cur === 'RUB' ? '₽' : (cur || '')}`.trim();
+    // Этап просрочен: не оплачен, а дата платежа по Москве уже прошла
+    const mskToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+    const stageLate = (s, today = mskToday()) => s.status !== 'paid' && !/cancel|refund/i.test(String(s.status || '')) && !!s.paymentDate && String(s.paymentDate).slice(0, 10) < today;
+    const creditLate = (x) => (x.credit?.items || []).some((it) => (it.stages || []).some((s) => stageLate(s)));
     function creditDetail(x) {
         const items = x.credit?.items || [];
         if (!items.length) return '';
-        const today = new Date().toISOString().slice(0, 10);
+        const today = mskToday();
         return items.map((it) => {
             const st = (it.stages || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
             const paid = st.filter((s) => s.status === 'paid').length;
             const chips = st.map((s) => {
                 const isPaid = s.status === 'paid';
-                const late = s.status === 'upcoming' && String(s.paymentDate || '') < today;
+                const late = stageLate(s, today);
                 const cls = isPaid ? 'ok' : late ? 'bad' : s.status === 'upcoming' ? 'mute' : 'warn';
-                const label = isPaid ? 'оплачен' : late ? 'просрочен' : s.status === 'upcoming' ? 'предстоит' : String(s.status || '');
+                const label = isPaid ? 'оплачен' : late ? 'просрочен (дата платежа прошла)' : s.status === 'upcoming' ? 'предстоит' : String(s.status || '');
                 const pos = s.position || {};
                 const tip = `Этап ${s.index}: ${label}${s.paymentDate ? ', ' + fmtDate(s.paymentDate) : ''}${pos.count ? ' · ' + pos.count + ' ур.' : ''}${pos.price ? ' · ' + fmtMoney(pos.price, pos.currency) : ''}`;
                 return `<span class="sth-stg ${cls}" title="${esc(tip)}">${isPaid ? ico('check') : ''}${esc(fmtDate(s.paymentDate))}${pos.price ? ' · ' + esc(fmtMoney(pos.price, pos.currency)) : ''}</span>`;
@@ -848,7 +852,7 @@
         const out = [];
         const km = d.services.filter((x) => x.km);
         if (km.length) out.push(`<span class="sth-hchip bad" title="Кризисное сопровождение">КМ · ${km.length}</span>`);
-        if (d.services.some((x) => x.credit && !x.credit.unknown)) out.push('<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
+        if (d.services.some((x) => x.credit && !x.credit.unknown)) out.push(d.services.some(creditLate) ? '<span class="sth-hchip bad" title="Есть просроченный этап рассрочки">Рассрочка: просрочка</span>' : '<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
         if (d.today?.length) out.push(`<span class="sth-hchip info" title="Уроки сегодня (МСК): ${esc(d.today.map((l) => hhmm(l.at)).join(', '))}">Уроки сегодня: ${d.today.length}</span>`);
         const mine = tpTasks(d), wait = mine.filter((t) => t.status === 'waiting').length;
         if (mine.length) out.push(`<span class="sth-hchip ${wait ? 'bad' : 'warn'}" title="Задачи ТП Исход / 2ЛТП${wait ? ': не взято в работу ' + wait : ''}">Задачи ТП: ${mine.length}</span>`);
@@ -894,8 +898,8 @@
         const crUnknown = sv.some((x) => unk(x.credit));
         const crCard = cr.length
             ? (state.mode === 'tp'
-                ? card('warn wide', 'coins', 'Рассрочка', 'Активна', '', cr.map((x) => `<div class="sth-sub" style="display:block"><b>#${esc(x.id)}</b>${creditDetail(x)}</div>`).join(''))
-                : card('warn', 'coins', 'Рассрочка', 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', ')))
+                ? card((cr.some(creditLate) ? 'bad' : 'warn') + ' wide', 'coins', 'Рассрочка', cr.some(creditLate) ? 'Есть просроченный этап' : 'Активна', '', cr.map((x) => `<div class="sth-sub" style="display:block"><b>#${esc(x.id)}</b>${creditDetail(x)}</div>`).join(''))
+                : card(cr.some(creditLate) ? 'bad' : 'warn', 'coins', 'Рассрочка', cr.some(creditLate) ? 'Просрочка' : 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', ')))
             : card(crUnknown ? 'mute' : 'ok', 'coins', 'Рассрочка', crUnknown ? 'Нет данных' : 'Нет активной');
 
         if (state.mode === 'tp') return [kmCard, crCard, lessonsCard(d), tasksCard(d)].join('');
@@ -953,7 +957,7 @@
             if (x.promo && !unk(x.promo) && x.promo.offer) pCell += promoBtn(x.promo.offer);
             let cCell = '<span class="sth-pill mute">—</span>';
             if (unk(x.credit)) cCell = '<span class="sth-pill mute">?</span>';
-            else if (x.credit) cCell = '<span class="sth-pill warn">активна</span>' + creditDetail(x);
+            else if (x.credit) cCell = (creditLate(x) ? '<span class="sth-pill bad" title="Есть просроченный этап">просрочка</span>' : '<span class="sth-pill warn">активна</span>') + creditDetail(x);
             let apCell = '<span class="sth-pill mute" title="Не удалось проверить автоподбор">?</span>';
             if (x.ap && !x.ap.unknown) {
                 apCell = x.ap.avail

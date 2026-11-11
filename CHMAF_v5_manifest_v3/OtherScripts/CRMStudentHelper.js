@@ -14,14 +14,31 @@
     if (window.__CRM_STUDENT_HELPER__) return;
     window.__CRM_STUDENT_HELPER__ = true;
 
-    const BLOCK_ID = 'crm-sth-block';
-    const STYLE_ID = 'crm-sth-style';
+    const BLOCK_ID = 'chmaf-sth-block'; // у каждого расширения свой id, чтобы не трогать чужую полосу
+    const STYLE_ID = 'chmaf-sth-style';
     const HEADER_SEL = 'crm-header';
     const COLLAPSE_KEY = 'crmStudentHelperExpanded'; // '1' — полоса развёрнута (по умолчанию свёрнута)
     const TICK_MS = 700;
     const STABLE_TICKS = 2;   // сколько тиков подряд роль на странице должна быть одной и той же
     const MAX_CACHE = 40;     // сколько пользователей держим в памяти
     const MAX_SERVICES = 8; // защита от лавины запросов у учеников с десятками услуг
+
+
+    // ── Защита от конфликта с соседним расширением ──────────────────────────
+    // На странице CRM одновременно могут работать CHMAF и CRMHelper, и оба рисуют такую полосу. Окружение у расширений изолированное,
+    // а DOM общий, поэтому договариваемся через атрибуты <html>: кто первым занял — тот рисует, второй молчит (не рисует и не делает запросов).
+    // Владелец продлевает бронь каждый такт; если его расширение выключили, бронь протухает через 4 с и полосу берёт второе.
+    const OWNER = 'chmaf';
+    const LOCK_ATTR = 'data-sth-owner', LOCK_TS_ATTR = 'data-sth-owner-ts', LOCK_TTL = 4000;
+    function claimLock() {
+        try {
+            const el = document.documentElement, now = Date.now();
+            const owner = el.getAttribute(LOCK_ATTR), ts = +el.getAttribute(LOCK_TS_ATTR) || 0;
+            if (owner && owner !== OWNER && now - ts < LOCK_TTL) return false;
+            el.setAttribute(LOCK_ATTR, OWNER); el.setAttribute(LOCK_TS_ATTR, String(now));
+            return true;
+        } catch { return true; }
+    }
 
     const BACKEND = 'https://backend.skyeng.ru/api';
     const SOURCES = {
@@ -543,18 +560,22 @@
     const promoBtn = (offer) => offer ? `<button type="button" class="sth-promoopen" data-offer="${esc(offer)}" title="Скопировать ID оффера (${esc(offer)}) и открыть проверку промокодов">${ico('ext')}Оффер</button>` : '';
     // Рассрочка: этапы (оплачен / предстоит / просрочен, даты, суммы) и ссылка на саму рассрочку по UUID
     const fmtMoney = (n, cur) => `${Number(n).toLocaleString('ru-RU')} ${cur === 'RUB' ? '₽' : (cur || '')}`.trim();
+    // Этап просрочен: не оплачен, а дата платежа по Москве уже прошла
+    const mskToday = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Moscow' });
+    const stageLate = (s, today = mskToday()) => s.status !== 'paid' && !/cancel|refund/i.test(String(s.status || '')) && !!s.paymentDate && String(s.paymentDate).slice(0, 10) < today;
+    const creditLate = (x) => (x.credit?.items || []).some((it) => (it.stages || []).some((s) => stageLate(s)));
     function creditDetail(x) {
         const items = x.credit?.items || [];
         if (!items.length) return '';
-        const today = new Date().toISOString().slice(0, 10);
+        const today = mskToday();
         return items.map((it) => {
             const st = (it.stages || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
             const paid = st.filter((s) => s.status === 'paid').length;
             const chips = st.map((s) => {
                 const isPaid = s.status === 'paid';
-                const late = s.status === 'upcoming' && String(s.paymentDate || '') < today;
+                const late = stageLate(s, today);
                 const cls = isPaid ? 'ok' : late ? 'bad' : s.status === 'upcoming' ? 'mute' : 'warn';
-                const label = isPaid ? 'оплачен' : late ? 'просрочен' : s.status === 'upcoming' ? 'предстоит' : String(s.status || '');
+                const label = isPaid ? 'оплачен' : late ? 'просрочен (дата платежа прошла)' : s.status === 'upcoming' ? 'предстоит' : String(s.status || '');
                 const pos = s.position || {};
                 const tip = `Этап ${s.index}: ${label}${s.paymentDate ? ', ' + fmtDate(s.paymentDate) : ''}${pos.count ? ' · ' + pos.count + ' ур.' : ''}${pos.price ? ' · ' + fmtMoney(pos.price, pos.currency) : ''}`;
                 return `<span class="sth-stg ${cls}" title="${esc(tip)}">${isPaid ? ico('check') : ''}${esc(fmtDate(s.paymentDate))}${pos.price ? ' · ' + esc(fmtMoney(pos.price, pos.currency)) : ''}</span>`;
@@ -874,8 +895,8 @@
         const crUnknown = sv.some((x) => unk(x.credit));
         const crCard = cr.length
             ? (state.mode === 'tp'
-                ? card('warn wide', 'coins', 'Рассрочка', 'Активна', '', cr.map((x) => `<div class="sth-sub" style="display:block"><b>#${esc(x.id)}</b>${creditDetail(x)}</div>`).join(''))
-                : card('warn', 'coins', 'Рассрочка', 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', ')))
+                ? card((cr.some(creditLate) ? 'bad' : 'warn') + ' wide', 'coins', 'Рассрочка', cr.some(creditLate) ? 'Есть просроченный этап' : 'Активна', '', cr.map((x) => `<div class="sth-sub" style="display:block"><b>#${esc(x.id)}</b>${creditDetail(x)}</div>`).join(''))
+                : card(cr.some(creditLate) ? 'bad' : 'warn', 'coins', 'Рассрочка', cr.some(creditLate) ? 'Просрочка' : 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', ')))
             : card(crUnknown ? 'mute' : 'ok', 'coins', 'Рассрочка', crUnknown ? 'Нет данных' : 'Нет активной');
 
         if (state.mode === 'tp') return [kmCard, crCard, lessonsCard(d), tasksCard(d)].join('');
@@ -933,7 +954,7 @@
             if (x.promo && !unk(x.promo) && x.promo.offer) pCell += promoBtn(x.promo.offer);
             let cCell = '<span class="sth-pill mute">—</span>';
             if (unk(x.credit)) cCell = '<span class="sth-pill mute">?</span>';
-            else if (x.credit) cCell = '<span class="sth-pill warn">активна</span>' + creditDetail(x);
+            else if (x.credit) cCell = (creditLate(x) ? '<span class="sth-pill bad" title="Есть просроченный этап">просрочка</span>' : '<span class="sth-pill warn">активна</span>') + creditDetail(x);
             let apCell = '<span class="sth-pill mute" title="Не удалось проверить автоподбор">?</span>';
             if (x.ap && !x.ap.unknown) {
                 apCell = x.ap.avail
@@ -976,7 +997,7 @@
         const km = sv.filter((x) => x.km);
         if (km.length) out.push(`<span class="sth-hchip bad" title="Кризисное сопровождение">КМ · ${km.length}</span>`);
         const cr = sv.filter((x) => x.credit && !x.credit.unknown);
-        if (cr.length) out.push('<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
+        if (cr.length) out.push(cr.some(creditLate) ? '<span class="sth-hchip bad" title="Есть просроченный этап рассрочки">Рассрочка: просрочка</span>' : '<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
         const vac = sv.filter((x) => x.vacation && !x.vacation.unknown && x.vacation.active);
         if (vac.length) out.push(`<span class="sth-hchip warn" title="Ученик в отпуске">${esc(vac[0].vacation.title)}</span>`);
         if (d.today) out.push(`<span class="sth-hchip ${d.today.length ? 'info' : 'ok'}" title="Уроки сегодня (МСК)">Уроки сегодня: ${d.today.length}</span>`);
@@ -1134,6 +1155,7 @@
         const header = doc.querySelector(HEADER_SEL);
         // Не страница пользователя или шапка ещё не нарисована — полосы нет
         if (!id || !header) { block?.remove(); return; }
+        if (!claimLock()) { block?.remove(); return; } // полосу уже рисует соседнее расширение
 
         // Только ученик и родитель; у преподавателя и при неизвестной роли полосы нет
         const role = roleFor(id);
