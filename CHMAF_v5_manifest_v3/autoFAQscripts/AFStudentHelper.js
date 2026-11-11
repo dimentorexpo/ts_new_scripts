@@ -22,9 +22,10 @@
 
     const BLOCK_ID = 'af-sth-block';
     const STYLE_ID = 'af-sth-style';
-    const FRAME_SEL = '[class^="NEW_FRONTEND"]';
+    const FRAME_SEL = window.CHMAF_SELECTORS?.iframeBroad || '[class^="NEW_FRONTEND"]';
     const HEADER_SEL = '[class*="ConversationScreen_Header"]';
     const TICK_MS = 700;
+    const ERROR_RETRY_MS = 30000; // после ошибки автоповтор не чаще раза в 30 с (тик остаётся 700 мс)
     const STABLE_TICKS = 2;   // сколько тиков подряд DOM должен показывать одного и того же ученика, прежде чем ему верить
     const MAX_CACHE = 40;     // сколько чатов держим в памяти
     const MAX_SERVICES = 8; // защита от лавины запросов у учеников с десятками услуг
@@ -51,12 +52,13 @@
     // Ключ — хеш чата из адресной строки (/tickets/assigned/{uuid}). Оператор ведёт несколько
     // чатов сразу: данные каждого хранятся отдельно, при возврате в чат запросов нет.
     const cache = new Map();
-    const newEntry = () => ({ id: null, role: null, data: null, loading: false, pending: false, error: null, collapsed: false, reqToken: 0, tplBrand: null, tplOpen: null, tplFloat: false, tblOpen: null });
+    const newEntry = () => ({ id: null, role: null, data: null, loading: false, pending: false, error: null, errorAt: 0, collapsed: false, reqToken: 0, tplBrand: null, tplOpen: null, tplFloat: false, tblOpen: null });
     let state = newEntry();
     let curMode = 'full'; // 'tp' — краткая панель для ТП, 'full' — полная      // запись текущего чата (на неё смотрят renderBody/renderBlock)
     let currentKey = null;
     let stab = { sig: '', n: 0 };
     let staleId = null;          // ученик предыдущего чата: пока DOM показывает его же, чат мог ещё не перерисоваться
+    let escListener = null;      // { doc, fn }: keydown для Escape — один на документ, снимается при пересоздании блока
 
     function getEntry(key) {
         let e = cache.get(key);
@@ -213,6 +215,16 @@
     #${BLOCK_ID}.tp .sth-card:not(.wide){flex:0 0 auto;padding:5px 10px;display:flex;align-items:center;gap:8px;border-radius:8px}
     #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-lbl{margin:0;white-space:nowrap}
     #${BLOCK_ID}.tp .sth-card:not(.wide) .sth-sub{display:none}
+    #${BLOCK_ID} .sth-inst{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:4px}
+    #${BLOCK_ID} .sth-inst .sth-open{margin-left:0}
+    #${BLOCK_ID} .sth-stgs{display:inline-flex;flex-wrap:wrap;gap:4px}
+    #${BLOCK_ID} .sth-stg{display:inline-flex;align-items:center;gap:3px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid;white-space:nowrap}
+    #${BLOCK_ID} .sth-stg .sth-i{width:11px;height:11px;margin:0}
+    #${BLOCK_ID} .sth-stg.ok{color:#bbf7d0;background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.45)}
+    #${BLOCK_ID} .sth-stg.mute{color:#cbd5e1;background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.4)}
+    #${BLOCK_ID} .sth-stg.bad{color:#fecaca;background:rgba(239,68,68,.25);border-color:rgba(252,165,165,.6)}
+    #${BLOCK_ID} .sth-stg.warn{color:#fde68a;background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5)}
+    #${BLOCK_ID} .sth-table td.cr{white-space:normal;min-width:230px}
     @keyframes sthKmPulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.55),0 4px 22px rgba(239,68,68,.7)}}
     #${BLOCK_ID} .sth-card.vac{background:linear-gradient(135deg,#b45309,#f59e0b);border:1px solid #fde68a;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(251,191,36,.35),0 4px 18px rgba(245,158,11,.45)}
     #${BLOCK_ID} .sth-card.warn.vac .sth-lbl{color:#fffbeb!important}
@@ -452,7 +464,10 @@
         const pd = promo.ok ? (promo.v?.data ?? null) : null;
         const promoName = pd?.promocode ? String(pd.promocode) : '';
         const promoExpired = pd?.expiredAt ? Date.parse(pd.expiredAt) < Date.now() : false;
-        const creditStages = credit.ok ? (credit.v?.data?.stages ?? credit.v?.stages ?? null) : null;
+        // data — массив рассрочек [{uuid, createdAt, stages:[{index, status, paymentDate, position}]}] (на случай одиночного объекта — обернём)
+        const creditRaw = credit.ok ? (credit.v?.data ?? credit.v) : null;
+        const creditItems = (Array.isArray(creditRaw) ? creditRaw : (creditRaw && typeof creditRaw === 'object' && (creditRaw.uuid || creditRaw.stages) ? [creditRaw] : []))
+            .map((c) => ({ uuid: c.uuid || '', stages: Array.isArray(c.stages) ? c.stages : [] }));
 
         return {
             id: sid,
@@ -471,7 +486,7 @@
             replacement: src.isTeacherReplacementInProgress === true,
             vacation: vac.ok ? vacationInfo(vac.v, src.stage) : { unknown: true },
             promo: promo.ok ? (pd ? { name: promoName, expiredAt: pd.expiredAt, expired: promoExpired, offer: pd.promocodeOffer?.offerId ?? null, bf: /черн\S*\s+пятниц/i.test(promoName.toLowerCase().replace(/ё/g, 'е')) } : null) : { unknown: true },
-            credit: credit.ok ? (credit.v ? { stages: Array.isArray(creditStages) ? creditStages : [] } : null) : { unknown: true }
+            credit: credit.ok ? (creditItems.length ? { items: creditItems } : null) : { unknown: true }
         };
     }
 
@@ -529,6 +544,29 @@
     const KLP_MAX_AGE = 9, ADULT_AGE = 18;
     // Кнопка: скопировать ID оффера промокода и открыть страницу проверки промокодов (оператор вставит ID в поле «Оффер»)
     const promoBtn = (offer) => offer ? `<button type="button" class="sth-promoopen" data-offer="${esc(offer)}" title="Скопировать ID оффера (${esc(offer)}) и открыть проверку промокодов">${ico('ext')}Оффер</button>` : '';
+    // Рассрочка: этапы (оплачен / предстоит / просрочен, даты, суммы) и ссылка на саму рассрочку по UUID
+    const fmtMoney = (n, cur) => `${Number(n).toLocaleString('ru-RU')} ${cur === 'RUB' ? '₽' : (cur || '')}`.trim();
+    function creditDetail(x) {
+        const items = x.credit?.items || [];
+        if (!items.length) return '';
+        const today = new Date().toISOString().slice(0, 10);
+        return items.map((it) => {
+            const st = (it.stages || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
+            const paid = st.filter((s) => s.status === 'paid').length;
+            const chips = st.map((s) => {
+                const isPaid = s.status === 'paid';
+                const late = s.status === 'upcoming' && String(s.paymentDate || '') < today;
+                const cls = isPaid ? 'ok' : late ? 'bad' : s.status === 'upcoming' ? 'mute' : 'warn';
+                const label = isPaid ? 'оплачен' : late ? 'просрочен' : s.status === 'upcoming' ? 'предстоит' : String(s.status || '');
+                const pos = s.position || {};
+                const tip = `Этап ${s.index}: ${label}${s.paymentDate ? ', ' + fmtDate(s.paymentDate) : ''}${pos.count ? ' · ' + pos.count + ' ур.' : ''}${pos.price ? ' · ' + fmtMoney(pos.price, pos.currency) : ''}`;
+                return `<span class="sth-stg ${cls}" title="${esc(tip)}">${isPaid ? ico('check') : ''}${esc(fmtDate(s.paymentDate))}${pos.price ? ' · ' + esc(fmtMoney(pos.price, pos.currency)) : ''}</span>`;
+            }).join('');
+            const link = it.uuid ? `<a class="sth-open" href="https://billing-api.skyeng.ru/installments/view/${encodeURIComponent(it.uuid)}" target="_blank" rel="noopener" title="Открыть рассрочку">${ico('ext')}Рассрочка ${paid}/${st.length}</a>` : '';
+            return `<div class="sth-inst">${link}<span class="sth-stgs">${chips}</span></div>`;
+        }).join('');
+    }
+
     function growCard(d) {
         if (!d || d.age == null || !d.services || operatorKind() === 'tp') return '';
         const g = d.services.filter((x) => {
@@ -855,7 +893,9 @@
         const cr = sv.filter((x) => !unk(x.credit) && x.credit);
         const crUnknown = sv.some((x) => unk(x.credit));
         const crCard = cr.length
-            ? card('warn', 'coins', 'Рассрочка', 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', '))
+            ? (state.mode === 'tp'
+                ? card('warn wide', 'coins', 'Рассрочка', 'Активна', '', cr.map((x) => `<div class="sth-sub" style="display:block"><b>#${esc(x.id)}</b>${creditDetail(x)}</div>`).join(''))
+                : card('warn', 'coins', 'Рассрочка', 'Активна', cr.map((x) => `#${esc(x.id)}`).join(', ')))
             : card(crUnknown ? 'mute' : 'ok', 'coins', 'Рассрочка', crUnknown ? 'Нет данных' : 'Нет активной');
 
         if (state.mode === 'tp') return [kmCard, crCard, lessonsCard(d), tasksCard(d)].join('');
@@ -913,7 +953,7 @@
             if (x.promo && !unk(x.promo) && x.promo.offer) pCell += promoBtn(x.promo.offer);
             let cCell = '<span class="sth-pill mute">—</span>';
             if (unk(x.credit)) cCell = '<span class="sth-pill mute">?</span>';
-            else if (x.credit) cCell = '<span class="sth-pill warn">активна</span>';
+            else if (x.credit) cCell = '<span class="sth-pill warn">активна</span>' + creditDetail(x);
             let apCell = '<span class="sth-pill mute" title="Не удалось проверить автоподбор">?</span>';
             if (x.ap && !x.ap.unknown) {
                 apCell = x.ap.avail
@@ -924,7 +964,7 @@
                 <td class="svc"><div class="svc-name" title="${esc(x.title)}"><a class="sth-lnk" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}/services/${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="Открыть услугу в CRM"><b>#${esc(x.id)}</b></a> ${esc(x.title)}<a class="sth-open" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}/services/${encodeURIComponent(x.id)}" target="_blank" rel="noopener" title="Открыть услугу в новой вкладке">${ico('ext')}Услуга</a></div>
                     <div class="svc-tags">${chip(brandOf([x.key]), 'brand')}${cat ? chip(cat) : ''}${x.corp ? chip('корп', 'corp') : ''}${x.stage ? chip(x.stage) : ''}</div></td>
                 ${cell(x.balance === null ? '—' : esc(x.balance) + (x.balance === 0 && !unk(x.credit) && x.credit ? ' · рассрочка' : ''), 'bal ' + bCls)}
-                ${cell(kmCell)}${cell(tCell)}${cell(vCell)}${cell(pCell)}${cell(cCell)}${cell(apCell)}${showLast ? cell(x.lessons?.last ? `<span class="sth-pill ${new Date(x.lessons.last).getFullYear() < new Date().getFullYear() ? 'mute' : x.lessons.lastStatus === 'success' ? 'ok' : 'warn'}" title="Последний урок: ${x.lessons.lastStatus === 'success' ? 'проведён' : 'пропущен студентом'} (МСК)">${fmtDate(x.lessons.last)} ${esc(hhmm(x.lessons.last))} · ${x.lessons.lastStatus === 'success' ? 'Прошёл' : 'Пропущен студентом'}</span>` : '<span class="sth-pill mute">—</span>') : ''}${cell(evCell, 'ev')}
+                ${cell(kmCell)}${cell(tCell)}${cell(vCell)}${cell(pCell)}${cell(cCell, 'cr')}${cell(apCell)}${showLast ? cell(x.lessons?.last ? `<span class="sth-pill ${new Date(x.lessons.last).getFullYear() < new Date().getFullYear() ? 'mute' : x.lessons.lastStatus === 'success' ? 'ok' : 'warn'}" title="Последний урок: ${x.lessons.lastStatus === 'success' ? 'проведён' : 'пропущен студентом'} (МСК)">${fmtDate(x.lessons.last)} ${esc(hhmm(x.lessons.last))} · ${x.lessons.lastStatus === 'success' ? 'Прошёл' : 'Пропущен студентом'}</span>` : '<span class="sth-pill mute">—</span>') : ''}${cell(evCell, 'ev')}
             </tr>`;
         }).join('');
         const table = `<div class="sth-card wide mute"><details class="sth-fold" data-k="tblOpen"${state.tblOpen !== false ? ' open' : ''}><summary class="sth-lbl">${ico('info')}По каждой рабочей услуге (${esc(foot)}${hiddenN ? esc(', скрыто (life/self/talks): ' + hiddenN) : ''})</summary>
@@ -954,9 +994,16 @@
         if (!block) {
             block = doc.createElement('div');
             block.id = BLOCK_ID;
-            doc.addEventListener('keydown', (e) => {
+            // Блок пересоздан (React унёс шапку/сменился документ): снимаем прежний
+            // keydown-листенер, иначе они копились на документе при каждом пересоздании
+            if (escListener) {
+                try { escListener.doc.removeEventListener('keydown', escListener.fn); } catch { /* ignore */ }
+            }
+            const fn = (e) => {
                 if (e.key === 'Escape' && state.tplFloat) { state.tplFloat = false; if (block.isConnected) renderBlock(doc); }
-            });
+            };
+            escListener = { doc, fn };
+            doc.addEventListener('keydown', fn);
             block.addEventListener('toggle', (e) => {
                 const k = e.target?.dataset?.k;
                 if (k) state[k] = e.target.open;
@@ -1070,6 +1117,7 @@
         } catch (e) {
             if (token !== entry.reqToken) return;
             entry.error = e?.message || 'ошибка запроса';
+            entry.errorAt = Date.now(); // автоповтор (tickInner) — не раньше чем через ERROR_RETRY_MS
         } finally {
             if (token === entry.reqToken) {
                 entry.loading = false;
@@ -1091,7 +1139,7 @@
         let sec = '';
         try { sec = typeof getOpSection === 'function' ? getOpSection() : ''; } catch { /* ignore */ }
         if (sec) return kindOf(sec);
-        const nm = document.querySelector('.user_menu-dropdown-user_name')?.textContent?.trim() || '';
+        const nm = document.querySelector(window.CHMAF_SELECTORS?.operatorName || '.user_menu-dropdown-user_name')?.textContent?.trim() || '';
         if (nm) return kindOf(nm);
         return null;
     }
@@ -1157,7 +1205,10 @@
             state = getEntry(key);
             stab = { sig: '', n: 0 };
             if (!state.id) state.pending = true;
-            else if (state.error && !state.loading) { refresh(); return; }
+            // Ошибка в кеше чата: автоповтор только после паузы ERROR_RETRY_MS,
+            // иначе refresh() уходил каждый тик (шторм запросов). Пока пауза не
+            // прошла — ниже просто показываем кешированные данные/ошибку.
+            else if (state.error && !state.loading && Date.now() - (state.errorAt || 0) >= ERROR_RETRY_MS) { refresh(); return; }
             renderBlock(doc); // сразу показываем данные нового чата (кеш или «загрузка»), а не старого
         }
 

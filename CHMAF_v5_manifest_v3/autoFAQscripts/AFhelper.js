@@ -440,9 +440,10 @@ $af('inp')?.addEventListener('keydown', function (e) {
 
     /** Убирает HTML-разметку из текста шаблона (в таблице бывают <a>, <br>). */
     function plainText(s) {
-        const div = document.createElement('div');
-        div.innerHTML = String(s ?? '').replace(/<br\s*\/?>/gi, ' ');
-        return div.textContent.replace(/\s+/g, ' ').trim();
+        // DOMParser не исполняет скрипты и не грузит ресурсы: div.innerHTML
+        // запускал <img onerror> даже на detached-узле.
+        const doc = new DOMParser().parseFromString(String(s ?? '').replace(/<br\s*\/?>/gi, ' '), 'text/html');
+        return doc.body.textContent.replace(/\s+/g, ' ').trim();
     }
 
     const currentTable = () => (typeof table !== 'undefined' && Array.isArray(table) ? table : null);

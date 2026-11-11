@@ -339,24 +339,37 @@ function getGrListDataButtonPress() {
 window.getGrListDataButtonPress = getGrListDataButtonPress;
 
 // === EVENTS ===
-document.getElementById('ngu-hide-btn').addEventListener('click', () => {
+document.getElementById('ngu-hide-btn')?.addEventListener('click', () => {
     const win = document.getElementById('AF_GrList');
     if (win) {
         win.style.display = 'none';
-        document.getElementById('ngu-results').innerHTML = '';
-        document.getElementById('ngu-input-id').value = '';
+        const results = document.getElementById('ngu-results');
+        if (results) results.innerHTML = '';
+        const input = document.getElementById('ngu-input-id');
+        if (input) input.value = '';
     }
 });
 
-document.getElementById('ngu-input-id').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('ngu-get-btn').click();
-    if (e.key === 'Escape') document.getElementById('ngu-hide-btn').click();
+document.getElementById('ngu-input-id')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('ngu-get-btn')?.click();
+    if (e.key === 'Escape') document.getElementById('ngu-hide-btn')?.click();
 });
 
 // === API ===
 const fetchViaBackground = (payload) => new Promise((resolve) => {
-    chrome.runtime.sendMessage(payload, (response) => resolve(response));
+    try {
+        chrome.runtime.sendMessage(payload, (response) => {
+            const lastError = chrome.runtime.lastError;
+            if (lastError) resolve({ success: false, error: lastError.message });
+            else resolve(response);
+        });
+    } catch (e) {
+        resolve({ success: false, error: e.message });
+    }
 });
+
+// Счётчик запросов: устаревший ответ конкурентного клика «Найти» не перетирает свежий
+let nguRequestId = 0;
 
 // === MAIN LOGIC ===
 
@@ -374,9 +387,11 @@ const nguEsc = (s) => String(s)
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-document.getElementById('ngu-get-btn').addEventListener('click', async function () {
+document.getElementById('ngu-get-btn')?.addEventListener('click', async function () {
     const container = document.getElementById('ngu-results');
-    const groupId = document.getElementById('ngu-input-id').value.trim();
+    if (!container) return;
+    const groupId = (document.getElementById('ngu-input-id')?.value || '').trim();
+    const requestId = ++nguRequestId;
 
     if (!/^\d+$/.test(groupId)) {
         container.innerHTML = `
@@ -401,6 +416,8 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
             fetchURL: `https://learning-groups-storage-api.skyeng.ru/api/v1/groupParticipants/getParticipants/${groupId}`,
             requestOptions: { method: 'GET' }
         });
+
+        if (requestId !== nguRequestId) return; // ответ устаревшего клика — не трогаем контейнер
 
         if (!groupResponse?.success) {
             container.innerHTML = `
@@ -438,6 +455,8 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
                 body: JSON.stringify({ ids: userIds })
             }
         });
+
+        if (requestId !== nguRequestId) return; // ответ устаревшего клика — не трогаем контейнер
 
         const namesMap = {};
         if (namesResponse?.success) {
@@ -523,6 +542,7 @@ document.getElementById('ngu-get-btn').addEventListener('click', async function 
 
 
     } catch (error) {
+        if (requestId !== nguRequestId) return; // ошибка устаревшего клика — не перетираем свежий результат
         console.error('[GrList]', error);
         container.innerHTML = `
             <div class="ngu-status error">

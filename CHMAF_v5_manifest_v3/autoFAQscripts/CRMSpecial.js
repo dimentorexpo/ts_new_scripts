@@ -521,8 +521,11 @@ function crspWindowContent() {
    всё равно работала, а не молча ничего не делала. */
 function crspCreateFallbackWindow() {
     const element = document.createElement('div');
-    const storedTop = Number(window.localStorage.getItem('winTopCRMSPecial'));
-    const storedLeft = Number(window.localStorage.getItem('winLeftCRMSPecial'));
+    // Number(null) === 0 прошёл бы isFinite и окно открылось бы в (0,0)
+    const rawTop = window.localStorage.getItem('winTopCRMSPecial');
+    const rawLeft = window.localStorage.getItem('winLeftCRMSPecial');
+    const storedTop = rawTop === null ? NaN : Number(rawTop);
+    const storedLeft = rawLeft === null ? NaN : Number(rawLeft);
 
     element.id = CRSP_WINDOW_ID;
     element.className = 'extwindows';
@@ -845,7 +848,19 @@ function initCRMSPecialModule() {
         credentials: 'include'
     });
 
+    // Таймаут: при смерти service worker колбэк sendMessage не вызовется
+    // никогда, и кнопка осталась бы disabled навсегда.
     function crspFetchJson(url) {
+        return Promise.race([
+            crspFetchJsonInner(url),
+            new Promise((_, reject) => setTimeout(
+                () => reject(new Error('Таймаут запроса (20 сек)')),
+                20000
+            ))
+        ]);
+    }
+
+    function crspFetchJsonInner(url) {
         return new Promise((resolve, reject) => {
             if (isAborted()) {
                 reject(new Error('Модуль выгружен'));

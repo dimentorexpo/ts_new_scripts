@@ -1378,7 +1378,7 @@ function renderAFRTModal() {
                  onmouseout="if(!this.classList.contains('active-chat')){this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='transparent'; this.style.color='#a9c0ff'}">
                 <span style="pointer-events:none; color:#aaa; font-size:11px; min-width:24px;">${index + 1}.</span>
                 <span style="pointer-events:none; flex:1; text-align:center;">${c.chatId}</span>
-                <span style="pointer-events:none; color:#e2e8f0; font-family:sans-serif; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${c.operator}">${c.operator}</span>
+                <span style="pointer-events:none; color:#e2e8f0; font-family:sans-serif; font-size:11px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeStatHtml(c.operator)}">${escapeStatHtml(c.operator)}</span>
                 <span style="pointer-events:none; color:#fca5a5; font-weight:700; min-width:70px; text-align:right;">${formatTime(c.diffSeconds)}</span>
             </div>
         `).join('');
@@ -2100,8 +2100,8 @@ async function checkCSAT() {
     const checkBtn = document.getElementById('buttonCheckStats');
     if (checkBtn) { checkBtn.classList.add('active-stat-tab'); checkBtn.innerHTML = '<span class="af-tab-icon">⏳</span> Загрузка...'; }
 
-    document.getElementById('outputstatafield').style.display = 'none';
-    document.getElementById('loadkctp').style.display = 'none';
+    document.getElementById('outputstatafield')?.style.setProperty('display', 'none');
+    document.getElementById('loadkctp')?.style.setProperty('display', 'none');
 
     const csatDiv = document.getElementById('csatandthemes');
     if (csatDiv) { csatDiv.style.display = ''; csatDiv.innerHTML = ''; }
@@ -2187,19 +2187,23 @@ async function checkCSAT() {
                 let formattedTag = 'Нет тега!';
                 if (tagStr === '[\n  "queue"\n]') formattedTag = 'Тег: Очередь КЦ';
                 else if (tagStr === '[\n  "request_forwarded_to_2l_tp"\n]') formattedTag = 'Тег: 2ЛТП';
-                else if (tagStr) formattedTag = tagStr.replace(/[\[\]"\n]/g, '').replace(/,\s*/g, ', ').trim() || 'Нет тега!';
+                else if (tagStr) formattedTag = escapeStatHtml(tagStr.replace(/[\[\]"\n]/g, '').replace(/,\s*/g, ', ').trim() || 'Нет тега!');
 
                 if ((item.stats?.conversationDuration || 0) / 60000 > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
                     slacount++;
-                    let tsClean = typeof item.ts === 'string' ? item.ts.split(/\[UTC\]|\[GMT\]/)[0] : item.ts;
-                    let tmestmp = new Date(tsClean);
+                    let tsClean = typeof item.ts === 'string' ? item.ts.split(/\[UTC\]|\[GMT\]/)[0].trim() : item.ts;
+                    // Маркер [UTC] значит, что строка в UTC: добавляем 'Z', иначе
+                    // дата парсилась бы в локальном поясе оператора и «МСК» врало.
+                    let tmestmp = new Date(typeof tsClean === 'string' ? tsClean.replace(' ', 'T') + 'Z' : tsClean);
+                    if (isNaN(tmestmp.getTime())) tmestmp = new Date(tsClean);
                     if (isNaN(tmestmp.getTime())) tmestmp = new Date();
 
-                    const tshrs = String((tmestmp.getUTCHours() + 3) % 24).padStart(2, '0');
-                    const tsmin = String(tmestmp.getUTCMinutes()).padStart(2, '0');
+                    const tsTime = new Intl.DateTimeFormat('ru-RU', {
+                        timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', hour12: false
+                    }).format(tmestmp);
                     const duration = (item.stats.conversationDuration / 60000).toFixed(1);
 
-                    abovecloseslaarr += `<span style="color: red; font-weight:700">&#5129;</span> <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:LightGoldenrod;" class="slaclchatids">${item.conversationId}</a> Время: ${duration}м <span class="lookchat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span> Создан: ${tshrs}:${tsmin} МСК ${formattedTag}<br>`;
+                    abovecloseslaarr += `<span style="color: red; font-weight:700">&#5129;</span> <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:LightGoldenrod;" class="slaclchatids">${item.conversationId}</a> Время: ${duration}м <span class="lookchat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span> Создан: ${tsTime} МСК ${formattedTag}<br>`;
                 }
 
                 if (item.stats?.rate?.rate) {
@@ -2484,7 +2488,7 @@ async function checkload(department, flag) {
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
                                                 <span style="font-size: 16px;">${o.status}</span>
-                                                <span style="color: #e2e8f0; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${o.name}">${o.name}</span>
+                                                <span style="color: #e2e8f0; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeStatHtml(o.name)}">${escapeStatHtml(o.name)}</span>
                                             </div>
                                             <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px;">
                                                 ${o.status === '🟢' ? 'Доступен' : o.status === '🟡' ? 'Занят' : o.status === '🔴' ? 'На паузе' : 'Неизвестно'}

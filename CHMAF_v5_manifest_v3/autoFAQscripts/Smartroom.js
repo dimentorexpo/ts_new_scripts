@@ -734,6 +734,9 @@
     const SUBMIT_LABEL = 'Отправить <span aria-hidden="true">↗</span>';
 
     let isSending = false;
+    // Отправка ушла в таймаут: неизвестно, дошла ли она. Повтор — только после
+    // явного действия пользователя («Очистить»), чтобы не отправить форму дважды.
+    let sendUncertain = false;
 
     // ------------------------------------------------------------
     // Хелперы
@@ -851,6 +854,11 @@
 
     function clearForm() {
         if (isSending) return;
+
+        // Явное действие пользователя — снимаем «отправку под вопросом» и снова разрешаем отправку
+        sendUncertain = false;
+        submitButton.disabled = false;
+        submitButton.innerHTML = SUBMIT_LABEL;
 
         form.reset();
 
@@ -975,7 +983,9 @@
             const timeoutId = setTimeout(() => {
                 if (settled) return;
                 settled = true;
-                reject(new Error('Время ожидания ответа истекло'));
+                const timeoutError = new Error('Время ожидания ответа истекло');
+                timeoutError.isTimeout = true;
+                reject(timeoutError);
             }, CONFIG.requestTimeout);
 
             try {
@@ -1019,7 +1029,7 @@
     async function submitForm(event) {
         event.preventDefault();
 
-        if (isSending || !validateForm()) return;
+        if (isSending || sendUncertain || !validateForm()) return;
 
         const body = new URLSearchParams({
             'entry.505070950': $('#clientid').value.trim(),
@@ -1045,14 +1055,26 @@
             ok = true;
         } catch (error) {
             console.error('[SmartRoom] Ошибка отправки:', error);
-            // Введённые данные при ошибке остаются
-            setStatus(`Не удалось отправить: ${error.message}`, 'error');
-            notify('❌ Не удалось отправить форму', 'error');
+            if (error && error.isTimeout) {
+                // bg-запрос мог всё ещё выполняться — молча не повторяем
+                sendUncertain = true;
+                setStatus('Неизвестно, дошла ли отправка — проверьте документ «Пожелания Смартрум». Нажмите «Очистить», чтобы подготовить повторную отправку.', 'error');
+                notify('⚠️ Отправка под вопросом — проверьте документ, прежде чем повторять', 'warning');
+            } else {
+                // Введённые данные при ошибке остаются
+                setStatus(`Не удалось отправить: ${error.message}`, 'error');
+                notify('❌ Не удалось отправить форму', 'error');
+            }
         } finally {
             isSending = false;
-            submitButton.disabled = false;
             clearButton.disabled = false;
-            submitButton.innerHTML = SUBMIT_LABEL;
+            if (sendUncertain) {
+                submitButton.disabled = true;
+                submitButton.textContent = '⚠️ Проверьте документ';
+            } else {
+                submitButton.disabled = false;
+                submitButton.innerHTML = SUBMIT_LABEL;
+            }
         }
 
         if (ok) {
@@ -1079,7 +1101,7 @@
         target.removeAttribute('aria-invalid');
         target.closest(`.${PREFIX}__group`)?.classList.remove('is-invalid');
 
-        if (statusEl.dataset.tone === 'error') setStatus();
+        if (statusEl.dataset.tone === 'error' && !sendUncertain) setStatus();
     });
 
     form.addEventListener('change', event => {
@@ -1087,7 +1109,7 @@
 
         event.target.closest(`.${PREFIX}__group`)?.classList.remove('is-invalid');
 
-        if (statusEl.dataset.tone === 'error') setStatus();
+        if (statusEl.dataset.tone === 'error' && !sendUncertain) setStatus();
     });
 
     clearButton.addEventListener('click', clearForm);

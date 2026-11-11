@@ -356,9 +356,23 @@
 
                 if (nameRes?.success) {
                     const uData = JSON.parse(nameRes.fetchansver);
-                    // Создаем карту: hash -> Имя Фамилия
+                    // Создаем карту: hash -> Имя Фамилия.
+                    // Сопоставляем по хешу из ответа, если он есть: порядок
+                    // записей API не гарантирует совпадение с порядком запроса.
+                    const entries = Array.isArray(uData.data) ? uData.data : [];
+                    const byHash = {};
+                    let hasHashKeys = false;
+                    entries.forEach(entry => {
+                        const h = entry?.hash ?? entry?.data?.hash;
+                        if (h != null) {
+                            byHash[String(h)] = entry?.data;
+                            hasHashKeys = true;
+                        }
+                    });
                     uniqueHashes.forEach((hash, index) => {
-                        const user = uData.data[index]?.data;
+                        const user = hasHashKeys
+                            ? byHash[String(hash)]
+                            : entries[index]?.data;
                         namesMap[hash] = user ? `${user.firstName} ${user.lastName}` : 'System / Auto';
                     });
                 }

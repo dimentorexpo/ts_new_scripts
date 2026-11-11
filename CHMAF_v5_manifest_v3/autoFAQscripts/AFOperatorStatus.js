@@ -423,6 +423,9 @@
     const showEmergencyQueueAlert = (count) => {
         const now = Date.now();
         if (now - lastAlertTime < 5 * 60 * 1000) return;
+        // Отсчитываем паузу от ПОКАЗА, а не от клика «Принято»:
+        // иначе пока тревога не закрыта, звук играл бы каждые 8 секунд.
+        lastAlertTime = now;
 
         document.querySelectorAll('.op-st-alert-overlay').forEach(el => el.remove());
 

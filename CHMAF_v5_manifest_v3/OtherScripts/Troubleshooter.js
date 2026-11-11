@@ -26,9 +26,80 @@ const USER_FIELD_SOURCES = [
 ];
 
 const USER_TYPE_STYLES = {
-  student: { text: '(У)', color: '#DC143C' },
-  teacher: { text: '(П)', color: '#1E90FF' }
+  student: { text: '(У)', label: 'Ученик', color: '#DC143C' },
+  teacher: { text: '(П)', label: 'Преподаватель', color: '#1E90FF' }
 };
+
+// Бейдж роли у поля ввода: value поля НЕ трогаем (иначе «11030045(У)»
+// уходило в фильтры страницы). Пилюля живёт в обёртке поля справа.
+// Troubleshooter грузится без CSS — стили инжектим из самого JS.
+const INPUT_BADGE_CLASS = 'chmaf-usertype-input-badge';
+const INPUT_BADGE_STYLE_ID = 'chmaf-ts-input-badge-style';
+
+function ensureInputBadgeStyle() {
+  if (document.getElementById(INPUT_BADGE_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = INPUT_BADGE_STYLE_ID;
+  style.textContent = `
+    .${INPUT_BADGE_CLASS} {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1;
+      pointer-events: none; /* клики и ввод проходят сквозь бейдж */
+      user-select: none;
+      white-space: nowrap;
+      padding: 0 8px;
+      border-radius: 999px;
+      font: 600 10.5px/1.7 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      letter-spacing: .02em;
+      color: var(--chmaf-badge-color, #8a94a6);
+      background: #ffffff;
+      border: 1px solid var(--chmaf-badge-color, #8a94a6);
+    }
+  `;
+  (document.head || document.documentElement).appendChild(style);
+}
+
+/** Обёртка, внутри которой позиционируется бейдж (не сам input — он void-элемент).
+ *  Берём ближайшую обёртку (infix поля): её высота совпадает с высотой input. */
+function inputBadgeWrapper(input) {
+  return input.parentElement;
+}
+
+function removeInputBadge(input) {
+  const wrapper = inputBadgeWrapper(input);
+  if (wrapper) {
+    for (const old of wrapper.querySelectorAll(`.${INPUT_BADGE_CLASS}`)) old.remove();
+  }
+  if ('chmafPad' in input.dataset) {
+    input.style.paddingRight = input.dataset.chmafPad;
+    delete input.dataset.chmafPad;
+  }
+}
+
+/** Компактная пилюля «Ученик»/«Преподаватель» справа внутри обёртки поля.
+ *  Повторные вызовы не плодят дубли: старый бейдж этого поля снимается. */
+function setInputBadge(input, info) {
+  const typeStyle = USER_TYPE_STYLES[info.flagusertype];
+  const wrapper = inputBadgeWrapper(input);
+  if (!typeStyle || !wrapper) return;
+  ensureInputBadgeStyle();
+  removeInputBadge(input);
+
+  if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
+
+  const badge = document.createElement('span');
+  badge.className = `${BADGE_CLASS} ${INPUT_BADGE_CLASS}`;
+  badge.textContent = typeStyle.label;
+  badge.style.setProperty('--chmaf-badge-color', typeStyle.color);
+  wrapper.appendChild(badge);
+
+  // Вводимый текст не заходит под пилюлю; исходный padding восстанавливается при снятии
+  if (!('chmafPad' in input.dataset)) input.dataset.chmafPad = input.style.paddingRight;
+  input.style.paddingRight = `${badge.offsetWidth + 14}px`;
+}
 
 /** Текст элемента без нашей подписи. textContent вместо innerText:
  *  innerText заставляет браузер пересчитывать вёрстку на каждом вызове. */
@@ -68,13 +139,21 @@ function addusersinfo() {
 
 function processUserElement(element, type) {
   const userid = type === 'input' ? element.value.trim() : ownIdText(element);
-  if (!ID_RE.test(userid)) return;
+  if (!ID_RE.test(userid)) {
+    // Поле очистили или редактируют: снимаем бейдж, само значение не трогаем
+    if (type === 'input' && element.dataset.chmafUid) {
+      removeInputBadge(element);
+      delete element.dataset.chmafUid;
+    }
+    return;
+  }
 
   // Уже подписан этим же ID — ничего не делаем
   if (element.dataset.chmafUid === userid) return;
 
   // Angular переиспользует узлы: в ячейке мог смениться ID, старую подпись убираем
   for (const old of element.querySelectorAll(`:scope > .${BADGE_CLASS}`)) old.remove();
+  if (type === 'input') removeInputBadge(element); // бейдж поля лежит в обёртке, не внутри input
 
   element.dataset.chmafUid = userid;
   element.setAttribute('info-added', 'true'); // по этому атрибуту диагностика ищет участников
@@ -192,9 +271,10 @@ function addinginfo(pageelement, userid, elemtype, info = processedUserIds.get(u
   const { text, color } = USER_TYPE_STYLES[info.flagusertype] || { text: '', color: '' };
 
   if (elemtype === 'input') {
-    // Подпись дописывается в само поле; после этого значение уже не число
-    // и повторно не обрабатывается
-    if (text) pageelement.value += text;
+    // Роль показываем бейджем рядом с полем; value остаётся чистым числом,
+    // поэтому фильтры страницы не портятся. От повторной обработки поле
+    // защищает отметка dataset.chmafUid в processUserElement.
+    if (text) setInputBadge(pageelement, info);
     return;
   }
 
@@ -649,6 +729,11 @@ const TS_STATS = (() => {
 
   let cacheKey = '';
   let cachePromise = null;
+  // После ошибки API кэш сбрасывается, и тик раз в секунду снова дёргал ES.
+  // Backoff: следующая попытка не раньше чем через 30 с (частоту нормального
+  // режима не меняем — успешные данные по-прежнему кэшируются по ключу).
+  let failedAt = 0;
+  const ERROR_RETRY_MS = 30000;
 
   const token = () => {
     try { return localStorage.getItem('token_global') || ''; } catch (e) { return ''; }
@@ -745,14 +830,20 @@ const TS_STATS = (() => {
     const key = `${params.hash}|${params.from}|${params.to}`;
     if (key === cacheKey && cachePromise) return cachePromise;
 
+    // Пауза после ошибки: запросы в ES не отправляем, пока не прошло 30 с
+    if (failedAt && Date.now() - failedAt < ERROR_RETRY_MS) {
+      return Promise.reject(new Error('предыдущий запрос не удался — повтор через 30 с'));
+    }
+
     cacheKey = key;
     cachePromise = (async () => {
       const users = await loadUserSessions(params);
       const all = [...new Set([...users.values()].flatMap(set => [...set]))];
       const samples = await loadStats(all);
+      failedAt = 0;
       return { users, samples };
     })();
-    cachePromise.catch(() => { cacheKey = ''; cachePromise = null; });
+    cachePromise.catch(() => { failedAt = Date.now(); cacheKey = ''; cachePromise = null; });
     return cachePromise;
   }
 
@@ -942,7 +1033,8 @@ const TS_STATS = (() => {
     const fieldInput = [...chart.querySelectorAll('input')].find(i => /fields/i.test(i.closest('mat-form-field')?.textContent || ''));
     const userInput = [...chart.querySelectorAll('input')].find(i => /пользовател/i.test(i.closest('mat-form-field')?.textContent || ''));
     const field = (fieldInput?.value || '').trim();
-    // В поле может стоять «11030045(У)» (пометку роли добавляет расширение) — берём только номер
+    // Бейдж роли больше не дописывается в value. Regex оставлен как страховка
+    // (старая вкладка, ручной ввод с помехами) — берём из значения только номер
     const userId = ((userInput?.value || '').match(/\d{5,}/) || [''])[0];
 
     const state = `${field}|${userId}|${location.search}`;

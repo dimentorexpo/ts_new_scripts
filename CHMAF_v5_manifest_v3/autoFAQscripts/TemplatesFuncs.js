@@ -536,7 +536,9 @@ function updateUserBadgeInTestUsers(iframeDoc) {
         tplLog('updateUserBadgeInTestUsers: пустые userType/vertical', { currentUserType, currentVertical });
     }
 
-    infoUserEl.innerHTML = (currentUserType === '' || currentVertical === '')
+    // textContent вместо innerHTML: vertical/userType приходят из DOM сайта
+    // (SearchinAFnewUI) и не должны интерпретироваться как HTML.
+    infoUserEl.textContent = (currentUserType === '' || currentVertical === '')
         ? ''
         : `${currentVertical} + ${currentUserType}`;
 }
@@ -996,6 +998,13 @@ function maskEmail(email) {
     return maskedLocalPart + '@' + domainPart;
 }
 
+/** Имя для приветствия: любое слово из букв (кириллица или латиница); иначе пустая строка. */
+function pickGreetingName(raw) {
+    const n = String(raw || '').trim();
+    if (!n || n === 'Неизвестный') return '';
+    return /^[\p{L}][\p{L}'’-]*$/u.test(n) ? n : '';
+}
+
 /** Подставляет телефон/почту/имя в шаблон вместо маркеров (phone)/(email)/(name). */
 function transfPageButtons(textFromTable) {
     if (textFromTable == null) return textFromTable;
@@ -1038,18 +1047,16 @@ function transfPageButtons(textFromTable) {
 
     if (/(\(name\))/i.test(textFromTable)) {
         const tempname = getActiveConvUserName();
-        const cyrillicPattern = /^[\u0400-\u04FF]+$/;
-        const languageAF = langEl ? langEl.innerHTML : 'Русский';
-
-        let name = '';
-        if (tempname !== 'Неизвестный') {
-            const matchesLanguage =
-                (languageAF === 'Русский' && cyrillicPattern.test(tempname)) ||
-                (languageAF === 'Английский' && !cyrillicPattern.test(tempname));
-            if (matchesLanguage) name = tempname;
+        // Имя подставляем любое (кириллицей или латиницей, напр. Anastasia); нет имени — убираем и запятую рядом
+        const name = pickGreetingName(tempname);
+        if (name) {
+            textFromTable = textFromTable.replace(/\(name\)/gi, name);
+        } else {
+            textFromTable = textFromTable
+                .replace(/[ \t]*,[ \t]*\(name\)/gi, '')
+                .replace(/\(name\)[ \t]*,[ \t]*/gi, '')
+                .replace(/\(name\)/gi, '');
         }
-
-        textFromTable = textFromTable.replace(/\(name\)/gi, name);
     }
 
     return textFromTable;
@@ -1071,17 +1078,12 @@ function setInputMessage(message) {
 /** Приветствие с учётом языка интерфейса и языка имени пользователя. */
 function buildGreeting() {
     const tempname = getActiveConvUserName();
-    const cyrillicPattern = /^[\u0400-\u04FF]+$/;
     const langEl = document.getElementById('languageAF');
     const isRussian = langEl ? langEl.innerHTML === 'Русский' : true;
     const msg1El = document.getElementById('msg1');
     if (!msg1El) tplWarnOnce('noMsg1', 'buildGreeting: кнопка #msg1 не найдена — режим «Доработать» не определён');
 
-    const canUseName =
-        (isRussian ? cyrillicPattern.test(tempname) : !cyrillicPattern.test(tempname)) &&
-        tempname !== 'Неизвестный' &&
-        tempname !== '' &&
-        !!msg1El && msg1El.innerHTML === 'Доработать';
+    const canUseName = !!pickGreetingName(tempname) && !!msg1El && msg1El.innerHTML === 'Доработать';
 
     const hello = isRussian ? 'Здравствуйте' : 'Hello';
     const tail = isRussian
@@ -1419,11 +1421,6 @@ function stripAutoFaqHtml(html) {
         // 7. Убираем лишние пробелы/переносы по краям всего текста и более 2 переносов подряд
         .replace(/\n{3,}/g, '\n\n')
         .trim();
-}
-
-/** Укороченная цепочка очистки (для быстрых шаблонов) — используем ту же логику. */
-function stripAutoFaqHtmlLight(html) {
-    return stripAutoFaqHtml(html);
 }
 
 /** Укороченная цепочка очистки (для быстрых шаблонов). */

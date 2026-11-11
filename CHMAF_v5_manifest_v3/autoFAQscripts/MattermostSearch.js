@@ -34,16 +34,26 @@
     const AUTH_ERR = 'AUTH';                     // маркер проблемы авторизации
 
     // Прямой fetch со страницы AutoFAQ блокируется CORS-политикой Mattermost.
-    // Первый же сетевой сбой запоминаем (сессия + localStorage) и дальше ходим
-    // сразу через bg-фолбэк — иначе каждый запрос пишет CORS-ошибки в консоль.
+    // Сетевой сбой запоминаем на 10 минут и ходим через bg-фолбэк — иначе
+    // каждый запрос пишет CORS-ошибки в консоль. Раньше флаг жил вечно:
+    // если CORS когда-нибудь починят, модуль об этом не узнал бы.
+    const DIRECT_BROKEN_TTL = 10 * 60 * 1000;
     let directBroken = (() => {
-        try { return localStorage.getItem('mms_direct_broken') === '1'; } catch (e) { return false; }
+        try {
+            if (localStorage.getItem('mms_direct_broken') !== '1') return false;
+            const at = Number(localStorage.getItem('mms_direct_broken_at') || 0);
+            if (Date.now() - at > DIRECT_BROKEN_TTL) {
+                localStorage.removeItem('mms_direct_broken');
+                localStorage.removeItem('mms_direct_broken_at');
+                return false;
+            }
+            return true;
+        } catch (e) { return false; }
     })();
 
     // Мир выполнения: content-скрипты (isolated) видят chrome.runtime,
     // инжект через <script> (main world) — нет. Модуль работает в обоих.
     const IS_MAIN_WORLD = (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id);
-    let bridgeSeq = 0;
 
     // Единый тост: в isolated world — штатный createAndShowButton,
     // в main world — локальный минималистичный fallback.
@@ -58,31 +68,6 @@
             setTimeout(() => t.remove(), 5000);
         } catch (e) { /* без тоста */ }
     };
-
-    // Реле для main world: chrome.runtime здесь недоступен, поэтому fetch-запрос
-    // к bg выполняет isolated-мир (utils.js слушает сообщения chmaf-mms).
-    const fetchViaBridge = (url, requestOptions) => new Promise((resolve) => {
-        const id = 'mms' + (++bridgeSeq);
-        const handler = (e) => {
-            const d = e.data;
-            if (!d || d.source !== 'chmaf-mms' || d.action !== 'fetchResult' || d.id !== id) return;
-            clearTimeout(timer);
-            window.removeEventListener('message', handler);
-            resolve(d.ok && d.body != null ? { body: d.body, error: null } : { body: null, error: d.error || 'bg ошибка' });
-        };
-        const timer = setTimeout(() => {
-            window.removeEventListener('message', handler);
-            resolve({ body: null, error: 'bg не ответил (таймаут)' });
-        }, 8000);
-        window.addEventListener('message', handler);
-        try {
-            window.postMessage({ source: 'chmaf-mms', action: 'fetch', id, fetchURL: url, requestOptions }, '*');
-        } catch (e) {
-            clearTimeout(timer);
-            window.removeEventListener('message', handler);
-            resolve({ body: null, error: 'postMessage недоступен' });
-        }
-    });
 
     // ═══════════════════════════════════════════════════════
     // Кэш имён каналов и пользователей (память + localStorage)
@@ -127,22 +112,21 @@
                     || /failed to fetch|networkerror when attempting/i.test((err && err.message) || '');
                 if (isNetworkFail) {
                     directBroken = true;
-                    try { localStorage.setItem('mms_direct_broken', '1'); } catch (e) { /* ignore */ }
+                    try {
+                        localStorage.setItem('mms_direct_broken', '1');
+                        localStorage.setItem('mms_direct_broken_at', String(Date.now()));
+                    } catch (e) { /* ignore */ }
                     console.info('[ChMAF] Mattermost: прямой fetch блокируется CORS — работаю через bg-фолбэк');
                 }
             }
         }
 
         // 2) Фолбэк через background: host_permissions обходят CORS полностью.
-        //    isolated world — напрямую через chrome.runtime; main world —
-        //    через postMessage-реле (isolated мир проксирует запрос в bg).
+        //    (postMessage-реле для main world удалено: слушателя chmaf-mms
+        //    нигде нет, путь всегда таймаутился.)
         let bgError = null;
         let bgBody = null;
-        if (IS_MAIN_WORLD) {
-            const res = await fetchViaBridge(url, requestOptions);
-            bgBody = res.body;
-            bgError = res.error;
-        } else if (typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.sendMessage === 'function') {
+        if (typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.sendMessage === 'function') {
             bgBody = await new Promise((resolve) => {
                 chrome.runtime.sendMessage(
                     { action: 'getFetchRequest', fetchURL: url, requestOptions },
@@ -1110,7 +1094,7 @@
         dom.searchBtn.disabled = true;
         dom.results.innerHTML =
             '<div style="padding:var(--space-md)">' +
-            chmafSkeletons(6, { dot: true }) +
+            (typeof chmafSkeletons === 'function' ? chmafSkeletons(6, { dot: true }) : '⌛ Поиск…') +
             '</div>';
 
         try {
@@ -1337,17 +1321,6 @@
 
             if (hidden && !teamsLoaded) initTeams();
         };
-
-        // Мост для main world: utils.js (isolated) не видит window-функцию
-        // главного мира, поэтому открывает/закрывает окно через postMessage.
-        window.addEventListener('message', (e) => {
-            const d = e.data;
-            if (d && d.source === 'chmaf-mms' && d.action === 'toggle') {
-                const hidden = dom.win.style.display === 'none';
-                dom.win.style.display = hidden ? 'block' : 'none';
-                if (hidden && !teamsLoaded) initTeams();
-            }
-        });
     };
 
     // Запуск: ждём готовности DOM (document_idle гарантирует, но подстрахуемся).

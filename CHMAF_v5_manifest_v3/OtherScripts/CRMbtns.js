@@ -13,6 +13,7 @@
 
 	let tasksUserId = null;   // для кого загружены задачи
 	let tasksData = null;     // массив задач или null, пока не загружено
+	let tasksErrorAt = 0;     // когда была ошибка загрузки (кэш ошибки на 60с)
 	let loadingFor = null;    // ID пользователя, для которого идёт запрос
 	let mismatchWarned = false;
 
@@ -31,14 +32,16 @@
 
 			tasksData = Array.isArray(json?.data) ? json.data : [];
 			tasksUserId = userId;
+			tasksErrorAt = 0;
 			mismatchWarned = false;
 		} catch (error) {
 			console.error('[ChMAF:CRM] Не удалось загрузить задачи:', error);
 			if (loadingFor === userId) {
 				// Пустой список, чтобы не долбить сервер каждую секунду;
-				// при следующем заходе на страницу попробуем снова
+				// через 60с попробуем снова (раньше кэш ошибки жил вечно).
 				tasksData = [];
 				tasksUserId = userId;
+				tasksErrorAt = Date.now();
 			}
 		} finally {
 			if (loadingFor === userId) loadingFor = null;
@@ -129,6 +132,13 @@
 		if (!match) return;
 
 		const userId = match[1];
+
+		// Кэш ошибки протух — повторяем запрос к тому же пользователю
+		if (tasksUserId === userId && tasksErrorAt && Date.now() - tasksErrorAt > 60000) {
+			tasksData = null;
+			tasksUserId = null;
+			tasksErrorAt = 0;
+		}
 
 		if (tasksUserId !== userId) {
 			if (loadingFor !== userId) {

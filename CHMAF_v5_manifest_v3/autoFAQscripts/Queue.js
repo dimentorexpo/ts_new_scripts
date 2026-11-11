@@ -20,7 +20,8 @@
         globalTimerInterval: null,
         isRendering: false,
         renderAgain: false,
-        selectedBadges: new Set()
+        selectedBadges: new Set(),
+        takingChats: new Set()   // conversationId чатов, которые сейчас «забирают» (защита от гонки с автообновлением)
     };
 
     const BADGE_CONFIG = [
@@ -821,7 +822,7 @@
         }
 
         list.innerHTML = visibleItems.map(({ el, originalIndex }) => {
-            const ts = new Date(el.ts.replace(/\[.*?\]/g, '').trim());
+            const ts = new Date(String(el?.ts ?? '').replace(/\[.*?\]/g, '').trim());
             const uType = el.channelUser?.payload?.userType;
             return `
             <div class="qg5-item" name="prosmChat" data-index="${originalIndex}">
@@ -1069,13 +1070,15 @@
         takeChat: async (cid, button) => {
             const notifyQ = (msg, type) => typeof createAndShowButton === 'function' && createAndShowButton(msg, type);
 
-            if (!cid || button?.disabled) return;
+            if (!cid || button?.disabled || state.takingChats.has(cid)) return;
+            state.takingChats.add(cid);
 
             // ID определяем ДО возврата чата в очередь: без него второй шаг
             // назначил бы чат «никому», и он ушёл бы в общую очередь.
             // Если автоматически не нашли — один раз выбираете себя из списка.
             const myId = await resolveMyOperatorId();
             if (!myId) {
+                state.takingChats.delete(cid);
                 notifyQ('ID оператора не выбран — чат не тронут', 'warning');
                 return;
             }
@@ -1106,7 +1109,9 @@
                     ? 'Чат вернулся в очередь, но забрать его не удалось — проверьте его статус'
                     : 'Не удалось забрать чат: ' + (e.message || e), 'error');
             } finally {
-                if (button) { button.disabled = false; button.textContent = '🫳'; }
+                state.takingChats.delete(cid);
+                // Автообновление могло пересоздать список — detached-кнопку не оживляем
+                if (button && button.isConnected) { button.disabled = false; button.textContent = '🫳'; }
             }
         }
     };

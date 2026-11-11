@@ -28,7 +28,11 @@ async function init_settings() {
         // Новые SVG-иконки (1) или прежние эмодзи (0)
         newIconsFab: 1,
         newIconsTabs: 1,
-        newIconsTestUser: 1
+        newIconsTestUser: 1,
+        // Тестовые ID (блок «Тестовые ID»): без ключей в DEFAULTS поля
+        // показывали строку "undefined" (Settings.get возвращал undefined)
+        test_stud: '',
+        test_teach: ''
     };
 
     const data = await getStorageData(['KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv']);
@@ -1046,7 +1050,7 @@ async function init_settings() {
             }
             body .app-body-content h3,
             body .app-body-content-desc,
-            body .user_menu-dropdown-user_name,
+            body ${window.CHMAF_SELECTORS?.operatorName || '.user_menu-dropdown-user_name'},
             body .user_menu-language_switcher .user_menu-status-name {
                 color: ${textColor} !important;
             }
@@ -1640,7 +1644,7 @@ async function init_settings() {
             });
         };
         processDoc(document);
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        const iframe = document.querySelector(window.CHMAF_SELECTORS?.iframeBroad || '[class^="NEW_FRONTEND"]');
         if (iframe) {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
             if (iframeDoc) processDoc(iframeDoc);
@@ -1656,7 +1660,7 @@ async function init_settings() {
         // Если тёмный фон — пропускаем, там уже есть свой блок внутри cssRules
         if (isDark) {
             const el = document.getElementById('chmaf-premium-light');
-            const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+            const iframe = document.querySelector(window.CHMAF_SELECTORS?.iframeBroad || '[class^="NEW_FRONTEND"]');
             const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
             if (el) el.remove();
             if (iframeDoc) {
@@ -1723,7 +1727,7 @@ async function init_settings() {
         const inject = (targetDoc) => injectStyleInto(targetDoc, 'chmaf-premium-light', lightCss);
 
         inject(document);
-        const iframe = document.querySelector('[class^="NEW_FRONTEND"]');
+        const iframe = document.querySelector(window.CHMAF_SELECTORS?.iframeBroad || '[class^="NEW_FRONTEND"]');
         if (iframe) {
             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
             if (iframeDoc) inject(iframeDoc);
@@ -3375,7 +3379,7 @@ async function init_settings() {
 
     const bindInput = (id, key) => {
         const el = document.getElementById(id);
-        el.value = Settings.get(key);
+        el.value = Settings.get(key) ?? ''; // неизвестный ключ не должен показывать "undefined"
         el.onchange = () => Settings.set(key, el.value);
     };
 
@@ -3660,6 +3664,22 @@ async function init_settings() {
         /token|csrf|session|auth|jwt|passw|secret|cookie/i.test(key) ||
         /^(persist:|SMART_TABLE\.|messageContent\.)/.test(key);
 
+    // Ключи-адреса Google Apps Script. localStorage доступен странице, поэтому
+    // импорт не должен подменять адрес GAS чужим сервером. Проверка та же, что
+    // в fetchGasJson (utils.js): только HTTPS и хосты script.google.com /
+    // script.googleusercontent.com. Легитимные адреса отделов все на script.google.com.
+    const GAS_ADDR_KEYS = new Set([
+        'scriptAdr', 'scriptAdrTH',
+        'KC_addr', 'TP_addr', 'KC_addrRzrv', 'TP_addrRzrv', 'KC_addrth', 'TP_addrth'
+    ]);
+    const isAllowedGasAddr = (value) => {
+        try {
+            const u = new URL(String(value));
+            return u.protocol === 'https:' &&
+                ['script.google.com', 'script.googleusercontent.com'].includes(u.hostname);
+        } catch { return false; }
+    };
+
     document.getElementById('savesettingstofile').onclick = () => {
         const data = {};
         let skipped = 0;
@@ -3712,8 +3732,12 @@ async function init_settings() {
 
             const entries = Object.entries(json).filter(([k, v]) =>
                 !isPrivateBackupKey(k) &&
-                ['string', 'number', 'boolean'].includes(typeof v)
+                ['string', 'number', 'boolean'].includes(typeof v) &&
+                (!GAS_ADDR_KEYS.has(k) || isAllowedGasAddr(v))
             );
+            // Невалидные адреса пропускаем поштучно (весь импорт не роняем) и предупреждаем
+            const badAddrKeys = Object.keys(json).filter(k => GAS_ADDR_KEYS.has(k) && !isAllowedGasAddr(json[k]));
+            if (badAddrKeys.length) console.warn('[ChMAF] Импорт: пропущены некорректные адреса GAS:', badAddrKeys);
             const skipped = Object.keys(json).length - entries.length - (BACKUP_META_KEY in json ? 1 : 0);
 
             if (!entries.length) {
@@ -3726,7 +3750,8 @@ async function init_settings() {
                     title: 'Импорт настроек',
                     message: `Загрузить ${entries.length} настроек из файла «${file.name}»?\n` +
                         'Текущие значения этих настроек будут заменены, страница перезагрузится.' +
-                        (skipped > 0 ? `\n\nПропущено служебных/секретных значений: ${skipped}.` : ''),
+                        (skipped > 0 ? `\n\nПропущено служебных/секретных/некорректных значений: ${skipped}.` : '') +
+                        (badAddrKeys.length ? `\n\nПропущены некорректные адреса GAS: ${badAddrKeys.join(', ')}. Разрешены только https://script.google.com / https://script.googleusercontent.com.` : ''),
                     okText: 'Загрузить',
                     danger: true
                 }))

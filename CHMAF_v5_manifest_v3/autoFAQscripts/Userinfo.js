@@ -672,7 +672,13 @@ const openLinkInNewTab = (userId, url) => {
 
 const sendMessageAsync = (message) => {
     return new Promise((resolve, reject) => {
+        // Таймаут 20с: если service worker «умер», колбэк не придёт никогда,
+        // и кнопка навсегда оставалась бы в состоянии загрузки.
+        const timer = setTimeout(() => {
+            reject(new Error('Расширение не ответило за 20 секунд — обновите страницу и повторите'));
+        }, 20000);
         chrome.runtime.sendMessage(message, (response) => {
+            clearTimeout(timer);
             if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
             if (response && response.success) resolve(response);
             else reject(new Error(response?.error || 'Unknown error from extension'));
@@ -925,7 +931,14 @@ fetchServiceConfiguration();
 
 function formatLessonDate(dateString) {
     const date = new Date(dateString);
-    return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    if (isNaN(date.getTime())) return '—';
+    // Показываем по МСК независимо от часового пояса оператора (как в TaskCreate)
+    const parts = new Intl.DateTimeFormat('ru-RU', {
+        timeZone: 'Europe/Moscow', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hour12: false
+    }).formatToParts(date);
+    const p = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${p.day}-${p.month}-${p.year} ${p.hour}:${p.minute}`;
 }
 
 const teacherLoginerBtn = (teacherId) => teacherId
@@ -952,7 +965,7 @@ function createFutureLessonHTML(lesson, type) {
 
     return `
         <div style="background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; padding: 12px; margin-bottom: 8px;">
-            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">${GLI.calendar}</span> ${formatLessonDate(startedAt)}</div>
+            <div style="margin-bottom:4px; font-size:12px;"><span style="color:#fde047;">${GLI.calendar}</span> ${formatLessonDate(startedAt)} <span style="opacity:.6; font-size:10px;" title="Московское время">МСК</span></div>
             <div style="margin-bottom:4px; font-size:12px;"><span style="color:#7dd3fc;">${GLI.student}</span> ${translatedType}</div>
             <div style="margin-bottom:4px; font-size:12px;"><span style="color:#94a3b8;">${GLI.books}</span> ${escapeUserinfoHtml(educationService.id)} ${escapeUserinfoHtml(srvTitle)}</div>
             ${statusHTML}
@@ -1192,7 +1205,7 @@ async function getservices(stidNew) {
 
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px;">
                         <div class="af-gl-complect-header ${stageClass}" ${opNote}>
-                            ${GLI.cube} [${service.id}] ${service.productKit.title}
+                            ${GLI.cube} [${service.id}] ${escapeUserinfoHtml(service.productKit.title)}
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 4px; font-weight: 500;">
                                 ${service.stage === "regular_lessons" ? "Регулярные занятия" : service.stage === "lost" ? "Потерянная" : service.stage}
                             </div>
@@ -1201,7 +1214,7 @@ async function getservices(stidNew) {
                     </div>`;
                 } else {
                     compTable.innerHTML += `<div class="af-gl-complect-card" style="margin-bottom:10px; text-align:center; border: 1px solid rgba(220, 20, 60, 0.3); background: linear-gradient(145deg, rgba(220, 20, 60, 0.1), rgba(220, 20, 60, 0.05));">
-                        <div style="color: #fca5a5; font-weight: 600; font-size: 13px;">${GLI.alert} [${service.id}] '${service.productKit.title}' — некорректна</div>
+                        <div style="color: #fca5a5; font-weight: 600; font-size: 13px;">${GLI.alert} [${service.id}] '${escapeUserinfoHtml(service.productKit.title)}' — некорректна</div>
                     </div>`;
                 }
             });
@@ -1239,7 +1252,7 @@ async function getservices(stidNew) {
 
             data.data.forEach((service) => {
                 if (srvKeyMap.has(service.serviceTypeKey)) service.serviceTypeKey = srvKeyMap.get(service.serviceTypeKey);
-                if (service.student.general.id != stidNew || service.incorrectnessReason != null) return;
+                if (service.student?.general?.id != stidNew || service.incorrectnessReason != null) return;
 
                 const sType = service.serviceTypeKey;
                 const ignoreTypes = ["Англ Talks 15 min", "Skyeng Space", "Групповые онлайн-мероприятия Life", "Скрининг", "Англ adult АЯ Даунсейл"];
@@ -1356,7 +1369,7 @@ async function getuserinfo() {
         }
     } catch (err) {
         console.error('Ошибка загрузки данных пользователя:', err);
-        document.getElementById('servicetable').innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">${GLI.close} ${err.message}</div>`;
+        document.getElementById('servicetable').innerHTML = `<div class="af-gl-empty-state" style="color: #fca5a5;">${GLI.close} ${escapeUserinfoHtml(err.message)}</div>`;
     }
 }
 

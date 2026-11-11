@@ -504,6 +504,7 @@ function afosClearTable() {
 
 let afosSocket = null;
 let afosReconnectTimer = null;
+let afosReconnectDelay = 3000;
 let afosWanted = false; // окно открыто — соединение должно жить
 
 function afosIsWindowVisible() {
@@ -529,6 +530,12 @@ function afosInitSocket() {
         console.error('[AF OperStatus] WS failed:', err);
         afosSetConn('Ошибка', 'bad');
         afosShowMessage('Не удалось подключиться к телефонии.', { error: true });
+        // Исключение конструктора (например, нет сети) не вызывает onclose —
+        // планируем переподключение сами, иначе статус зависал бы навсегда.
+        if (afosWanted) {
+            afosReconnectTimer = setTimeout(afosInitSocket, afosReconnectDelay);
+            afosReconnectDelay = Math.min(afosReconnectDelay * 2, 30000);
+        }
         return;
     }
 
@@ -540,7 +547,7 @@ function afosInitSocket() {
 
         if (message === '2') { socket.send('3'); return; }                              // ping → pong
         if (message.startsWith('0')) { socket.send('40' + AFOS_CONFIG.namespace + ','); return; } // handshake → подписка
-        if (message.startsWith('40')) { afosSetConn('Онлайн', 'ok'); return; }
+        if (message.startsWith('40')) { afosSetConn('Онлайн', 'ok'); afosReconnectDelay = AFOS_CONFIG.reconnectMs; return; }
         if (!message.startsWith('42')) return;                                         // служебные пакеты не рисуем
 
         // Окно скрыли двойным кликом — сокет больше не нужен
@@ -562,7 +569,8 @@ function afosInitSocket() {
         // Сервер оборвал соединение, а окно открыто — переподключаемся
         if (afosWanted && afosIsWindowVisible()) {
             afosSetConn('Переподключение…', 'warn');
-            afosReconnectTimer = setTimeout(afosInitSocket, AFOS_CONFIG.reconnectMs);
+            afosReconnectTimer = setTimeout(afosInitSocket, afosReconnectDelay);
+            afosReconnectDelay = Math.min(afosReconnectDelay * 2, 30000);
             return;
         }
 

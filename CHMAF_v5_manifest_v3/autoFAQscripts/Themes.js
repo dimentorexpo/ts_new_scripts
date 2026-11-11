@@ -571,7 +571,7 @@ document.getElementById('hideMeThemes').addEventListener('click', () => {
 
     if (afThemes.style.display !== 'none') {
         afThemes.style.display = 'none';
-        document.getElementById('themes').classList.remove('active');
+        document.getElementById('themes')?.classList.remove('active');
     }
 
     // Сбрасываем поиск при закрытии

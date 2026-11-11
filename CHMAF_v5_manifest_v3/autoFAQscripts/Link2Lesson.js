@@ -246,7 +246,7 @@
             };
 
             document.getElementById('l2l-help').onclick = () =>
-                window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971");
+                window.open("https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971", '_blank', 'noopener,noreferrer');
 
             // Исключающие чекбоксы
             ui.web.onchange = () => { if (ui.web.checked) ui.hw.checked = false; };

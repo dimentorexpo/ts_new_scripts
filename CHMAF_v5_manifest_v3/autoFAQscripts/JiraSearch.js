@@ -525,23 +525,26 @@ function hydratePriorityImages(rootEl) {
 
 function formatIssue(item, currentNumber, issueKey, searchText, currentpic, currentIds) {
     const processedItem = replaceItem(item);
-    const temporarka = (processedItem && processedItem.toLowerCase().includes(searchText.toLowerCase()))
+    // highlightSearchText экранирует сам, но при пустом searchText возвращает
+    // строку как есть — поэтому подсветка только при непустом поиске, остальное
+    // чистим sanitizer'ом из utils.js, иначе <img onerror> исполнялся бы в панели.
+    const temporarka = (processedItem && searchText && processedItem.toLowerCase().includes(searchText.toLowerCase()))
         ? highlightSearchText(processedItem, searchText)
-        : processedItem;
+        : sanitizeHTML(processedItem);
 
     // Сверяем ID строки с массивом избранного (приводим к строке для надежности)
     const isAlreadyFav = favissues.some(fav => String(fav.id) === String(currentIds));
     const heartTitle = isAlreadyFav ? "Удалить из избранного" : "В избранное";
 
     return `
-        <div class="jiras-glass-issue-row" data-id="${currentIds}">
-            <span class="newcount" title="Репорты">${currentNumber || 0}</span>
-            <img class="jiras-priority-img" data-src="${currentpic}" title="Приоритет">
+        <div class="jiras-glass-issue-row" data-id="${addsEsc(currentIds)}" data-issue-key="${addsEsc(issueKey)}">
+            <span class="newcount" title="Репорты">${addsEsc(currentNumber || 0)}</span>
+            <img class="jiras-priority-img" data-src="${addsEsc(currentpic)}" title="Приоритет">
             <span class="jiraissues jiras-glass-icon-btn jiras-btn-chat" title="Отправить в чат">${jIco('chat')}</span>
             <span class="refreshissues jiras-glass-icon-btn jiras-btn-plus" title="Увеличить Support Tab">+1</span>
             <span name="addtofavourites" class="jiras-glass-icon-btn jiras-btn-heart${isAlreadyFav ? ' is-fav' : ''}" title="${heartTitle}">${jIco('heart')}</span>
-            <a name="buglinks" href="https://jira.skyeng.link/browse/${issueKey}" target="_blank">${temporarka}</a>
-            <span name="issueIds" style="display:none">${currentIds}</span>
+            <a name="buglinks" href="https://jira.skyeng.link/browse/${addsEsc(issueKey)}" target="_blank">${temporarka}</a>
+            <span name="issueIds" style="display:none">${addsEsc(currentIds)}</span>
         </div>
     `;
 }
@@ -559,16 +562,19 @@ function addPageSwitcher(spanCount) {
 function addJiraIssueOnClickEvent(barray, issueKeys) {
     barray.forEach((el, j) => {
         el.addEventListener('click', () => {
+            // Ключ ИМЕННО отображаемой строки: на страницах ≥2 полный issueKeys
+            // имеет сдвиг, и issueKeys[j] отправлял бы в чат чужую задачу.
+            const issueKey = el.closest('.jiras-glass-issue-row')?.dataset.issueKey || issueKeys[j];
             const chatId = getChatId();
             if (chatId) {
                 if (window.location.href.includes('tickets/assigned')) {
-                    sendComment(`https://jira.skyeng.link/browse/${issueKeys[j]}`);
+                    sendComment(`https://jira.skyeng.link/browse/${issueKey}`);
                 }
                 afApiFetch(`https://skyeng.autofaq.ai/api/conversation/${chatId}/payload`, {
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         conversationId: chatId,
-                        elements: [{ name: "taskUrl", value: `https://jira.skyeng.link/browse/${issueKeys[j]}` }]
+                        elements: [{ name: "taskUrl", value: `https://jira.skyeng.link/browse/${issueKey}` }]
                     }),
                     method: "POST"
                 });
@@ -589,17 +595,29 @@ function renderFavorites() {
         return;
     }
 
-    outputTable.innerHTML = favissues.map(fav => `
-        <div class="jiras-glass-issue-row" data-id="${fav.id}">
-            <span class="newcount" title="Репорты">${fav.num}</span>
-            <a href="${fav.href}" target="_blank">${fav.html}</a>
+    outputTable.innerHTML = favissues.map(fav => {
+        // Данные избранного (localStorage + сырой HTML Jira) недоверенные:
+        // текст экранируем, разметку чистим sanitizer'ом, href — только Jira.
+        let safeHref = '#';
+        try {
+            const url = new URL(fav.href);
+            if (url.protocol === 'https:' && (url.hostname === 'jira.skyeng.link' || url.hostname === 'jira.skyeng.tech')) {
+                safeHref = url.href;
+            }
+        } catch { /* битый href — остаётся заглушка */ }
+
+        return `
+        <div class="jiras-glass-issue-row" data-id="${addsEsc(fav.id)}">
+            <span class="newcount" title="Репорты">${addsEsc(fav.num)}</span>
+            <a href="${addsEsc(safeHref)}" target="_blank">${sanitizeHTML(fav.html)}</a>
             <div class="jiras-row-actions">
                 <span name="addtonotesbug" class="jiras-glass-icon-btn jiras-btn-chat" title="В чат">${jIco('chat')}</span>
                 <span name="increasecount" class="jiras-glass-icon-btn jiras-btn-plus" title="Увеличить Tab">+1</span>
                 <span name="removefromfavourites" class="jiras-glass-icon-btn jiras-btn-del" title="Удалить">${jIco('trash')}</span>
             </div>
         </div>
-    `).join("");
+        `;
+    }).join("");
 
     // Навешиваем события ПОСЛЕ отрисовки
     outputTable.querySelectorAll('.jiras-glass-issue-row').forEach((row, index) => {
@@ -719,7 +737,11 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
             issueElement.dataset.busy = '1';
             const unlock = () => { delete issueElement.dataset.busy; };
 
-            const fetchURLToken = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueIds[index]}`;
+            // ID отображаемой строки из её data-id: переданный массив может быть
+            // полным (страница 1) и разойтись с индексами, если строка пропущена.
+            const issueId = issueElement.closest('.jiras-glass-issue-row')?.dataset.id || issueIds[index];
+
+            const fetchURLToken = `https://jira.skyeng.link/secure/AjaxIssueEditAction!default.jspa?decorator=none&issueId=${issueId}`;
             chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: fetchURLToken, requestOptions: { method: 'GET', credentials: 'include' } }, responseToken => {
                 if (responseToken?.success) {
                     const responseAuth = responseToken.fetchansver;
@@ -731,7 +753,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                         const requestOptionsIncrease = {
                             method: 'POST',
                             headers: { "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8" },
-                            body: `customfield_15410=${increasedcount}&issueId=${issueIds[index]}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
+                            body: `customfield_15410=${increasedcount}&issueId=${issueId}&atl_token=${jira_token}&singleFieldEdit=true&fieldsToForcePresent=customfield_15410`,
                             credentials: 'include',
                         };
 
@@ -742,7 +764,7 @@ function addRefreshIssueOnClickEvent(refreshissuesarr, issueIds) {
                                 const badge = issueElement.closest('.jiras-glass-issue-row')?.querySelector('.newcount');
                                 if (badge) badge.textContent = increasedcount;
 
-                                const fav = favissues.find(f => String(f.id) === String(issueIds[index]));
+                                const fav = favissues.find(f => String(f.id) === String(issueId));
                                 if (fav) {
                                     fav.num = increasedcount;
                                     localStorage.setItem('bugsarray', JSON.stringify(favissues));
@@ -767,8 +789,15 @@ function getJiraTask(requestOptions) {
     const fetchURL = 'https://jira.skyeng.link/rest/issueNav/1/issueTable';
     chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, tasksresponse => {
         if (tasksresponse?.success) {
-            const rezissuetable = JSON.parse(tasksresponse.fetchansver);
-            const { issueKeys, table, issueIds } = rezissuetable.issueTable;
+            // Jira может вернуть HTML (страница логина/502): без try/catch
+            // JSON.parse ронял обработчик и оставлял таблицу пустой навсегда.
+            let issueKeys, table, issueIds;
+            try {
+                ({ issueKeys, table, issueIds } = JSON.parse(tasksresponse.fetchansver).issueTable);
+            } catch {
+                document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Не удалось разобрать ответ Jira — вероятно, нет авторизации. Войдите в Jira и повторите поиск.</div>';
+                return;
+            }
 
             if (!table) {
                 document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Задач не найдено</div>';
@@ -829,8 +858,21 @@ function switchJiraPages() {
 
                 chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL, requestOptions }, response => {
                     if (response?.success) {
-                        const responseData = JSON.parse(response.fetchansver);
-                        const { issueKeys, table } = responseData.issueTable;
+                        // Ответ может быть HTML (логин/502) — снимаем скелетон
+                        // и показываем понятное сообщение вместо вечной загрузки.
+                        let issueKeys, table, displayed;
+                        try {
+                            ({ issueKeys, table, displayed } = JSON.parse(response.fetchansver).issueTable);
+                        } catch {
+                            document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Не удалось разобрать ответ Jira — вероятно, нет авторизации. Войдите в Jira и повторите поиск.</div>';
+                            return;
+                        }
+
+                        if (!table) {
+                            document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Задач не найдено</div>';
+                            return;
+                        }
+
                         const matchedItems = table.match(/(\w+-\d+">.*?).<\/a>/gmi)?.filter(filterItems) || [];
                         const matchedNumbers = table.match(/(">.)*?([0-9]+)\n/gm);
                         const ids = Array.from(table.matchAll(/<tr id="issuerow(\d+)"/g), m => m[1]);
@@ -839,7 +881,7 @@ function switchJiraPages() {
                         const switcher = Number(page.getAttribute('value'));
 
                         let issues = '';
-                        for (let i = 0; i < responseData.issueTable.displayed; i++) {
+                        for (let i = 0; i < displayed; i++) {
                             if (matchedItems[i] && issueKeys[+i + switcher]) {
                                 issues += formatIssue(matchedItems[i], matchedNumbers?.[i], issueKeys[+i + switcher], searchText, currentpics[i], ids[i]);
                             }
@@ -857,6 +899,7 @@ function switchJiraPages() {
                         );
                         addRefreshIssueOnClickEvent(document.querySelectorAll('.refreshissues'), ids);
                     } else {
+                        document.getElementById('issuetable').innerHTML = '<div class="jiras-empty">Не удалось получить задачи Jira. Повторите поиск.</div>';
                         console.log('Ошибка при запросе: ', response?.error);
                     }
                 });

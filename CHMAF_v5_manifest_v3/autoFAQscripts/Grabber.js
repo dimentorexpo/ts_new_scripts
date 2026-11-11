@@ -1439,6 +1439,13 @@
             `${Math.max(0, Math.min(100, percent))}%`;
     }
 
+    // API иногда возвращает дату с суффиксом [Europe/Moscow] —
+    // new Date() такую строку не понимает (Invalid Date → NaN).
+    function parseAfTs(value) {
+        if (value === null || value === undefined || value === '') return NaN;
+        return new Date(String(value).replace(/\s*\[[^\]]*\]\s*$/, '')).getTime();
+    }
+
     function formatMoscowDate(date = new Date()) {
         const parts = new Intl.DateTimeFormat('en-GB', {
             timeZone: 'Europe/Moscow',
@@ -1944,8 +1951,8 @@
             for (let b = groupFoundIndex; b >= 0; b--) {
                 const m = messages[b];
                 if (['AnswerOperatorWithBot', 'AnswerOperator'].includes(m.tpe)) {
-                    const diff = (new Date(m.ts) - new Date(firstMessageTime)) / 1000;
-                    afrt = diff > 60 ? 0 : 1;
+                    const diff = (parseAfTs(m.ts) - parseAfTs(firstMessageTime)) / 1000;
+                    if (Number.isFinite(diff)) afrt = diff > 60 ? 0 : 1;
                     break;
                 }
             }
@@ -1970,7 +1977,7 @@
             }
 
             if (queueMsgIndex !== -1) {
-                const queueTime = new Date(messages[queueMsgIndex].ts).getTime();
+                const queueTime = parseAfTs(messages[queueMsgIndex].ts);
 
                 let assignMsg = null;
                 let firstOperatorMsg = null;
@@ -2001,7 +2008,7 @@
                 const targetAssign = assignMsg ?? firstOperatorMsg;
 
                 if (targetAssign) {
-                    const assignTime = new Date(targetAssign.ts).getTime();
+                    const assignTime = parseAfTs(targetAssign.ts);
                     if (Number.isFinite(queueTime) && Number.isFinite(assignTime)) {
                         const diffSec = (assignTime - queueTime) / 1000;
                         if (diffSec > 60) {
@@ -2064,7 +2071,7 @@
             if (!themeMatches(topicId, filters.themes)) {
                 return null;
             }
-            const timestamp = new Date(data.tsCreate).getTime();
+            const timestamp = parseAfTs(data.tsCreate);
 
             // Возвращаем запись ТОЛЬКО с данными для AFRT (CSAT, SLA и текст обнулены)
             return {
@@ -2199,8 +2206,8 @@
                 : ''
         ].filter(Boolean).join('\n\n');
 
-        const timestamp = new Date(data.tsCreate).getTime();
-        const modified = new Date(data.tsMod).getTime();
+        const timestamp = parseAfTs(data.tsCreate);
+        const modified = parseAfTs(data.tsMod);
 
         // SLA считаем по длительности разговора из истории (как в «Статистике»).
         // tsMod — время ПОСЛЕДНЕГО изменения чата: оно сдвигается, когда после

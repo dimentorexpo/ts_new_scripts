@@ -84,15 +84,27 @@
 
     function compAsk(message) {
         return new Promise((resolve, reject) => {
+            let settled = false;
+            const timeoutId = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(new Error('Таймаут ответа фонового скрипта (25 с)'));
+            }, 25000);
+            const finish = (fn, arg) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timeoutId);
+                fn(arg);
+            };
             try {
                 chrome.runtime.sendMessage(message, resp => {
-                    if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
-                    if (!resp) return reject(new Error('Нет ответа от фонового скрипта'));
-                    if (resp.success === false) return reject(new Error(resp.error || 'Ошибка фонового скрипта'));
-                    resolve(resp);
+                    if (chrome.runtime.lastError) return finish(reject, new Error(chrome.runtime.lastError.message));
+                    if (!resp) return finish(reject, new Error('Нет ответа от фонового скрипта'));
+                    if (resp.success === false) return finish(reject, new Error(resp.error || 'Ошибка фонового скрипта'));
+                    finish(resolve, resp);
                 });
             } catch {
-                reject(new Error('Расширение обновилось — нажмите Ctrl+Shift+R'));
+                finish(reject, new Error('Расширение обновилось — нажмите Ctrl+Shift+R'));
             }
         });
     }
@@ -176,7 +188,7 @@
         $('compAuth').dataset.state = state;
         $('compAuthText').textContent = text;
         $('compLogin').hidden = state !== 'out' && state !== 'warn';
-        compAuthorized = state === 'ok' || state === 'warn';
+        compAuthorized = state === 'ok';
         $('compSend').disabled = !compAuthorized;
     }
 
@@ -236,7 +248,7 @@
         compOptions.bonusType = compMergeOptions(page[compQid('bonusType')], fb.bonusType, labels);
         compOptions.operation = compMergeOptions(page[compQid('operation')], fb.operation, labels);
 
-        const missing = ['department', 'bonusType', 'operation'].filter(k => compOptions[k].some(o => o.id.startsWith('label:')));
+        const missing = ['department', 'bonusType', 'operation'].filter(k => compOptions[k].some(o => String(o.id ?? '').startsWith('label:')));
         if (missing.length) {
             console.warn('[ChMAF] Компенсация: id не найдены, отправится текст подписи для', missing,
                 '| пар id/подпись на странице формы:', Object.keys(labels).length);

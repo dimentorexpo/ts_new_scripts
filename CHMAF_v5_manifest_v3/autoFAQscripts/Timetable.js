@@ -780,6 +780,15 @@ function loadTimetable() {
     const button = ttEl('tt-load-btn');
     if (button) button.disabled = true;
 
+    // Таймаут: если background не ответит, кнопка не должна остаться disabled навсегда
+    let responded = false;
+    const timeoutId = setTimeout(() => {
+        if (responded || requestId !== ttRequestId) return;
+        responded = true;
+        if (button) button.disabled = false;
+        ttState('Ошибка: таймаут запроса расписания (20 с)', true);
+    }, 20000);
+
     try {
         chrome.runtime.sendMessage({
             action: 'getFetchRequest',
@@ -814,6 +823,9 @@ function loadTimetable() {
         }, response => {
             // Ответ старой недели или старого преподавателя не отображаем.
             if (requestId !== ttRequestId) return;
+
+            responded = true;
+            clearTimeout(timeoutId);
 
             if (button) button.disabled = false;
 
@@ -855,8 +867,10 @@ function loadTimetable() {
             }
         });
     } catch (error) {
+        clearTimeout(timeoutId);
         if (requestId !== ttRequestId) return;
 
+        responded = true;
         if (button) button.disabled = false;
 
         console.error('[Timetable] Ошибка запроса:', error);

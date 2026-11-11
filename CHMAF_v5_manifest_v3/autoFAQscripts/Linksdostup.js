@@ -342,7 +342,8 @@ hideWindowOnClick('AF_Linksd', 'hideMeLinksd');
 // ==========================================
 // 4. Toggle Visibility
 // ==========================================
-document.getElementById('addsrc').onclick = function () {
+const addsrcBtn = document.getElementById('addsrc');
+if (addsrcBtn) addsrcBtn.onclick = function () {
     const win = document.getElementById('AF_Linksd');
     if (!win) return;
     win.style.display = (win.style.display === '') ? 'none' : '';
@@ -363,7 +364,7 @@ const AF_LX_GRAFANA = {
 
 Object.entries(AF_LX_GRAFANA).forEach(([id, url]) => {
     const btn = document.getElementById(id);
-    if (btn) btn.addEventListener('click', () => window.open(url));
+    if (btn) btn.addEventListener('click', () => window.open(url, '_blank', 'noopener,noreferrer'));
 });
 
 
@@ -376,7 +377,7 @@ const openWidgetLessonStatus = () => {
         createAndShowButton('Введите id в поле', 'error');
         return;
     }
-    window.open('https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=' + encodeURIComponent(input.value.trim()) + '&from=now-24h&to=now');
+    window.open('https://grafana.skyeng.link/d/DZop3WKVz/nextlesson-analytics?orgId=1&var-UserId=' + encodeURIComponent(input.value.trim()) + '&from=now-24h&to=now', '_blank', 'noopener,noreferrer');
     input.value = '';
 };
 
@@ -392,5 +393,5 @@ document.getElementById('WidgetLessonStatus')?.addEventListener('keydown', (e) =
 // 7. Datalens Dashboard
 // ==========================================
 document.getElementById('lkmpdashboard').addEventListener('click', function () {
-    window.open('https://datalens.yandex.cloud/b4ut2mi8b8z8y-deystvie-polzovateley-v-lk-mp');
+    window.open('https://datalens.yandex.cloud/b4ut2mi8b8z8y-deystvie-polzovateley-v-lk-mp', '_blank', 'noopener,noreferrer');
 });

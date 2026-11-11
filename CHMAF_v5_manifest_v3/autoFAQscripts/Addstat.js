@@ -602,6 +602,9 @@ function attachEventHandlers() {
                     return resp.json();
                 };
                 let pendingPage = fetchArchivePage(page);
+                // Ошибка prefetch не должна становиться unhandled rejection, пока
+                // обрабатывается текущая страница: она всплывёт при await ниже.
+                pendingPage.catch(() => {});
                 while (true) {
                     const data = await pendingPage;
 
@@ -611,7 +614,10 @@ function attachEventHandlers() {
 
                     // Сразу запрашиваем следующую страницу — параллельно с разбором текущей
                     const hasNext = page * 100 < data.total;
-                    if (hasNext) pendingPage = fetchArchivePage(page + 1);
+                    if (hasNext) {
+                        pendingPage = fetchArchivePage(page + 1);
+                        pendingPage.catch(() => {});
+                    }
 
                     // Чаты страницы загружаем параллельно (по 12 одновременно) вместо
                     // строго по одному — подсчёт за день идёт в разы быстрее.
@@ -716,8 +722,8 @@ function attachEventHandlers() {
                                     <a href="https://skyeng.autofaq.ai/logs/${encodeURIComponent(item.conversationId)}" target="_blank" class="adds-chat-link">${addsEsc(item.conversationId)}</a>
                                 </div>
                                 <div class="line2-actions">
-                                    <span class="adds-action-icon open-history-btn" data-id="${item.conversationId}" title="История">👁️</span>
-                                    <span class="adds-action-icon toggle-fav-btn" data-id="${item.conversationId}" title="${isFav ? 'Удалить из избранного' : 'Добавить в избранное'}">${isFav ? '❤️' : '🤍'}</span>
+                                    <span class="adds-action-icon open-history-btn" data-id="${addsEsc(item.conversationId)}" title="История">👁️</span>
+                                    <span class="adds-action-icon toggle-fav-btn" data-id="${addsEsc(item.conversationId)}" title="${isFav ? 'Удалить из избранного' : 'Добавить в избранное'}">${isFav ? '❤️' : '🤍'}</span>
                                 </div>
                             </div>`;
                         }
@@ -883,12 +889,16 @@ function attachEventHandlers() {
 }
 
 // ---------- 7. Запуск ----------
+let initAllAttempts = 0;
 function initAll() {
     initWindows();
     if (document.getElementById('showFavoritesBtn')) {
         attachEventHandlers();
-    } else {
+    } else if (initAllAttempts++ < 20) {
+        // Лимит попыток: раньше таймер перезапускался вечно, если окно не построилось
         setTimeout(initAll, 50);
+    } else {
+        console.warn('[Addstat] Кнопка избранного не найдена — инициализация остановлена');
     }
 }
 

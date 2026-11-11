@@ -163,14 +163,22 @@ function getCsrfToken() {
 async function afApiFetch(url, options = {}) {
     options.credentials = options.credentials || 'include';
     options.headers = { 'x-csrf-token': getCsrfToken(), ...(options.headers || {}) };
-    let response = await fetch(url, options);
-    if (response.status === 403) {
-        const freshToken = readCsrfFromCookie();
-        if (freshToken && freshToken !== aftoken) {
-            aftoken = freshToken;
-            options.headers['x-csrf-token'] = freshToken;
-            response = await fetch(url, options);
+    const controller = new AbortController();
+    if (!options.signal) options.signal = controller.signal;
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    let response;
+    try {
+        response = await fetch(url, options);
+        if (response.status === 403) {
+            const freshToken = readCsrfFromCookie();
+            if (freshToken && freshToken !== aftoken) {
+                aftoken = freshToken;
+                options.headers['x-csrf-token'] = freshToken;
+                response = await fetch(url, options);
+            }
         }
+    } finally {
+        clearTimeout(timeoutId);
     }
     if (!response.ok) {
         let details = '';
@@ -993,7 +1001,10 @@ const SERVICE_NAME_PREFIXES = ['тьютор', 'тютор', 'тутор', 'ба
 function getActiveConvUserName() {
     const nameField = getIframeDoc()?.querySelectorAll('[class^="User_Preview"]')[0];
     if (!nameField) return '';
-    const nameParts = nameField.textContent.split(/[\s_]+/);
+    // Бейдж роли («У Ученик» / «П Родитель») и панель кнопок вставляет само расширение внутрь этого блока — в имя они попадать не должны
+    const clone = nameField.cloneNode(true);
+    clone.querySelectorAll('.UsersInfo, #userTypeId').forEach((n) => n.remove());
+    const nameParts = clone.textContent.trim().split(/[\s_]+/);
     const firstPart = nameParts[0].toLowerCase();
     if (SERVICE_NAME_PREFIXES.includes(firstPart)) return nameParts[1] || '';
     return firstPart ? nameParts[0] : '';

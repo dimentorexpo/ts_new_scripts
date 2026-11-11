@@ -2606,6 +2606,16 @@ async function fetchGasJson(url, timeoutMs = 15_000) {
         );
     }
 
+    // Адрес приходит из настроек/localStorage, доступного странице:
+    // разрешаем только Google Apps Script, иначе импорт настроек
+    // мог бы перенаправить загрузку шаблонов на чужой сервер.
+    const GAS_HOSTS = ['script.google.com', 'script.googleusercontent.com'];
+    if (!GAS_HOSTS.includes(parsedUrl.hostname)) {
+        throw new Error(
+            'Адрес шаблонов должен быть на script.google.com'
+        );
+    }
+
     const controller = new AbortController();
 
     const timeoutId = setTimeout(
@@ -3104,6 +3114,8 @@ window.getText = getText;
 //   if (await chmafDialog.confirm({ title, message })) { ... }
 //   const name = await chmafDialog.prompt({ title, label });
 (() => {
+    let openLayers = 0;
+
     function buildDialog({
         title,
         message,
@@ -3189,6 +3201,7 @@ window.getText = getText;
         function finish(result) {
             if (backdrop.dataset.closed === '1') return;
             backdrop.dataset.closed = '1';
+            openLayers = Math.max(0, openLayers - 1);
             document.removeEventListener('keydown', onKeydown, true);
             backdrop.remove();
             if (previouslyFocused instanceof HTMLElement) {

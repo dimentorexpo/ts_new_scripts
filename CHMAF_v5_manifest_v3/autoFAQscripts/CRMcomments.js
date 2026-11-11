@@ -441,11 +441,27 @@ function getbutCRMCommentsButtonPress() {
 
 const sendMessageCRM = (message) => {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(message, (response) => {
-            if (chrome.runtime.lastError) return reject(new Error(chrome.runtime.lastError.message));
-            if (response && response.success) resolve(response);
-            else reject(new Error(response?.error || 'Unknown error from extension'));
-        });
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('Таймаут ответа расширения (20 с)'));
+        }, 20000);
+        const finish = (fn, arg) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            fn(arg);
+        };
+        try {
+            chrome.runtime.sendMessage(message, (response) => {
+                if (chrome.runtime.lastError) return finish(reject, new Error(chrome.runtime.lastError.message));
+                if (response && response.success) finish(resolve, response);
+                else finish(reject, new Error(response?.error || 'Unknown error from extension'));
+            });
+        } catch (e) {
+            finish(reject, e);
+        }
     });
 };
 

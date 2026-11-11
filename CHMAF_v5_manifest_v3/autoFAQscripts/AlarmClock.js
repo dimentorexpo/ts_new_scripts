@@ -25,6 +25,8 @@
     const REM_KEY = 'alc_reminders';
     const MISSED_GRACE_MS = 5 * 60 * 1000;      // будильник «Занят»: сработать, если опоздали ≤5 мин
     const REM_MISSED_GRACE_MS = 60 * 60 * 1000; // напоминание: показать, если опоздали ≤1 ч
+    const CLAIM_TTL_MS = 60 * 1000;             // TTL захвата действия вкладкой (образец — AutoRespond.js)
+    const TAB_ID = Math.random().toString(36).slice(2);
 
     const timeouts = {};       // будильники
     const remTimeouts = {};    // напоминания
@@ -297,6 +299,26 @@
         setTimeout(() => el.classList.remove('error'), 450);
     };
 
+    // Атомарный захват действия между вкладками (образец — AutoRespond.js):
+    // пишем метку с timestamp, ждём случайную паузу, перечитываем и проверяем,
+    // что метка наша. Просроченную (TTL) метку можно перехватить.
+    const readClaim = (key) => {
+        try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) { return null; }
+    };
+    const claimAction = async (key) => {
+        const now = Date.now();
+        const existing = readClaim(key);
+        if (existing && existing.by !== TAB_ID && now - existing.at < CLAIM_TTL_MS) return false;
+        try { localStorage.setItem(key, JSON.stringify({ by: TAB_ID, at: now })); } catch (_) { return false; }
+        await new Promise(r => setTimeout(r, 150 + Math.random() * 250));
+        const again = readClaim(key);
+        return !!(again && again.by === TAB_ID);
+    };
+    const releaseClaim = (key) => {
+        const cur = readClaim(key);
+        if (cur && cur.by === TAB_ID) { try { localStorage.removeItem(key); } catch (_) { /* ignore */ } }
+    };
+
     // ═══════════════════════════════════════════════════════════════════
     //  АВТОСТАТУС «ЗАНЯТ»
     // ═══════════════════════════════════════════════════════════════════
@@ -331,7 +353,7 @@
         if (btnEl) { btnEl.textContent = isSet ? 'Изменить' : 'Установить'; btnEl.classList.toggle('set', isSet); }
     };
 
-    const triggerAlarm = (cfg) => {
+    const triggerAlarm = async (cfg) => {
         // Сверяемся с хранилищем: будильник могли удалить/переставить в другой вкладке,
         // а первая сработавшая вкладка удаляет ключ — остальные не дублируют.
         const stamp = Number(localStorage.getItem(cfg.key));
@@ -340,9 +362,30 @@
             if (stamp) timeouts[cfg.id] = setTimeout(() => triggerAlarm(cfg), stamp - Date.now());
             return;
         }
+        // Атомарный захват: busy-POST и тост выполняет только одна вкладка
+        const claimKey = cfg.key + '_claim';
+        if (!(await claimAction(claimKey))) {
+            // Захват у другой вкладки. Если она «умрёт» до очистки — попробуем после TTL
+            // (storage-событие об очистке ключа снимет этот повторный таймер).
+            const still = Number(localStorage.getItem(cfg.key));
+            if (still && still - Date.now() <= 1000) {
+                clearAlarmTimer(cfg);
+                timeouts[cfg.id] = setTimeout(() => triggerAlarm(cfg), CLAIM_TTL_MS + 1000);
+            }
+            return;
+        }
+        // Пока ждали захват, будильник могли удалить/переставить
+        const stampNow = Number(localStorage.getItem(cfg.key));
+        if (!stampNow || stampNow - Date.now() > 1000) {
+            releaseClaim(claimKey);
+            clearAlarmTimer(cfg);
+            if (stampNow) timeouts[cfg.id] = setTimeout(() => triggerAlarm(cfg), stampNow - Date.now());
+            return;
+        }
         setOperatorBusy();
         clearAlarmStorage(cfg);
         clearAlarmTimer(cfg);
+        releaseClaim(claimKey);
         restoreInputs(cfg);
         refreshGlobalReminderIcon();
     };
@@ -456,7 +499,7 @@
         if (changed) saveReminders(keep);
     };
 
-    const fireReminder = (id) => {
+    const fireReminder = async (id) => {
         clearRemTimer(id);
         const list = loadReminders();
         const r = list.find(x => x.id === id);
@@ -465,8 +508,27 @@
             remTimeouts[id] = setTimeout(() => fireReminder(id), r.at - Date.now());
             return;
         }
-        saveReminders(list.filter(x => x.id !== id));
-        showReminderToast(r);
+        // Атомарный захват: тост и звук — только в одной вкладке
+        const claimKey = REM_KEY + '_claim_' + id;
+        if (!(await claimAction(claimKey))) {
+            // Захват у другой вкладки; если она не покажет — попробуем после TTL
+            // (storage-событие об удалении напоминания пересоздаст таймеры и снимет этот).
+            if (loadReminders().some(x => x.id === id)) {
+                remTimeouts[id] = setTimeout(() => fireReminder(id), CLAIM_TTL_MS + 1000);
+            }
+            return;
+        }
+        // Пока ждали захват, напоминание могли удалить/перенести
+        const cur = loadReminders().find(x => x.id === id);
+        if (!cur) { releaseClaim(claimKey); return; }
+        if (cur.at - Date.now() > 1000) {
+            releaseClaim(claimKey);
+            remTimeouts[id] = setTimeout(() => fireReminder(id), cur.at - Date.now());
+            return;
+        }
+        saveReminders(loadReminders().filter(x => x.id !== id));
+        releaseClaim(claimKey);
+        showReminderToast(cur);
         refreshGlobalReminderIcon();
         renderReminderList();
     };
@@ -631,7 +693,7 @@
         listEl.innerHTML = list.map(r => {
             if (r.id === editingId) {
                 return `
-                <div class="alc-item alc-edit-box" data-id="${r.id}" style="flex-direction:column;align-items:stretch">
+                <div class="alc-item alc-edit-box" data-id="${esc(r.id)}" style="flex-direction:column;align-items:stretch">
                     <textarea id="alc_e_text" class="alc-input" maxlength="500">${esc(r.text)}</textarea>
                     <div class="alc-row" style="margin-top:0">
                         ${timeFieldsHtml('alc_e', 'at', r.at)}
@@ -644,7 +706,7 @@
             }
             const left = r.at - now;
             return `
-                <div class="alc-item${left < 5 * 60000 ? ' soon' : ''}" data-id="${r.id}">
+                <div class="alc-item${left < 5 * 60000 ? ' soon' : ''}" data-id="${esc(r.id)}">
                     <div class="alc-item-time"><b>${hhmm(r.at)}</b><span data-left="${r.at}">${fmtLeftShort(left)}</span></div>
                     <div class="alc-item-text">${esc(r.text)}</div>
                     <div class="alc-item-actions">

@@ -609,7 +609,7 @@
             content.innerHTML = emptyStateHtml(
                 '🔍', 'Ничего не найдено',
                 studentFilter
-                    ? `Нет уроков у ученика ID ${studentFilter}. Очисти поле — вернётся полный список`
+                    ? `Нет уроков у ученика ID ${esc(studentFilter)}. Очисти поле — вернётся полный список`
                     : 'Попробуй другой период'
             );
             return;
@@ -624,8 +624,8 @@
 
             return `
                 <tr>
-                    <td class="${CONFIG.prefix}__cell--id" data-id="${cls.studentId}" name="idToCRM">
-                        ${cls.studentId}
+                    <td class="${CONFIG.prefix}__cell--id" data-id="${esc(cls.studentId)}" name="idToCRM">
+                        ${esc(cls.studentId)}
                     </td>
                     <td>${formatDateTime(cls.startAt, true)}</td>
                     <td>${getStatusBadge(status?.status, isRemoved)}</td>

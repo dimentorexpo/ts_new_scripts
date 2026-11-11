@@ -6,6 +6,32 @@ importScripts('bg-yaforms.js');
 const DATSY_URL = 'https://datsy.ru/';
 const DATSY_AUTH_URL = 'https://datsy.ru/api/auth/check.php';
 
+// getFetchRequest — прокси с cookies оператора, поэтому пускаем
+// только рабочие домены расширения (те же, что в host_permissions).
+const FETCH_ALLOWED_HOSTS = [
+    'skyeng.ru',
+    'skyeng.tech',
+    'skyeng.link',
+    'skyeng.autofaq.ai',
+    'datsy.ru',
+    'script.google.com',
+    'script.googleusercontent.com',
+    'api.ipgeolocation.io',
+    'forms.yandex.ru',
+    'yandex.ru',
+    'docs.google.com'
+];
+
+function isAllowedFetchUrl(rawUrl) {
+    let url;
+    try { url = new URL(rawUrl); } catch { return false; }
+    if (url.protocol !== 'https:') return false;
+    const host = url.hostname.toLowerCase();
+    return FETCH_ALLOWED_HOSTS.some(
+        allowed => host === allowed || host.endsWith('.' + allowed)
+    );
+}
+
 chrome.runtime.onInstalled.addListener(details => {
     if (
         details.reason !== 'install' &&
@@ -75,6 +101,14 @@ chrome.runtime.onMessage.addListener(
         }
 
         if (request?.action === 'getFetchRequest') {
+            if (sender.id !== chrome.runtime.id || !isAllowedFetchUrl(request.fetchURL)) {
+                sendResponse({
+                    success: false,
+                    error: 'Запрос отклонён: недопустимый адрес или отправитель'
+                });
+                return false;
+            }
+
             (async () => {
                 const controller = new AbortController();
 

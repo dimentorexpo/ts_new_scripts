@@ -14,17 +14,12 @@ function yafFormUrl(surveyId) {
     return `${YAF_ORIGIN}/cloud/${surveyId}/?page=1`;
 }
 
-/* Запросы из service worker уходят с Origin chrome-extension://…
-   Форма может такой отвергнуть, поэтому для запросов НЕ из вкладок (tabId -1)
-   подменяем Origin/Referer на сам сайт форм. Страницы и вкладки это не трогает. */
-/* Тестовая сборка без разрешений cookies и declarativeNetRequest:
-   куки браузер прикладывает сам (credentials: "include" + host_permissions),
-   Origin не подменяем. */
-async function yafEnsureHeaderRule() { /* отключено */ }
-async function yafCookie() { return ""; }
+/* Куки браузер прикладывает сам (credentials: "include" + host_permissions).
+   Origin/Referer не подменяем: правила declarativeNetRequest и прямой доступ
+   к cookies не используются. */
 
 /* CSRF-токен Яндекс Форм лежит в HTML страницы формы (в состоянии приложения
-   или в <meta>). На всякий случай проверяем и куки. */
+   или в <meta>). */
 function yafExtractToken(html) {
     const patterns = [
         /"csrf[-_]?token"\s*:\s*"([^"]+)"/i,
@@ -73,8 +68,6 @@ function yafExtractOptions(html, questionIds) {
 /* Варианты ответов из API формы (getSurvey) — тот же запрос, что делает сама форма.
    Обходим JSON целиком: любой объект с длинным числовым id и подписью = вариант. */
 async function yafFetchSurveyOptions(surveyId, token, questionIds) {
-    await yafEnsureHeaderRule(surveyId);
-    const yandexuid = await yafCookie(["yandexuid"], "https://yandex.ru") || await yafCookie(["yandexuid"]);
     const res = await fetch(`${YAF_ORIGIN}/cloud/gateway/root/form/getSurvey`, {
         method: "POST",
         credentials: "include",
@@ -82,7 +75,6 @@ async function yafFetchSurveyOptions(surveyId, token, questionIds) {
             "accept": "application/json, text/plain, */*",
             "content-type": "application/json",
             "x-csrf-token": token,
-            ...(yandexuid ? { "x-forms-yandexuid": yandexuid } : {}),
             "x-use-collab": "1"
         },
         body: JSON.stringify({ surveyId })
@@ -134,8 +126,7 @@ async function yafLoadSession(surveyId, questionIds = [], force = false) {
     if (!res.ok) throw new Error(`Форма не открылась: HTTP ${res.status}`);
 
     const html = await res.text();
-    const token = yafExtractToken(html)
-        || await yafCookie(["csrf_token", "csrftoken", "_csrf", "CSRF-TOKEN"]);
+    const token = yafExtractToken(html);
     if (!token) {
         /* Страница пришла, но токена нет — почти всегда это экран входа без редиректа */
         const looksLikeLogin = /passport\.yandex|sso\.ya\.ru|auth/i.test(html) && !html.includes(surveyId);
@@ -196,10 +187,6 @@ async function yafLoadSession(surveyId, questionIds = [], force = false) {
 async function yafSubmit({ surveyId, values, dryRun }, retried = false) {
     const session = await yafLoadSession(surveyId);
     if (!session.authorized) return session;
-    await yafEnsureHeaderRule(surveyId);
-
-    const yandexuid = await yafCookie(["yandexuid"], "https://yandex.ru")
-        || await yafCookie(["yandexuid"]);
 
     const res = await fetch(YAF_SUBMIT_URL, {
         method: "POST",
@@ -209,7 +196,6 @@ async function yafSubmit({ surveyId, values, dryRun }, retried = false) {
             "content-type": "application/json",
             "x-csrf-token": session.token,
             "x-form-referer": yafFormUrl(surveyId),
-            ...(yandexuid ? { "x-forms-yandexuid": yandexuid } : {}),
             "x-use-collab": "1"
         },
         body: JSON.stringify({

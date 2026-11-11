@@ -21,6 +21,7 @@
 	"content_scripts": [
 		{
 			"js": [
+				"/autoFAQscripts/Selectors.js",
 				"/autoFAQscripts/utils.js",
 				"/autoFAQscripts/Settings.js",
 				"/autoFAQscripts/AutoRespond.js",

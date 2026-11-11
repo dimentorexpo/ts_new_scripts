@@ -524,10 +524,34 @@ function setNoCallState(isForbidden) {
 // Утилита для выполнения API запросов с Promise (избавляет от вложенностей)
 const sendBgRequest = (url, options = { method: 'GET' }) => {
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: options }, (response) => {
-            if (!response || !response.success) reject(new Error(response?.error || 'Unknown error'));
-            else resolve(JSON.parse(response.fetchansver));
-        });
+        let settled = false;
+        const timeoutId = setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            reject(new Error('Таймаут запроса (20 с): ' + url));
+        }, 20000);
+        const finish = (fn, arg) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeoutId);
+            fn(arg);
+        };
+        try {
+            chrome.runtime.sendMessage({ action: 'getFetchRequest', fetchURL: url, requestOptions: options }, (response) => {
+                const lastError = chrome.runtime.lastError;
+                if (lastError) return finish(reject, new Error(lastError.message));
+                if (!response || !response.success) return finish(reject, new Error(response?.error || 'Unknown error'));
+                let parsed;
+                try {
+                    parsed = JSON.parse(response.fetchansver);
+                } catch (e) {
+                    return finish(reject, new Error('Некорректный JSON в ответе: ' + e.message));
+                }
+                finish(resolve, parsed);
+            });
+        } catch (e) {
+            finish(reject, e);
+        }
     });
 };
 
@@ -906,10 +930,14 @@ initNativeModalObserver();
 
 // Сторож: раз в секунду проверяем, что наблюдатель висит на актуальном документе
 // iframe (после перезагрузки iframe старый наблюдатель «глохнет»), и подстраховываемся.
-setInterval(() => {
+const nativeModalWatchdogId = setInterval(() => {
     ensureNativeModalObserver();
     suppressNativeTaskModal();
 }, 1000);
+// Регистрируем в общем реестре очистки (utils.js), если он доступен; иначе таймер живёт как раньше
+if (typeof window.cleanupRegistry?.registerInterval === 'function') {
+    window.cleanupRegistry.registerInterval(nativeModalWatchdogId);
+}
 
 // ГЛАВНАЯ ФУНКЦИЯ
 async function gettaskButButtonPress() {
@@ -943,7 +971,7 @@ async function gettaskButButtonPress() {
             try {
                 const checkForbiddenCall = await sendBgRequest(`https://backend.skyeng.ru/api/persons/${idshka}`)
 
-                if (checkForbiddenCall.data.isForbiddenToCall) {
+                if (checkForbiddenCall?.data?.isForbiddenToCall) {
                     setNoCallState(true);
                 } else {
                     setNoCallState(false);
@@ -970,8 +998,8 @@ async function gettaskButButtonPress() {
                         if (config) srv.serviceTypeKey = config.shortTitle;
 
                         const balance = srv.balance ?? '0';
-                        const studentInfo = `${srv.student.general.id} ${srv.student.general.name || ''} ${srv.student.general.surname || ''}`;
-                        const teacherInfo = srv.teacher ? `${srv.teacher.general.id} ${srv.teacher.general.name} ${srv.teacher.general.surname}` : '—';
+                        const studentInfo = `${srv.student?.general?.id ?? ''} ${srv.student?.general?.name || ''} ${srv.student?.general?.surname || ''}`;
+                        const teacherInfo = srv.teacher ? `${srv.teacher.general?.id ?? ''} ${srv.teacher.general?.name || ''} ${srv.teacher.general?.surname || ''}` : '—';
 
                         const isVU = ["after_trial", "before_call"].includes(srv.stage);
                         const stage = isVU
