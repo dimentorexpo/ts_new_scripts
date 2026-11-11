@@ -1244,5 +1244,7 @@
     if (window.AFStudentHelperTest) window.AFStudentHelperTest.api = { loadAll, renderBody, get state() { return state; }, cache, tick };
 
     setInterval(tick, TICK_MS);
+    // Режим для страницы CRM синхронизируем независимо от экрана диалога (иначе смена настройки в Settings доходит до CRM только после открытия чата)
+    setInterval(() => { try { const k = operatorKind(); if (k) syncShared(k); } catch { /* ignore */ } }, 1500);
     tick();
 })();
