@@ -68,6 +68,13 @@
                 <input type="checkbox" id="crmSthEnabledCRM"><span class="crm-switch-track"></span>
                 <span>Полоса «Вспомогательная информация по У»</span>
             </label>
+            <div class="crm-row" style="margin-top:8px">
+                <span class="crm-label" style="width:110px">Тема полосы</span>
+                <select class="crm-select crm-grow" id="crmSthThemeCRM" title="Оформление полосы «Вспомогательная информация по У»">
+                    <option value="dark">Тёмная</option>
+                    <option value="light">Светлая</option>
+                </select>
+            </div>
             <div class="crm-hint" style="margin-top:6px">ТП — компактный вид: КМ, рассрочка, задачи, уроки сегодня. Другие отделы — подробный: услуги, баланс, преподаватель, последний урок.</div>
         </div>
 
@@ -269,6 +276,10 @@
     // Отдел могли выбрать или сменить в другой вкладке.
     crmOnDepartmentChange(syncDepartment);
 
+    $('crmSthThemeCRM').addEventListener('change', (e) => {
+        localStorage.setItem('crmsth_theme', e.target.value === 'light' ? 'light' : 'dark');
+    });
+
     $('crmSthEnabledCRM').addEventListener('change', (e) => {
         localStorage.setItem('crmsth_enabled', e.target.checked ? '1' : '0');
     });
@@ -332,7 +343,7 @@
     // Старые ключи remindertextCRM* и т. п. оставлены: резервные копии, сделанные
     // до перехода на crm_reminders_v2, при импорте всё ещё восстанавливаются
     // (AlarmClock мигрирует их в новый формат).
-    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|crm_department|crmsth_enabled|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
+    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|crm_department|crmsth_enabled|crmsth_theme|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
 
     $('savesettingstofileCRM').onclick = () => {
         const data = {};
@@ -468,6 +479,7 @@
         $('soundplayintervalCRM').value = localStorage.getItem('splinterCRM') || '3';
         $('skyautoEnabledCRM').checked = localStorage.getItem('skyauto_enabled') !== '0';
         $('crmSthEnabledCRM').checked = localStorage.getItem('crmsth_enabled') !== '0';
+        $('crmSthThemeCRM').value = localStorage.getItem('crmsth_theme') === 'light' ? 'light' : 'dark';
         syncDepartment();
         $('test_stdCRM').value = localStorage.getItem('test_studCRM') || '';
         $('test_teachCRM').value = localStorage.getItem('test_teachCRM') || '';

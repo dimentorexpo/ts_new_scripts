@@ -3296,6 +3296,13 @@ async function init_settings() {
                         </select>
                     </div>
                     <div class="set-row">
+                        <span class="set-label" style="white-space:normal;line-height:1.25" title="Оформление панели «Вспомогательная информация по У» в AutoFAQ и в CRM">🎨 Тема панели ученика</span>
+                        <select class="set-input" id="afSthTheme">
+                            <option value="dark">Тёмная</option>
+                            <option value="light">Светлая</option>
+                        </select>
+                    </div>
+                    <div class="set-row">
                         <span class="set-label">Шаблоны отдела</span>
                         <div class="set-segment">
                             <button class="set-btn set-dept-badge" id="set_TP">ТП</button>
@@ -3423,7 +3430,7 @@ async function init_settings() {
         bindToggle('brnotificatios', 'brnotificatios');
         bindToggle('clearlessoninfo', 'clearlessoninfo');
         // Панель по ученику: режим по отделам (читается AFStudentHelper.js и, через chrome.storage, модулем на странице CRM)
-        [['afSthModeTP', 'tp'], ['afSthModeOther', 'full']].forEach(([id, def]) => {
+        [['afSthModeTP', 'tp'], ['afSthModeOther', 'full'], ['afSthTheme', 'dark']].forEach(([id, def]) => {
             const el = document.getElementById(id);
             if (!el) return;
             let cur = localStorage.getItem(id);
