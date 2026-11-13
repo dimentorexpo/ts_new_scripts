@@ -1443,6 +1443,9 @@
     // new Date() такую строку не понимает (Invalid Date → NaN).
     function parseAfTs(value) {
         if (value === null || value === undefined || value === '') return NaN;
+        // tsCreate / tsMod теперь приходят числом (мс с 1970), раньше были строкой
+        if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
+        if (/^\d{10,}$/.test(String(value).trim())) return Number(value);
         return new Date(String(value).replace(/\s*\[[^\]]*\]\s*$/, '')).getTime();
     }
 
