@@ -896,9 +896,20 @@
         return `${operatorName(payload.oid)} открыл(а) диалог`;
 
       case "AssignToOperator":
-        return payload.oid
-          ? `Диалог назначен: ${operatorName(payload.oid)}`
-          : "Назначение оператора изменено";
+        if (!payload.oid) return "Назначение оператора изменено";
+
+        // src: "operator" — действие самого оператора: взял чат в работу или передал другому
+        if (payload.src === "operator") {
+          if (payload.sender && payload.sender !== payload.oid) {
+            return `${operatorName(payload.sender)} передал(а) диалог: ${operatorName(payload.oid)}`;
+          }
+          if (payload.status === "AssignedToOperator") {
+            return `${operatorName(payload.oid)} взял(а) диалог в работу`;
+          }
+        }
+
+        // src: "autoAssign" и прочее — автоматическое назначение из очереди
+        return `Диалог назначен: ${operatorName(payload.oid)}`;
 
       case "CloseConversation":
         if (payload.sender === "userAnswerTimer") {
@@ -3496,13 +3507,18 @@
     if (!id) return;
 
     const today = dateValue(new Date());
+    // Нужны только активные чаты оператора. Фильтр — conversationStatuses (текущий статус чата);
+    // usedStatuses сервер игнорирует, из-за этого приходили все чаты, где оператор когда-либо участвовал.
+    // Смотрим 3 суток назад: активный чат мог быть открыт до полуночи.
+    const from = new Date(`${today}T00:00:00`);
+    from.setDate(from.getDate() - 2);
 
     await searchHistory(
       {
         participatingOperatorsIds: [id],
-        tsFrom: new Date(`${today}T00:00:00`).toISOString(),
+        tsFrom: from.toISOString(),
         tsTo: new Date(`${today}T23:59:59.999`).toISOString(),
-        usedStatuses: ["OnOperator", "AssignedToOperator", "Active"],
+        conversationStatuses: ["AssignedToOperator"],
       },
       "Чаты оператора"
     );
