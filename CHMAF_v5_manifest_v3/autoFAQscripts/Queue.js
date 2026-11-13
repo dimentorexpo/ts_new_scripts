@@ -428,12 +428,13 @@
         document.head.appendChild(style);
     };
 
-    // Порция загрузки: 5 страниц по 100 чатов. «Загрузить ещё» добавляет порцию.
-    const PAGES_PER_PORTION = 5;
+    // Порция загрузки: 1 страница (100 чатов) — один запрос на обновление. «Загрузить ещё» добавляет порцию.
+    const PAGES_PER_PORTION = 1;
     state.pageLimit = PAGES_PER_PORTION;
 
-    async function fetchAllPages(url, initialBodyContent, maxPages = PAGES_PER_PORTION) {
+    async function fetchAllPages(url, initialBodyContent, maxPages = PAGES_PER_PORTION, keep = null, need = null) {
         let allData = [];
+        const allFetchedStatuses = [];
         let page = 1;
         let totalFetched = 0;
         let totalAvailable;
@@ -448,13 +449,19 @@
             });
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.json();
-            allData = allData.concat(data.items || []);
-            totalFetched += (data.items || []).length;
+            const got = data.items || [];
+            got.forEach(x => allFetchedStatuses.push(x?.status));
+            allData = allData.concat(keep ? got.filter(keep) : got);
+            totalFetched += got.length; // считаем сырые строки: по ним работает постраничная загрузка
             if (page === 1) totalAvailable = data.total;
             page++;
-        } while (totalFetched < totalAvailable && page <= maxPages);
+        } while (totalFetched < totalAvailable && page <= maxPages && !(need !== null && allData.length >= need));
         // Сколько чатов всего: если загружено не всё, в шапке покажем «N (из M)»
-        allData.total = Number(totalAvailable) || allData.length;
+        // Если часть чатов отфильтрована, «всего» уменьшаем на отброшенные — остаток (total − загружено) остаётся верным
+        allData.total = need !== null
+            ? Math.max(allData.length, need) // известно из currentState: «Загрузить ещё» не нужна
+            : (Number(totalAvailable) || totalFetched) - (totalFetched - allData.length);
+        if (keep && totalFetched > 0 && allData.length === 0) console.warn('[Queue] после фильтра по текущему статусу чатов не осталось; статусы в выдаче:', [...new Set(allFetchedStatuses)]);
         return allData;
     }
 
@@ -490,6 +497,45 @@
         if (hasOperators) return "❌";
         return "🚫";
     };
+
+    // Признак «оператор ответил». В выдаче history поля firstOperatorAnswerTime больше нет (проверено по ответам API),
+    // поэтому для чатов «в очереди / в работе» (их единицы) смотрим сообщения чата: есть ли AnswerOperator / AnswerOperatorWithBot.
+    // Ответил — запоминаем навсегда; не ответил — перепроверяем не чаще раза в 30 с. Для закрытых лишних запросов не делаем.
+    const answeredCache = new Map(); // conversationId → { v: boolean, at: ms }
+    const ANSWER_RECHECK_MS = 30_000;
+    const isLiveStatus = (el) => el?.status === 'AssignedToOperator' || el?.status === 'OnOperator';
+    async function loadAnswerFlags(items) {
+        const now = Date.now();
+        const todo = items.filter(el => isLiveStatus(el) && el.conversationId && !el.stats?.firstOperatorAnswerTime && (() => {
+            const c = answeredCache.get(el.conversationId);
+            return !c || (c.v === false && now - c.at > ANSWER_RECHECK_MS);
+        })());
+        let changed = false;
+        const queue = todo.slice();
+        const worker = async () => {
+            while (queue.length) {
+                const el = queue.shift();
+                try {
+                    const resp = await afApiFetch(`https://skyeng.autofaq.ai/api/conversations/${el.conversationId}`, { method: 'GET' });
+                    if (resp && resp.ok === false) continue;
+                    const conv = await resp.json();
+                    const v = (conv?.messages || []).some(m => /^AnswerOperator/.test(m?.tpe || '')); // AnswerOperator и AnswerOperatorWithBot (ответ оператора от имени бота)
+                    const prev = answeredCache.get(el.conversationId);
+                    answeredCache.set(el.conversationId, { v, at: Date.now() });
+                    if (!prev || prev.v !== v) changed = true;
+                } catch { /* оставим «⏳», проверим в следующий раз */ }
+            }
+        };
+        await Promise.all([worker(), worker(), worker(), worker()]);
+        return changed;
+    }
+    function getFlag(el) {
+        if (el?.stats?.firstOperatorAnswerTime) return '✅';
+        const c = answeredCache.get(el?.conversationId);
+        if (c?.v === true) return '✅';
+        if (c?.v === false) return getFirstAnswerFlag(el.stats);
+        return isLiveStatus(el) ? '⏳' : '➖';
+    }
 
     // ─── Определение своего ID оператора ───────────────────────────
     // Глобальный operatorId есть не всегда: например, у учётки без префикса
@@ -830,7 +876,7 @@
                 <span class="qg5-badge" title="${esc(uType || '')}">${getUserTypeEmoji(uType)}</span>
                 <span class="qg5-usr-name">${esc(el.channelUser?.fullName || 'User')}</span>
                 <span class="qg5-timer" data-start="${ts.getTime()}">00:00:00</span>
-                <span class="qg5-flag" title="Флаг ответа">${getFirstAnswerFlag(el.stats)}</span>
+                <span class="qg5-flag" title="Флаг ответа">${getFlag(el)}</span>
                 <span class="qg5-country">${esc(el.channelUser?.payload?.country || "➖")}</span>
                 <button class="qg5-btn" name="assignToMe">🫳</button>
             </div>`;
@@ -934,13 +980,20 @@
                     mode: "Json",
                     groupList: setgroupList,
                     tsFrom, tsTo,
-                    usedStatuses: [statusToFetch],
+                    conversationStatuses: [statusToFetch],
                     orderBy: "ts",
                     orderDirection: "Desc"
                 };
 
-                dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent, state.pageLimit);
+                // history понимает фильтр conversationStatuses — это ТЕКУЩИЙ статус чата (проверено по ответам API).
+                // Поле usedStatuses сервер игнорирует, из-за чего раньше приходили все чаты подряд.
+                // «Закрытые с ботом» сервер отдаёт как просто закрытые, поэтому дополнительно отбираем по stats.usedStatuses
+                const onlyBot = statusToFetch === 'ClosedByOperatorWithBot'
+                    ? (it) => [].concat(it?.stats?.usedStatuses || []).includes('ClosedByOperatorWithBot') : null;
+                dataChts = await fetchAllPages("https://skyeng.autofaq.ai/api/conversations/history", initialBodyContent, state.pageLimit, onlyBot);
                 renderChatList();
+                // Флаги ответа дозагружаем после показа списка, чтобы он не ждал лишних запросов
+                if (await loadAnswerFlags(dataChts)) renderChatList();
             } catch (e) {
                 console.error('[Queue] Ошибка загрузки очереди:', e);
                 const list = document.getElementById('qg5-data-list');
