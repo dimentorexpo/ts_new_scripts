@@ -913,17 +913,18 @@
           return "Автозакрытие после паузы";
         }
 
-        if (
-          String(payload.closeOnAwake) === "true" &&
-          payload.status === "ClosedTemporary"
-        ) {
+        // Пауза (status = ClosedTemporary): обычная или с автозакрытием после возврата (closeOnAwake)
+        if (payload.status === "ClosedTemporary") {
           const who = payload.sender
             ? operatorName(payload.sender)
             : "Оператор";
           const until = awakeDateText(payload.awakeDt);
-          return until
-            ? `${who} поставил(а) диалог на паузу с автозакрытием до ${until}`
-            : `${who} поставил(а) диалог на паузу с автозакрытием`;
+          const auto = String(payload.closeOnAwake) === "true";
+          let text = `${who} поставил(а) диалог на паузу${auto ? " с автозакрытием" : ""}`;
+          if (until) text += ` до ${until}`;
+          const awakeText = String(payload.awakeText ?? "").replace(/<[^>]*>/g, " ").trim();
+          if (awakeText) text += `. Сообщение после возврата: «${awakeText}»`;
+          return text;
         }
 
         return payload.sender
