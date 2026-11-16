@@ -1593,3 +1593,62 @@ input.tsm-dialog-input + .tsm-dialog-actions { margin-top: 14px; }
   transition: background-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease);
 }
 .tsm-btn-homework:hover { background: var(--tsm-accent); color: #0d1a29; }
+
+/* ─── Словарь: режим мобильного приложения ─── */
+.tsm-mode-switch {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin: 0 0 10px;
+  background: var(--tsm-surface-sunken);
+  border: 1px solid var(--tsm-line);
+  border-radius: 10px;
+}
+.tsm-mode-btn {
+  appearance: none;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 8px;
+  font-family: var(--tsm-font);
+  font-size: var(--tsm-fs-sm);
+  font-weight: 600;
+  color: var(--tsm-text-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 120ms var(--tsm-ease), color 120ms var(--tsm-ease);
+}
+.tsm-mode-btn:hover { color: var(--tsm-text); background: var(--tsm-surface-hover); }
+.tsm-mode-btn.is-active { color: var(--tsm-text); background: var(--tsm-accent-soft); border-color: var(--tsm-accent-line); }
+.tsm-mobile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--tsm-violet);
+  background: var(--tsm-violet-soft);
+  border-radius: 999px;
+}
+.tsm-mobile-banner {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: var(--tsm-violet-soft);
+  border: 1px solid var(--tsm-line-strong);
+  border-left: 3px solid var(--tsm-violet);
+  border-radius: 10px;
+}
+.tsm-mobile-banner-head { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 650; color: var(--tsm-text); }
+.tsm-mobile-banner-text { margin-top: 4px; font-size: 11.5px; line-height: 1.45; color: var(--tsm-text-2); }
+.tsm-mobile-log { margin-top: 6px; font-size: 11px; line-height: 1.5; color: var(--tsm-text-3); }
+.tsm-mobile-log:empty { display: none; }
+.tsm-vocab-mobile #iduserwords { display: none; }
+.tsm-vocab-mobile #searchtoolswords #findwords { flex: 1; }
+.tsm-word-tr { color: var(--tsm-text-3); font-weight: 400; }
+.tsm-word-row.is-hidden-word .tsm-word-text { opacity: 0.55; text-decoration: line-through; }
+.tsm-word-row.is-hidden-word .tsm-learned-status { color: var(--tsm-bad); }

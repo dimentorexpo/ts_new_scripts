@@ -131,6 +131,7 @@ const TSM_ICONS = {
     "grad": ["violet", '<polygon class="fs" points="12 3 1 9 12 15 23 9"/><path class="a" d="M5 11.5V17c0 1.5 3.1 3 7 3s7-1.5 7-3v-5.5"/><line class="a" x1="23" y1="9" x2="23" y2="15"/>'],
     "briefcase": ["amber", '<rect class="fs" x="2" y="7" width="20" height="14" rx="2" ry="2"/><path class="a" d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line class="a" x1="2" y1="13" x2="22" y2="13"/>'],
     "flask": ["teal", '<path class="fs" d="M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><line class="a" x1="8.5" y1="3" x2="15.5" y2="3"/><line class="a" x1="7" y1="15" x2="17" y2="15"/>'],
+    "phone": ["teal", '<rect class="fs" x="6" y="2" width="12" height="20" rx="2.5"/><line class="a" x1="10.5" y1="18.5" x2="13.5" y2="18.5"/>'],
     "moon": ["blue", '<path class="fs" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'],
     "sun": ["amber", '<circle class="fs" cx="12" cy="12" r="4.5"/><line class="a" x1="12" y1="1.5" x2="12" y2="3.5"/><line class="a" x1="12" y1="20.5" x2="12" y2="22.5"/><line class="a" x1="1.5" y1="12" x2="3.5" y2="12"/><line class="a" x1="20.5" y1="12" x2="22.5" y2="12"/><line class="a" x1="4.6" y1="4.6" x2="6" y2="6"/><line class="a" x1="18" y1="18" x2="19.4" y2="19.4"/><line class="a" x1="4.6" y1="19.4" x2="6" y2="18"/><line class="a" x1="18" y1="6" x2="19.4" y2="4.6"/>'],
     "library": ["pink", '<rect class="fs" x="3" y="3" width="5" height="18" rx="1"/><rect class="fs" x="9.5" y="3" width="5" height="18" rx="1"/><path class="a" d="M16.2 5.2l4.4-1.2 3 15.6-4.4 1.2z" transform="translate(-1.6 0)"/>']
@@ -158,7 +159,7 @@ function tsmIcon(name, size = 16, extraClass = "") {
 
 /* Заголовок с ведущим эмодзи → цветная SVG-иконка + экранированный текст.
    Так заголовки секций можно оставлять строками вида «🎓 План урока». */
-const TSM_TITLE_EMOJI = { "🎓": "grad", "💼": "briefcase", "🧪": "flask", "💬": "chat", "📚": "library", "⚠": "alert" };
+const TSM_TITLE_EMOJI = { "🎓": "grad", "💼": "briefcase", "🧪": "flask", "💬": "chat", "📚": "library", "⚠": "alert", "📱": "phone" };
 function tsmTitleHTML(title, size = 16) {
     const text = String(title ?? "");
     const first = [...text][0];

@@ -23,6 +23,7 @@ const ALLOWED_FETCH_ORIGINS = new Set([
     "https://crm2.skyeng.ru",
     "https://id.skyeng.ru",
     "https://api-words.skyeng.ru",
+    "https://words-gateway.skyeng.ru",
     "https://api-profile.skyeng.ru",
     "https://billing-api.skyeng.ru",
     "https://billing-marketing.skyeng.ru",

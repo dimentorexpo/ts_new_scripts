@@ -12,6 +12,11 @@ let vocabTaskId = 0;
 let vocabStudentId = "";
 /* Выбор слов хранится отдельно от DOM — живой поиск больше не сбрасывает галочки */
 const selectedWordIds = new Set();
+/* Режим окна: «student» — словарь ученика по ID, «mobile» — слова аккаунта мобильного приложения Skyeng Words */
+let vocabMode = "student";
+/* Исходные записи слов мобильного приложения (meaningId → запись). Нужны для выбора слов по статусу */
+const mobileRecords = new Map();
+const mobileLog = [];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,10 +31,19 @@ function WORDS_API_HEADERS() {
 const win_Vocabulary = `
 <div class="tsm-window-grab">
     <div class="tsm-window-header">
-        <span class="tsm-window-title">${tsmIcon("book", 15)} Словарь</span>
+        <span class="tsm-window-title">${tsmIcon("book", 15)} Словарь <span id="vocabModeBadge" class="tsm-mobile-badge tsm-hidden" title="Режим мобильного приложения Skyeng Words">${tsmIcon("phone", 12)} Моб.</span></span>
         <span class="tsm-toolbar-spacer"></span>
         <button type="button" class="tsm-btn tsm-btn-icon" id="ClearVocabulary" title="Очистить и остановить операции" aria-label="Очистить и остановить операции">${tsmIcon("trash")}</button>
         <button type="button" class="tsm-btn tsm-btn-hide tsm-btn-icon" title="Скрыть" aria-label="Скрыть" id="hideVocabularyMenu">${tsmIcon("close")}</button>
+    </div>
+    <div class="tsm-mode-switch" id="vocabModeSwitch" role="tablist" aria-label="Источник словаря">
+        <button type="button" class="tsm-mode-btn is-active" data-mode="student" role="tab" aria-selected="true">${tsmIcon("user", 14)} Ученик</button>
+        <button type="button" class="tsm-mode-btn" data-mode="mobile" role="tab" aria-selected="false">${tsmIcon("phone", 14)} Моб. приложение</button>
+    </div>
+    <div id="vocabMobileBanner" class="tsm-mobile-banner tsm-hidden">
+        <div class="tsm-mobile-banner-head">${tsmIcon("phone", 15)} Мобильное приложение Skyeng Words</div>
+        <div class="tsm-mobile-banner-text">Слова аккаунта, под которым вы сейчас вошли на сайте, а не ученика. Сброс, «выучено» и скрытие меняют словарь в приложении.</div>
+        <div id="vocabMobileLog" class="tsm-mobile-log"></div>
     </div>
     <div id="vocabularbar">
         <div id="searchtoolswords" class="tsm-input-group">
@@ -49,16 +63,16 @@ const win_Vocabulary = `
                 <span class="tsm-btn-vertical-icon">${tsmIcon("check-square", 18)}</span><span class="label">Выбрать все</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-ok" id="learncheckedwords" title="Отметить выбранные слова выученными">
-                <span class="tsm-btn-vertical-icon">${tsmIcon("check-circle", 18)}</span><span class="label">Выучить</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("check-circle", 18)}</span><span class="label" data-vocab-label="learn">Выучить</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-warn" id="unlearnallwords" title="Сбросить прогресс выбранных (или всех) слов">
-                <span class="tsm-btn-vertical-icon">${tsmIcon("reset", 18)}</span><span class="label">Сброс прогресса</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("reset", 18)}</span><span class="label" data-vocab-label="reset">Сброс прогресса</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-bad" id="delunlearnallwords" title="Удалить все выученные слова">
-                <span class="tsm-btn-vertical-icon">${tsmIcon("trash", 18)}</span><span class="label">Удалить выученные</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("trash", 18)}</span><span class="label" data-vocab-label="delLearned">Удалить выученные</span>
             </button>
             <button type="button" class="tsm-btn-vertical tsm-tone-bad" id="deleteallwords" title="Удалить выбранные слова (если ничего не выбрано — все)">
-                <span class="tsm-btn-vertical-icon">${tsmIcon("x-circle", 18)}</span><span class="label">Удалить</span>
+                <span class="tsm-btn-vertical-icon">${tsmIcon("x-circle", 18)}</span><span class="label" data-vocab-label="del">Удалить</span>
             </button>
         </div>
         <input id="searchwordinput" class="tsm-input tsm-hidden" autocomplete="off" placeholder="Поиск по слову">
@@ -145,7 +159,7 @@ async function runConcurrentPool({ items, limit = 6, taskId, worker }) {
 
 /* ---------- Универсальный батч-раннер ---------- */
 
-async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, successMessage, request, undo = null }) {
+async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, successMessage, request }) {
     if (isTaskRunning) {
         createNotify("Дождитесь окончания текущей операции", "error");
         return false;
@@ -170,7 +184,6 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
     const studentId = vocabStudentId;
     let failed = 0;
     let completed = 0;
-    const succeededIds = [];
     const total = targetIds.length;
     const taskId = startTask(tone, `0 / ${total}`);
 
@@ -188,7 +201,6 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
                     res = await request(wordId, studentId);
                 }
                 if (!res.ok) failed++;
-                else succeededIds.push(wordId);
             } catch (err) {
                 failed++;
                 console.error(`[TSM Словарь] Ошибка операции над словом ${wordId}:`, err);
@@ -206,49 +218,10 @@ async function runBatchOperation({ targetIds, confirmMessage, tone, doneLabel, s
 
     finishTask(failed ? `${doneLabel}, ошибок: ${failed}` : doneLabel);
     const message = failed ? `${successMessage}, но ${failed} из ${total} не обработаны` : successMessage;
-    const undoIds = undo ? succeededIds.filter((id) => undo.eligible.has(id)) : [];
-    createNotify(message, failed ? "error" : "message", undoIds.length
-        ? { label: "Вернуть", onClick: () => runVocabUndo(undoIds, studentId, undo) }
-        : null);
+    createNotify(message, failed ? "error" : "message");
     selectedWordIds.clear();
     await getwordsets(studentId);
     return true;
-}
-
-/* Откат массовой операции: тот же пул с прогрессом, но без подтверждения —
-   кнопка «Вернуть» в тосте уже является явным действием пользователя */
-async function runVocabUndo(ids, studentId, undo) {
-    if (isTaskRunning) {
-        createNotify("Дождитесь окончания текущей операции", "error");
-        return;
-    }
-    let failed = 0;
-    let completed = 0;
-    const taskId = startTask("warn", `Возврат: 0 / ${ids.length}`);
-
-    await runConcurrentPool({
-        items: ids,
-        limit: 6,
-        taskId,
-        worker: async (wordId) => {
-            try {
-                const res = await undo.request(wordId, studentId);
-                if (!res.ok) failed++;
-            } catch (err) {
-                failed++;
-                console.error(`[TSM Словарь] Ошибка возврата слова ${wordId}:`, err);
-            }
-            completed++;
-            if (!isTaskStale(taskId)) {
-                setProgress(Math.round((completed / ids.length) * 100), `Возврат: ${completed} / ${ids.length}${failed ? ` · ошибок: ${failed}` : ""}`);
-            }
-        }
-    });
-
-    if (isTaskStale(taskId)) return;
-    finishTask(failed ? `Возврат, ошибок: ${failed}` : "Возвращено");
-    createNotify(failed ? `${undo.successMessage}, но ${failed} из ${ids.length} не обработаны` : undo.successMessage, failed ? "error" : "message");
-    if (vocabStudentId === studentId) await getwordsets(studentId);
 }
 
 const WORD_OPERATIONS = {
@@ -288,21 +261,13 @@ function learnSelectedWords() {
         createNotify("Отметьте слова, которые нужно сделать выученными", "error");
         return;
     }
-    /* Откат доступен только для слов, которые не были выучены до операции:
-       API отката — сброс прогресса, и у ранее выученных слов он стёр бы их законный прогресс */
-    const learnedBefore = new Set(allWordSets.flatMap((set) => set.words.filter((w) => w.isLearned).map((w) => String(w.meaningId))));
     return runBatchOperation({
         targetIds,
         confirmMessage: `Отметить выученными выбранные слова: ${targetIds.length} шт.`,
         tone: "ok",
         doneLabel: "Выучено",
         successMessage: "Выбранные слова отмечены выученными",
-        request: WORD_OPERATIONS.learn,
-        undo: {
-            eligible: new Set(targetIds.filter((id) => !learnedBefore.has(id))),
-            request: WORD_OPERATIONS.resetProgress,
-            successMessage: "Отметка «выучено» снята"
-        }
+        request: WORD_OPERATIONS.learn
     });
 }
 
@@ -381,6 +346,7 @@ async function getwordsets(studentId) {
     const meaningsCache = new Map();
     let completedSets = 0;
     let loadedWordsCount = 0;
+    let failedSets = 0;
 
     await runConcurrentPool({
         items: sets,
@@ -442,6 +408,7 @@ async function getwordsets(studentId) {
                 loadedSets[index] = wordSetData;
                 loadedWordsCount += wordSetData.words.length;
             } catch (err) {
+                failedSets++;
                 console.error("[TSM Словарь] Ошибка загрузки набора " + wordset.title, err);
             }
 
@@ -461,7 +428,8 @@ async function getwordsets(studentId) {
     globalWordsCounter = allWordSets.reduce((acc, s) => acc + s.words.length, 0);
     renderWordSets(allWordSets, false);
     document.getElementById("searchwordinput").classList.remove("tsm-hidden");
-    finishTask(`Найдено слов: ${globalWordsCounter} в ${allWordSets.length} наборах`);
+    finishTask(`Найдено слов: ${globalWordsCounter} в ${allWordSets.length} наборах${failedSets ? `, не загружено наборов: ${failedSets}` : ""}`);
+    if (failedSets) createNotify(`Не удалось загрузить наборов: ${failedSets} из ${sets.length}. Список слов неполный — нажмите «Загрузить» ещё раз`, "error");
 }
 
 /* ---------- Рендер ---------- */
@@ -471,16 +439,16 @@ function renderWordSets(wordSets, isSearch = false) {
         const learned = wordSet.words.filter((w) => w.isLearned).length;
         const rows = wordSet.words.map((word) => {
             const id = escapeHTML(word.meaningId);
-            return `<div class="tsm-word-row${word.isLearned ? " is-learned" : ""}" data-word-id="${id}">
+            return `<div class="tsm-word-row${word.isLearned ? " is-learned" : ""}${word.isHidden ? " is-hidden-word" : ""}" data-word-id="${id}">
                 <label class="tsm-custom-checkbox">
                     <input type="checkbox" name="checkfordel" class="tsm-checkbox" ${selectedWordIds.has(String(word.meaningId)) ? "checked" : ""}>
                     <span class="tsm-checkmark"></span>
                 </label>
-                <div class="tsm-word-text" title="${escapeHTML(word.text)}">${escapeHTML(word.text)}</div>
+                <div class="tsm-word-text" title="${escapeHTML(word.text + (word.translation ? " — " + word.translation : ""))}">${escapeHTML(word.text)}${word.translation ? `<span class="tsm-word-tr"> — ${escapeHTML(word.translation)}</span>` : ""}</div>
                 <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS" aria-label="Скопировать ссылку в CMS">${tsmIcon("link", 14)}</button>
                 <div class="tsm-word-id tsm-word-stat">${id}</div>
-                <div class="tsm-word-stat tsm-word-progress" title="Прогресс заучивания"><span>${escapeHTML(word.progress)}%</span><span class="tsm-word-progress-track"><i style="width:${Math.max(0, Math.min(100, Number(word.progress) || 0))}%"></i></span></div>
-                <div class="tsm-learned-status" title="${word.isLearned ? "Выучено" : "Не выучено"}">${word.isLearned ? tsmIcon("check", 14) : "·"}</div>
+                ${word.mobile ? `<div class="tsm-word-stat tsm-word-progress" title="Ступень повторения в мобильном приложении"><span>${escapeHTML(word.intervals)}</span></div>` : `<div class="tsm-word-stat tsm-word-progress" title="Прогресс заучивания"><span>${escapeHTML(word.progress)}%</span><span class="tsm-word-progress-track"><i style="width:${Math.max(0, Math.min(100, Number(word.progress) || 0))}%"></i></span></div>`}
+                <div class="tsm-learned-status" title="${word.isHidden ? "Убрано из изучения (скрыто)" : word.isLearned ? "Выучено" : "Не выучено"}">${word.isHidden ? tsmIcon("x-circle", 14) : word.isLearned ? tsmIcon("check", 14) : "·"}</div>
             </div>`;
         }).join("");
 
@@ -495,7 +463,7 @@ function renderWordSets(wordSets, isSearch = false) {
                         <input type="checkbox" name="selectwordsinonelesson" class="tsm-checkbox-all">
                         <span class="tsm-checkmark"></span>
                     </label>
-                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">%</div><div class="tsm-text-center">${tsmIcon("check", 13)}</div>
+                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">${vocabMode === "mobile" ? "Ст." : "%"}</div><div class="tsm-text-center">${tsmIcon("check", 13)}</div>
                 </div>
                 <div>${rows}</div>
             </div>
@@ -538,6 +506,337 @@ function liveSearch(query) {
         .map((set) => ({ title: set.title, words: set.words.filter((w) => w.text.toLowerCase().includes(q)) }))
         .filter((set) => set.words.length > 0);
     renderWordSets(filtered, true);
+}
+
+/* =========================================================
+   Режим «Мобильное приложение Skyeng Words»
+   Работает со словарём аккаунта, под которым вы вошли на сайте
+   (токен token_global), через words-gateway — тот же API, что у приложения.
+   Запросы идут через фоновый скрипт (CORS-прокси TSM).
+   ========================================================= */
+
+const MOBILE_API = "https://words-gateway.skyeng.ru/api";
+const MOBILE_BATCH_SIZE = 50;
+const MOBILE_BATCH_PAUSE_MS = 1000;
+const MOBILE_TAG = "Моб. приложение";
+
+const VOCAB_LABELS = {
+    student: {
+        learn: ["Выучить", "Отметить выбранные слова выученными"],
+        reset: ["Сброс прогресса", "Сбросить прогресс выбранных (или всех) слов"],
+        delLearned: ["Удалить выученные", "Удалить все выученные слова"],
+        del: ["Удалить", "Удалить выбранные слова (если ничего не выбрано — все)"]
+    },
+    mobile: {
+        learn: ["Выучено", `${MOBILE_TAG}: отметить выбранные слова выученными`],
+        reset: ["Сброс прогресса", `${MOBILE_TAG}: сбросить прогресс выбранных (или всех) слов`],
+        delLearned: ["Убрать выученные", `${MOBILE_TAG}: убрать из изучения все выученные слова`],
+        del: ["Убрать из изучения", `${MOBILE_TAG}: убрать из изучения выбранные слова (если ничего не выбрано — все)`]
+    }
+};
+const VOCAB_BUTTON_IDS = { learn: "learncheckedwords", reset: "unlearnallwords", delLearned: "delunlearnallwords", del: "deleteallwords" };
+
+function setVocabMode(mode) {
+    if (mode === vocabMode) return;
+    if (isTaskRunning) {
+        createNotify("Дождитесь окончания текущей операции или нажмите «Очистить»", "error");
+        return;
+    }
+    /* resetVocabularyState очищает поле ID — при переключении вкладок оставляем введённое значение */
+    const idField = document.getElementById("iduserwords");
+    const savedStudentId = idField.value;
+    resetVocabularyState();
+    idField.value = savedStudentId;
+    vocabMode = mode;
+    const mobile = mode === "mobile";
+    wintVocabulary.classList.toggle("tsm-vocab-mobile", mobile);
+    document.querySelectorAll("#vocabModeSwitch [data-mode]").forEach((btn) => {
+        const active = btn.dataset.mode === mode;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-selected", String(active));
+    });
+    document.getElementById("vocabMobileBanner").classList.toggle("tsm-hidden", !mobile);
+    document.getElementById("vocabModeBadge").classList.toggle("tsm-hidden", !mobile);
+    document.getElementById("findwords").textContent = mobile ? "Загрузить мои слова" : "Загрузить";
+    for (const [key, id] of Object.entries(VOCAB_BUTTON_IDS)) {
+        const btn = document.getElementById(id);
+        const [label, title] = VOCAB_LABELS[mode][key];
+        btn.querySelector(".label").textContent = label;
+        btn.title = title;
+    }
+    setProgress(0, mobile ? `${MOBILE_TAG}: нажмите «Загрузить мои слова»` : "Введите ID ученика", "");
+    renderMobileLog();
+}
+
+function renderMobileLog() {
+    const box = document.getElementById("vocabMobileLog");
+    box.innerHTML = mobileLog.slice(-5).map((e) => `<div>${escapeHTML(e.time)} · ${escapeHTML(e.text)}</div>`).join("");
+}
+
+function addMobileLog(text) {
+    mobileLog.push({ time: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }), text });
+    renderMobileLog();
+}
+
+function mobileHeaders(withBody) {
+    const accessToken = getGlobalToken() || token?.token_global || "";
+    if (!accessToken) throw new Error("не найден токен token_global — войдите на сайт Skyeng");
+    const headers = {
+        "Authorization": `Bearer ${accessToken}`,
+        "Accept": "application/json",
+        "Accept-Language": "ru",
+        "appId": "skyeng.words.prod",
+        "Skyeng-Mobile-App-Id": "skyeng.words.prod",
+        "Skyeng-Mobile-App-Version": "10.15",
+        "User-Agent": "Skyeng/10.15 (7621) Android/16"
+    };
+    if (withBody) headers["Content-Type"] = "application/json; charset=utf-8";
+    return headers;
+}
+
+async function mobileFetch(path, { method = "GET", body = null } = {}) {
+    const requestOptions = { method, headers: mobileHeaders(body !== null) };
+    if (body !== null) requestOptions.body = JSON.stringify(body);
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await sendRuntimeMessage({ action: "getOvercomeCORS", fetchURL: `${MOBILE_API}${path}`, requestOptions });
+        if (response?.success) return response.fetchAnswer ? JSON.parse(response.fetchAnswer) : null;
+        const error = response?.error || "нет ответа от расширения";
+        if (attempt === 0 && /HTTP 429/.test(error)) {
+            await sleep(1500);
+            continue;
+        }
+        throw new Error(error);
+    }
+}
+
+async function mobileFetchAllPages(buildPath, taskId) {
+    const items = [];
+    let page = 1;
+    let lastPage = 1;
+    do {
+        if (isTaskStale(taskId)) return items;
+        const response = await mobileFetch(buildPath(page));
+        items.push(...(response?.data || []));
+        lastPage = Number(response?.meta?.lastPage) || 1;
+        page++;
+    } while (page <= lastPage);
+    return items;
+}
+
+async function loadMobileWords() {
+    const out = document.getElementById("wordsout");
+    out.innerHTML = tsmSkeleton(6);
+    document.getElementById("searchwordinput").classList.add("tsm-hidden");
+    allWordSets = [];
+    const taskId = startTask("search", `${MOBILE_TAG}: загружаем наборы…`);
+
+    let sets;
+    try {
+        sets = await mobileFetchAllPages((page) => `/for-mobile/v2/wordsets.json?pageSize=200&page=${page}&imageWidths=315&subjectArea=english`, taskId);
+    } catch (err) {
+        if (isTaskStale(taskId)) return;
+        console.error("[TSM Словарь/Моб.] Ошибка загрузки наборов:", err);
+        finishTask("Ошибка загрузки");
+        out.innerHTML = tsmEmptyState("alert", `${MOBILE_TAG}: не удалось загрузить словарь`, `Проверьте, что вы вошли на сайт Skyeng (${err.message})`, tsmRetryButton());
+        document.querySelector("#wordsout .tsm-empty-retry")?.addEventListener("click", loadMobileWords);
+        createNotify(`${MOBILE_TAG}: не удалось загрузить словарь — ${err.message}`, "error");
+        return;
+    }
+    if (isTaskStale(taskId)) return;
+    if (!sets.length) {
+        finishTask("Словарь пуст");
+        out.innerHTML = tsmEmptyState("book", `В мобильном приложении нет наборов слов`);
+        return;
+    }
+
+    const records = new Map();
+    const loadedSets = new Array(sets.length);
+    let done = 0;
+    let failedSets = 0;
+
+    await runConcurrentPool({
+        items: sets,
+        limit: 4,
+        taskId,
+        worker: async (wordset, index) => {
+            try {
+                const words = await mobileFetchAllPages((page) => `/for-training/v1/wordsets/${wordset.id}/words.json?pageSize=300&page=${page}&subjectArea=english`, taskId);
+                words.forEach((w) => { if (!records.has(String(w.meaningId))) records.set(String(w.meaningId), w); });
+                loadedSets[index] = { title: wordset.title, words };
+            } catch (err) {
+                failedSets++;
+                console.error(`[TSM Словарь/Моб.] Ошибка набора ${wordset.title}:`, err);
+            }
+            done++;
+            if (!isTaskStale(taskId)) setProgress(Math.round((done / sets.length) * 100), `${MOBILE_TAG}: наборы ${done}/${sets.length} · слов: ${records.size}`);
+        }
+    });
+    if (isTaskStale(taskId)) return;
+
+    /* Тексты и переводы — публичный словарь, токен не нужен */
+    const meanings = new Map();
+    const ids = [...records.keys()];
+    for (let i = 0; i < ids.length; i += 60) {
+        if (isTaskStale(taskId)) return;
+        try {
+            const list = await fetch(`https://dictionary.skyeng.ru/api/public/v1/meanings?ids=${ids.slice(i, i + 60).join(",")}`).then((r) => (r.ok ? r.json() : []));
+            if (Array.isArray(list)) list.forEach((m) => { if (m?.id) meanings.set(String(m.id), m); });
+        } catch (mErr) {
+            console.warn("[TSM Словарь/Моб.] Не удалось получить тексты слов:", mErr);
+        }
+    }
+
+    mobileRecords.clear();
+    records.forEach((rec, id) => mobileRecords.set(id, rec));
+    allWordSets = loadedSets.filter(Boolean).map((set) => ({
+        title: set.title,
+        words: set.words.map((w) => {
+            const m = meanings.get(String(w.meaningId));
+            return {
+                text: m?.text || `#${w.meaningId}`,
+                translation: m?.translation?.text || "",
+                isLearned: w.status === "known",
+                isHidden: w.status === "hidden",
+                progress: null,
+                intervals: w.trainingIntervalsNumber ?? 0,
+                mobile: true,
+                meaningId: w.meaningId
+            };
+        })
+    }));
+    globalWordsCounter = records.size;
+    renderWordSets(allWordSets, false);
+    document.getElementById("searchwordinput").classList.remove("tsm-hidden");
+
+    const counts = { "in progress": 0, known: 0, hidden: 0 };
+    records.forEach((r) => { if (r.status in counts) counts[r.status]++; });
+    finishTask(`${MOBILE_TAG}: слов ${records.size} (учится ${counts["in progress"]}, выучено ${counts.known}, скрыто ${counts.hidden})`);
+    if (failedSets) createNotify(`${MOBILE_TAG}: не загружено наборов ${failedSets} из ${sets.length}. Список неполный — нажмите «Загрузить мои слова» ещё раз`, "error");
+}
+
+const mobileNow = () => `${new Date().toISOString().slice(0, 19)}+0000`;
+const mobileBase = (r) => ({
+    id: String(r.id),
+    meaningId: r.meaningId,
+    trainingIntervalsNumber: r.trainingIntervalsNumber ?? 0,
+    correctAnswersNumber: r.correctAnswersNumber ?? 0,
+    status: r.status
+});
+
+const MOBILE_OPS = {
+    reset: {
+        title: "Сброс прогресса",
+        what: "Будет сброшен прогресс (ступень и счётчик ответов обнулятся, слово вернётся в изучение)",
+        skipNote: "скрытые слова не трогаем, иначе они вернулись бы в изучение",
+        tone: "warn",
+        doneLabel: "Прогресс сброшен",
+        pick: (r) => r.status !== "hidden",
+        apply: (r, now) => ({ ...mobileBase(r), trainingIntervalsNumber: 0, correctAnswersNumber: 0, status: "in progress", updatedAt: now })
+    },
+    learn: {
+        title: "Отметить выученными",
+        what: "Слова будут отмечены выученными (status = known)",
+        skipNote: "слова уже выучены",
+        tone: "ok",
+        doneLabel: "Выучено",
+        pick: (r) => r.status !== "known",
+        apply: (r, now) => ({ ...mobileBase(r), status: "known", updatedAt: now })
+    },
+    hide: {
+        title: "Убрать из изучения",
+        what: "Слова будут убраны из изучения (status = hidden) и пропадут из приложения",
+        skipNote: "слова уже скрыты",
+        tone: "bad",
+        doneLabel: "Убрано из изучения",
+        pick: (r) => r.status !== "hidden",
+        apply: (r, now) => ({ ...mobileBase(r), status: "hidden", updatedAt: now })
+    }
+};
+
+/* Отправка записей пачками: синхронизация одним запросом на пачку, пауза между пачками */
+async function postMobileBatches(words, taskId, label) {
+    const okIds = [];
+    let failed = 0;
+    for (let i = 0; i < words.length; i += MOBILE_BATCH_SIZE) {
+        while (isTaskPaused && !isTaskStale(taskId)) await sleep(200);
+        if (isTaskStale(taskId)) return { okIds, failed, stopped: true };
+        const batch = words.slice(i, i + MOBILE_BATCH_SIZE);
+        try {
+            await mobileFetch("/v1/words/synchronize.json?subjectArea=english", { method: "POST", body: { currentDateTime: mobileNow(), words: batch } });
+            batch.forEach((w) => okIds.push(String(w.meaningId)));
+        } catch (err) {
+            failed += batch.length;
+            console.error("[TSM Словарь/Моб.] Ошибка пачки:", err);
+            createNotify(`${MOBILE_TAG}: пачка из ${batch.length} слов не записана — ${err.message}`, "error");
+        }
+        const handled = Math.min(i + MOBILE_BATCH_SIZE, words.length);
+        setProgress(Math.round((handled / words.length) * 100), `${label}: ${handled} / ${words.length}${failed ? ` · ошибок: ${failed}` : ""}`);
+        if (handled < words.length) await sleep(MOBILE_BATCH_PAUSE_MS);
+    }
+    return { okIds, failed, stopped: false };
+}
+
+async function runMobileOperation(opKey, requestedIds, scopeNote) {
+    if (isTaskRunning) {
+        createNotify("Дождитесь окончания текущей операции", "error");
+        return false;
+    }
+    if (!mobileRecords.size) {
+        createNotify(`${MOBILE_TAG}: сначала нажмите «Загрузить мои слова»`, "error");
+        return false;
+    }
+    const op = MOBILE_OPS[opKey];
+    const targets = requestedIds.map((id) => mobileRecords.get(String(id))).filter(Boolean).filter(op.pick);
+    const skipped = requestedIds.length - targets.length;
+    if (!targets.length) {
+        createNotify(`${MOBILE_TAG}: нет слов для операции — ${op.skipNote}`, "error");
+        return false;
+    }
+
+    const confirmed = await tsmConfirm({
+        title: `📱 ${MOBILE_TAG}: ${op.title}`,
+        message: `Это словарь мобильного приложения Skyeng Words — аккаунта, под которым вы вошли на сайте, а не ученика.\n\n${op.what}: ${targets.length} шт.${skipped ? `\nПропущено: ${skipped} (${op.skipNote}).` : ""}\n${scopeNote}`,
+        okText: "Выполнить",
+        danger: true
+    });
+    if (!confirmed) return false;
+
+    const now = mobileNow();
+    const taskId = startTask(op.tone, `${MOBILE_TAG}: 0 / ${targets.length}`);
+    const { okIds, failed, stopped } = await postMobileBatches(targets.map((r) => op.apply(r, now)), taskId, MOBILE_TAG);
+    if (stopped) {
+        addMobileLog(`${op.title}: остановлено, записано ${okIds.length} из ${targets.length}`);
+        return false;
+    }
+
+    finishTask(failed ? `${op.doneLabel}, ошибок: ${failed}` : op.doneLabel);
+    addMobileLog(`${op.title}: ${okIds.length} слов${failed ? `, ошибок ${failed}` : ""}`);
+    const summary = `${MOBILE_TAG}: ${op.doneLabel.toLowerCase()} — ${okIds.length} слов${failed ? `, не обработано ${failed}` : ""}`;
+    createNotify(summary, failed ? "error" : "message");
+    selectedWordIds.clear();
+    await loadMobileWords();
+    return true;
+}
+
+const mobileScope = () => (selectedWordIds.size ? `Затронуты выбранные слова (${selectedWordIds.size}).` : "Ничего не выбрано — затронуты ВСЕ слова словаря.");
+const mobileTargets = () => (selectedWordIds.size ? [...selectedWordIds] : allWordIds());
+
+function mobileResetSelected() { return runMobileOperation("reset", mobileTargets(), mobileScope()); }
+function mobileHideSelected() { return runMobileOperation("hide", mobileTargets(), mobileScope()); }
+function mobileLearnSelected() {
+    if (!selectedWordIds.size) {
+        createNotify("Отметьте слова, которые нужно сделать выученными", "error");
+        return;
+    }
+    return runMobileOperation("learn", [...selectedWordIds], mobileScope());
+}
+function mobileHideLearned() {
+    const learned = [...mobileRecords.values()].filter((r) => r.status === "known").map((r) => String(r.meaningId));
+    if (!learned.length) {
+        createNotify(`${MOBILE_TAG}: выученных слов нет`, "error");
+        return;
+    }
+    return runMobileOperation("hide", learned, "Затронуты все выученные слова.");
 }
 
 /* ---------- Делегированные обработчики ---------- */
@@ -604,6 +903,10 @@ function startWordSearch() {
     }
     document.getElementById("searchwordinput").value = "";
     selectedWordIds.clear();
+    if (vocabMode === "mobile") {
+        loadMobileWords();
+        return;
+    }
     getwordsets(document.getElementById("iduserwords").value.trim());
 }
 
@@ -615,13 +918,18 @@ document.getElementById("hideVocabularyMenu").onclick = () => {
     wintVocabulary.style.display = "none";
 };
 document.getElementById("selectallwords").onclick = toggleAllWordSelection;
-document.getElementById("delunlearnallwords").onclick = deleteLearnedWords;
-document.getElementById("learncheckedwords").onclick = learnSelectedWords;
-document.getElementById("unlearnallwords").onclick = resetProgressForSelectedWords;
-document.getElementById("deleteallwords").onclick = deleteSelectedWords;
+document.getElementById("delunlearnallwords").onclick = () => (vocabMode === "mobile" ? mobileHideLearned() : deleteLearnedWords());
+document.getElementById("learncheckedwords").onclick = () => (vocabMode === "mobile" ? mobileLearnSelected() : learnSelectedWords());
+document.getElementById("unlearnallwords").onclick = () => (vocabMode === "mobile" ? mobileResetSelected() : resetProgressForSelectedWords());
+document.getElementById("deleteallwords").onclick = () => (vocabMode === "mobile" ? mobileHideSelected() : deleteSelectedWords());
+document.getElementById("vocabModeSwitch").addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-mode]");
+    if (btn) setVocabMode(btn.dataset.mode);
+});
 
 async function OpenVocabularyMenu() {
     if (!toggleTSMWindow(wintVocabulary)) return;
+    if (vocabMode === "mobile") return;
     const idField = document.getElementById("iduserwords");
     if (idField.value.trim()) return;
     const userId = await getUserId();
