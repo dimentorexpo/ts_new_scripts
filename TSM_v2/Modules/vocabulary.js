@@ -447,7 +447,7 @@ function renderWordSets(wordSets, isSearch = false) {
                 <div class="tsm-word-text" title="${escapeHTML(word.text + (word.translation ? " — " + word.translation : ""))}">${escapeHTML(word.text)}${word.translation ? `<span class="tsm-word-tr"> — ${escapeHTML(word.translation)}</span>` : ""}</div>
                 <button type="button" class="tsm-btn-save-word" data-action="copy-word" title="Скопировать ссылку в CMS" aria-label="Скопировать ссылку в CMS">${tsmIcon("link", 14)}</button>
                 <div class="tsm-word-id tsm-word-stat">${id}</div>
-                ${word.mobile ? `<div class="tsm-word-stat tsm-word-progress" title="Ступень повторения в мобильном приложении"><span>${escapeHTML(word.intervals)}</span></div>` : `<div class="tsm-word-stat tsm-word-progress" title="Прогресс заучивания"><span>${escapeHTML(word.progress)}%</span><span class="tsm-word-progress-track"><i style="width:${Math.max(0, Math.min(100, Number(word.progress) || 0))}%"></i></span></div>`}
+                ${word.mobile ? `<div class="tsm-word-stat tsm-word-progress" title="${escapeHTML(mobileProgressHint(word))}"><span>${Math.min(word.correct, MOBILE_LEARNED_ANSWERS)}/${MOBILE_LEARNED_ANSWERS}</span><span class="tsm-word-progress-track"><i style="width:${Math.min(100, Math.round((word.correct / MOBILE_LEARNED_ANSWERS) * 100))}%"></i></span></div>` : `<div class="tsm-word-stat tsm-word-progress" title="Прогресс заучивания"><span>${escapeHTML(word.progress)}%</span><span class="tsm-word-progress-track"><i style="width:${Math.max(0, Math.min(100, Number(word.progress) || 0))}%"></i></span></div>`}
                 <div class="tsm-learned-status" title="${word.isHidden ? "Убрано из изучения (скрыто)" : word.isLearned ? "Выучено" : "Не выучено"}">${word.isHidden ? tsmIcon("x-circle", 14) : word.isLearned ? tsmIcon("check", 14) : "·"}</div>
             </div>`;
         }).join("");
@@ -463,7 +463,7 @@ function renderWordSets(wordSets, isSearch = false) {
                         <input type="checkbox" name="selectwordsinonelesson" class="tsm-checkbox-all">
                         <span class="tsm-checkmark"></span>
                     </label>
-                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">${vocabMode === "mobile" ? "Ст." : "%"}</div><div class="tsm-text-center">${tsmIcon("check", 13)}</div>
+                    <div>Слово / фраза</div><div></div><div class="tsm-text-right">ID</div><div class="tsm-text-right">${vocabMode === "mobile" ? "Отв." : "%"}</div><div class="tsm-text-center">${tsmIcon("check", 13)}</div>
                 </div>
                 <div>${rows}</div>
             </div>
@@ -519,6 +519,23 @@ const MOBILE_API = "https://words-gateway.skyeng.ru/api";
 const MOBILE_BATCH_SIZE = 50;
 const MOBILE_BATCH_PAUSE_MS = 1000;
 const MOBILE_TAG = "Моб. приложение";
+
+/* Алгоритм тренажёра: слово выучено при 6 и более верных ответах (correctAnswersNumber),
+   trainingIntervalsNumber — номер интервала повторения (1–14), длительности в секундах ниже */
+const MOBILE_LEARNED_ANSWERS = 6;
+const MOBILE_INTERVAL_SECONDS = [1, 3, 25, 60, 150, 360, 1800, 7200, 86400, 432000, 2160000, 5184000, 15552000, 31536000];
+
+function formatInterval(seconds) {
+    if (seconds < 60) return `${seconds} с`;
+    if (seconds < 3600) return `${Math.round(seconds / 60)} мин`;
+    if (seconds < 86400) return `${Math.round(seconds / 3600)} ч`;
+    return `${Math.round(seconds / 86400)} дн`;
+}
+
+function mobileProgressHint(word) {
+    const interval = MOBILE_INTERVAL_SECONDS[word.intervals - 1];
+    return `Верных ответов: ${word.correct} из ${MOBILE_LEARNED_ANSWERS} (выучено при ${MOBILE_LEARNED_ANSWERS}+)\nИнтервал повторения №${word.intervals}${interval ? ` — ${formatInterval(interval)}` : ""}`;
+}
 
 const VOCAB_LABELS = {
     student: {
@@ -699,6 +716,7 @@ async function loadMobileWords() {
                 isHidden: w.status === "hidden",
                 progress: null,
                 intervals: w.trainingIntervalsNumber ?? 0,
+                correct: w.correctAnswersNumber ?? 0,
                 mobile: true,
                 meaningId: w.meaningId
             };
