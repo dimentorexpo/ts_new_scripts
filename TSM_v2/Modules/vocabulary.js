@@ -728,7 +728,7 @@ async function loadMobileWords() {
 
     const counts = { "in progress": 0, known: 0, hidden: 0 };
     records.forEach((r) => { if (r.status in counts) counts[r.status]++; });
-    finishTask(`${MOBILE_TAG}: слов ${records.size} (учится ${counts["in progress"]}, выучено ${counts.known}, скрыто ${counts.hidden})`);
+    finishTask(`Слов ${records.size}: учится ${counts["in progress"]} · выучено ${counts.known} · скрыто ${counts.hidden}`);
     if (failedSets) createNotify(`${MOBILE_TAG}: не загружено наборов ${failedSets} из ${sets.length}. Список неполный — нажмите «Загрузить мои слова» ещё раз`, "error");
 }
 
