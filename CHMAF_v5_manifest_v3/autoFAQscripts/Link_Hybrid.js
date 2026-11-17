@@ -60,7 +60,6 @@
         { id: 'deleteaclnk', top: true, icon: '🗑', label: 'ПД', title: 'Заявка на удаление персональных данных', url: 'https://infra.skyeng.ru/request/create/166' },
         { id: 'knoweledgebase', top: true, icon: '📚', label: 'БЗ', title: 'База знаний в Confluence', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=25407293' },
         { id: 'essayadmin', top: true, icon: '📝', label: 'Эссе', title: 'Админка эссе', url: 'https://api-english.skyeng.ru/admin/platform/openanswer/list' },
-        { id: 'getStats', top: true, icon: '📋', label: 'Статистика', title: 'Статистика', action: 'getStatsButtonPress' },
         { id: 'resetMMPassword', top: true, icon: '🔐', label: 'MM пароль', title: 'Infra: сброс пароля Mattermost', url: 'https://infra.skyeng.ru/request/create/233' },
         { id: 'GrListData', top: true, icon: '👥', label: 'Список гр.', title: 'Состав группы по ID', action: 'getGrListDataButtonPress' },
         { id: 'minecraftAccs', top: true, icon: '⛏️', label: 'Minecraft', title: 'УЗ Minecraft', url: 'https://disk.yandex.ru/edit/d/ARTwOEreBvxL1L4cDRCvEyPegnqahzm72s0qoIz-cKg6al9hdmhpLVFTZw' },
@@ -537,7 +536,6 @@
     /* ---------- Действия ---------- */
 
     const ACTIONS = {
-        getStatsButtonPress: () => typeof getStatsButtonPress === 'function' && getStatsButtonPress(),
         getGrListDataButtonPress: () => typeof getGrListDataButtonPress === 'function' && getGrListDataButtonPress(),
         toggleIpCheck: () => {
             const panel = document.getElementById('AF_IpCheck');

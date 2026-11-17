@@ -87,7 +87,6 @@ const getSectionOf = (fullName) => String(fullName ?? '').split('-')[0].trim();
 // Номер текущего запуска: повторное нажатие кнопки отменяет предыдущий расчёт,
 // иначе два расчёта одновременно писали в одну таблицу и обнуляли данные друг друга.
 let statRunId = 0;
-let csatRunId = 0;
 
 // Скелетон-дашборд вместо «⏳ Загрузка...»: контур будущей статистики
 // (шапка, карточки метрик, строки таблицы) с shimmer-анимацией.
@@ -230,7 +229,9 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
         `
     });
 
-    const columns = ["👨‍💻Оператор", "💪Закрыто", "⚡Пощупано", "🕒SLA", "⚠AvgCSAT", "🤖%A3", "⏱AHT"];
+    const columns = ["Оператор", "Закрыто", "Пощупано", "SLA", "AvgCSAT", "%АЗ", "AHT"];
+    const colIcons = { 'Оператор': 'user', 'Закрыто': 'check', 'Пощупано': 'inbox', 'SLA': 'queue', 'AvgCSAT': 'star', '%АЗ': 'bot', 'AHT': 'timer' };
+    const thInner = (t) => `<span style="display:inline-flex;align-items:center;gap:6px;">${(KCL_ICONS[colIcons[t]] || '').replace('class="kcl-ic"', 'class="kcl-ic" style="width:14px;height:14px"')}${t}</span>`;
 
     const thead = document.createElement('thead');
     const headerRow = document.createElement('tr');
@@ -253,11 +254,11 @@ function renderStatsTable(operators, chatCountMap, currentOperator) {
             position: relative;
         `;
 
-        if (text === '⏱AHT') {
-            th.innerHTML = `<span style="cursor:pointer;border-bottom:1px dashed #94a3b8;padding-bottom:2px;" class="aht-sort-btn" data-sort="asc" title="Сортировать по AHT">⏱AHT ▲</span>`;
+        if (text === 'AHT') {
+            th.innerHTML = `<span style="cursor:pointer;border-bottom:1px dashed #94a3b8;padding-bottom:2px;display:inline-flex;align-items:center;gap:6px;" class="aht-sort-btn" data-sort="asc" title="Сортировать по AHT">${(KCL_ICONS.timer || '').replace('class="kcl-ic"', 'class="kcl-ic" style="width:14px;height:14px"')}AHT ▲</span>`;
             th.style.cursor = 'pointer';
         } else {
-            th.textContent = text;
+            th.innerHTML = thInner(text);
         }
 
         headerRow.appendChild(th);
@@ -403,14 +404,14 @@ function renderSummaryStats(operators, chatCountMap) {
     });
 
     const stats = [
-        { label: '📦 Закрыто чатов:', value: '<span id="allChatsClsd" class="stat-loading">⏳</span>', icon: '📦', color: '#a9c0ff', compact: true },
-        { label: '✋ Пощупано чатов:', value: totalTouched, icon: '✋', color: '#a9c0ff', compact: true },
-        { label: '🤖 Средний %АЗ:', value: '<span id="avgAutoClosedGroup" class="stat-loading">⏳</span>', icon: '🤖', color: '#a9c0ff', compact: true },
-        { label: '🌟 Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: '🌟', color: '#a9c0ff', compact: true },
-        { label: '⏱ Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: '⏱', color: '#a9c0ff', compact: true },
-        { label: '📋 Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: '📋', color: '#a9c0ff', compact: false },
-        { label: '🕒 SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: '🕒', color: '#a9c0ff', compact: true },
-        { label: '🚀 AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: '🚀', color: '#a9c0ff', compact: true },
+        { label: 'Закрыто чатов:', value: '<span id="allChatsClsd" class="stat-loading">⏳</span>', icon: 'check', accent: '#4ade80', color: '#a9c0ff', compact: true },
+        { label: 'Пощупано чатов:', value: totalTouched, icon: 'inbox', accent: '#6b8cff', color: '#a9c0ff', compact: true },
+        { label: 'Средний %АЗ:', value: '<span id="avgAutoClosedGroup" class="stat-loading">⏳</span>', icon: 'bot', accent: '#38bdf8', color: '#a9c0ff', compact: true },
+        { label: 'Средний CSAT:', value: '<span id="avgCsatonGroup" class="stat-loading">⏳</span>', icon: 'star', accent: '#fbbf24', color: '#a9c0ff', compact: true },
+        { label: 'Средний AHT:', value: '<span id="avgAHTGroup" class="stat-loading">⏳</span>', icon: 'timer', accent: '#a78bfa', color: '#a9c0ff', compact: true },
+        { label: 'Разбивка по оценкам:', value: '<span id="CSATDetails" class="stat-loading">⏳</span>', icon: 'list', accent: '#fbbf24', color: '#a9c0ff', compact: false },
+        { label: 'SLA закрытия:', value: '<span id="SLAonGroup" class="stat-loading">⏳</span>', icon: 'queue', accent: '#6b8cff', color: '#a9c0ff', compact: true },
+        { label: 'AFRT:', value: '<span id="AFRTGroup" class="stat-loading">⏳</span>', icon: 'zap', accent: '#fb923c', color: '#a9c0ff', compact: true },
     ];
 
     // Компактные карточки (2 колонки)
@@ -483,7 +484,11 @@ function renderSummaryStats(operators, chatCountMap) {
             box-shadow: none;
 
         `;
-        iconBox.textContent = stat.icon;
+        iconBox.innerHTML = KCL_ICONS[stat.icon] || '';
+        iconBox.style.color = stat.accent || '#a9c0ff';
+        iconBox.style.background = `color-mix(in srgb, ${stat.accent || '#6b8cff'} 14%, transparent)`;
+        iconBox.style.borderColor = `color-mix(in srgb, ${stat.accent || '#6b8cff'} 40%, transparent)`;
+        const iconSvg = iconBox.querySelector('svg'); if (iconSvg) iconSvg.setAttribute('style', 'width:30px;height:30px');
 
         const contentBox = document.createElement('div');
         contentBox.style.cssText = `
@@ -571,7 +576,11 @@ function renderSummaryStats(operators, chatCountMap) {
             box-shadow: none;
 
         `;
-        iconBox.textContent = stat.icon;
+        iconBox.innerHTML = KCL_ICONS[stat.icon] || '';
+        iconBox.style.color = stat.accent || '#a9c0ff';
+        iconBox.style.background = `color-mix(in srgb, ${stat.accent || '#6b8cff'} 14%, transparent)`;
+        iconBox.style.borderColor = `color-mix(in srgb, ${stat.accent || '#6b8cff'} 40%, transparent)`;
+        const iconSvg = iconBox.querySelector('svg'); if (iconSvg) iconSvg.setAttribute('style', 'width:30px;height:30px');
 
         const contentBox = document.createElement('div');
         contentBox.style.cssText = `
@@ -1506,6 +1515,187 @@ function renderAFRTModal() {
 }
 
 // ============================================================================
+// 🎨 ОБЩИЕ КОМПОНЕНТЫ ДИЗАЙНА: SVG-иконки и стили карточек для вкладок статистики
+// ============================================================================
+const kclIc = (d) => `<svg class="kcl-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const KCL_ICONS = {
+    stats: kclIc('<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>'),
+    star: kclIc('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
+    user: kclIc('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    users: kclIc('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+    chat: kclIc('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+    queue: kclIc('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    gauge: kclIc('<path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>'),
+    list: kclIc('<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>'),
+    headset: kclIc('<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'),
+    wrench: kclIc('<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>'),
+    bot: kclIc('<rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/>'),
+    inbox: kclIc('<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'),
+    check: kclIc('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'),
+    forward: kclIc('<circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/>'),
+    eye: kclIc('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'),
+    trash: kclIc('<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'),
+    edit: kclIc('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>'),
+    ext: kclIc('<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>'),
+    search: kclIc('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+    warn: kclIc('<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
+    alert: kclIc('<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    tag: kclIc('<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>'),
+    plus: kclIc('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
+    refresh: kclIc('<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>'),
+    timer: kclIc('<circle cx="12" cy="14" r="8"/><polyline points="12 10 12 14 14.5 15.5"/><line x1="9" y1="2" x2="15" y2="2"/><line x1="12" y1="2" x2="12" y2="6"/>'),
+    zap: kclIc('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'),
+    smile: kclIc('<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>'),
+    meh: kclIc('<circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>'),
+    frown: kclIc('<circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>')
+};
+
+const KCL_CSS = `
+.kcl { --ok:#4ade80; --busy:#fbbf24; --alert:#f87171; --blue:#6b8cff; --zero:#64748b; --bg:#1a2536; --tx:#f1f5f9; --mut:#94a3b8; padding:12px; font-family:inherit; }
+.kcl-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px; }
+.kcl-card { --c:var(--blue); background:var(--bg); border:1px solid color-mix(in srgb,var(--c) 35%,transparent); border-radius:12px; padding:14px; min-height:132px; display:flex; flex-direction:column; box-shadow:0 6px 18px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); animation:kclIn .45s ease backwards; }
+.kcl-blue { --c:var(--blue); } .kcl-green { --c:var(--ok); }
+.kcl-lvl-ok { --c:var(--ok); } .kcl-lvl-busy { --c:var(--busy); } .kcl-lvl-alert { --c:var(--alert); border-color:var(--alert); box-shadow:0 0 0 1px var(--alert), 0 0 20px color-mix(in srgb,var(--alert) 45%,transparent); }
+.kcl-head { display:flex; align-items:center; gap:7px; color:var(--c); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+.kcl-ic { width:18px; height:18px; flex:none; }
+.kcl-num { font-size:34px; line-height:1.1; font-weight:800; color:var(--tx); margin-top:10px; font-variant-numeric:tabular-nums; }
+.kcl-lvl-ok .kcl-num, .kcl-lvl-busy .kcl-num, .kcl-lvl-alert .kcl-num { color:var(--c); }
+.kcl-num-sm { font-size:24px; margin-top:14px; }
+.kcl-sub { font-size:12px; color:var(--mut); margin-top:4px; }
+.kcl-split { display:flex; flex-wrap:wrap; gap:4px 8px; margin-top:auto; padding-top:10px; }
+.kcl-chip { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--mut); }
+.kcl-chip i { display:inline-block; width:7px; height:15px; border-radius:5px; flex:none; background:linear-gradient(180deg,color-mix(in srgb,var(--pc,var(--zero)) 55%,#fff),var(--pc,var(--zero)) 50%,color-mix(in srgb,var(--pc,var(--zero)) 60%,#000)); box-shadow:0 0 6px color-mix(in srgb,var(--pc,var(--zero)) 55%,transparent); }
+.kcl-chip.ok i { --pc:var(--ok); } .kcl-chip.busy i { --pc:var(--busy); } .kcl-chip.pause i { --pc:var(--alert); }
+/* Пилюля оператора: цвет — статус (онлайн / занят / перерыв), всегда залита */
+.kcl-pill { --pc:var(--zero); --fill:14%; position:relative; flex:none; width:10px; height:34px; border-radius:6px; overflow:hidden;
+  background:linear-gradient(90deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 45%,rgba(0,0,0,.28));
+  border:1px solid color-mix(in srgb,var(--pc) 60%,transparent);
+  box-shadow:0 0 10px color-mix(in srgb,var(--pc) 40%,transparent), inset 0 0 5px rgba(0,0,0,.55); }
+.kcl-pill i { position:absolute; left:0; right:0; bottom:0; height:var(--fill); border-radius:0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--pc) 55%,#fff) 0%,var(--pc) 45%,color-mix(in srgb,var(--pc) 55%,#000) 100%);
+  box-shadow:0 0 9px var(--pc); }
+.kcl-pill::after { content:''; position:absolute; top:3px; left:2px; width:2px; height:55%; border-radius:2px; background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0)); }
+.kcl-pill.ok { --pc:var(--ok); animation:kclPillGlow 2.8s ease-in-out infinite; } .kcl-pill.busy { --pc:var(--busy); } .kcl-pill.pause { --pc:var(--alert); }
+@keyframes kclPillGlow { 0%,100% { box-shadow:0 0 8px color-mix(in srgb,var(--pc) 35%,transparent), inset 0 0 5px rgba(0,0,0,.55); } 50% { box-shadow:0 0 15px color-mix(in srgb,var(--pc) 65%,transparent), inset 0 0 5px rgba(0,0,0,.55); } }
+.kcl-bar, .kcl-mini { height:5px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; margin-top:auto; }
+.kcl-bar > div { height:100%; background:var(--c); border-radius:3px; transition:width .5s ease; }
+.kcl-bar { margin-top:auto; }
+.kcl-pulse { width:8px; height:8px; border-radius:50%; background:var(--c); margin-left:auto; animation:kclPulse 1.4s ease-in-out infinite; }
+.kcl-panel { background:var(--bg); border:1px solid rgba(107,140,255,.2); border-radius:12px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,.45); }
+.kcl-panel-title { display:flex; align-items:center; gap:8px; color:#e2e8f0; font-size:14px; font-weight:700; margin-bottom:12px; }
+.kcl-panel-title .kcl-ic { color:var(--blue); }
+.kcl-ops { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; }
+.kcl-op { display:flex; align-items:center; gap:10px; background:rgba(0,0,0,.22); border:1px solid rgba(107,140,255,.16); border-radius:10px; padding:10px; animation:kclIn .35s ease backwards; transition:border-color .2s, transform .2s; }
+.kcl-op:hover { border-color:rgba(107,140,255,.5); transform:translateY(-1px); }
+.kcl-op-main { flex:1; min-width:0; }
+.kcl-op-name { color:#e2e8f0; font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kcl-op-st { color:var(--mut); font-size:11px; margin:2px 0 6px; }
+.kcl-mini { margin-top:0; height:3px; } .kcl-mini > div { height:100%; border-radius:2px; background:var(--zero); }
+.kcl-mini .ok { background:var(--ok); } .kcl-mini .busy { background:var(--busy); } .kcl-mini .alert { background:var(--alert); }
+.kcl-badge { --c:var(--zero); min-width:56px; text-align:center; padding:6px 10px; border-radius:10px; border:1px solid color-mix(in srgb,var(--c) 45%,transparent); background:color-mix(in srgb,var(--c) 14%,transparent); }
+.kcl-badge.ok { --c:var(--ok); } .kcl-badge.busy { --c:var(--busy); } .kcl-badge.alert { --c:var(--alert); }
+.kcl-badge b { display:block; font-size:18px; line-height:1; color:var(--c); font-variant-numeric:tabular-nums; }
+.kcl-badge small { display:block; font-size:10px; color:var(--mut); margin-top:3px; text-transform:uppercase; }
+@keyframes kclIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes kclPulse { 0%,100% { opacity:1; box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent); } 50% { opacity:.7; box-shadow:0 0 0 6px transparent; } }
+@media (max-width:700px) { .kcl-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+.kcl-grid.c3 { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.kcl-panel { margin-bottom:12px; }
+.kcl-panel.warn { border-color:rgba(251,191,36,.35); } .kcl-panel.warn .kcl-panel-title .kcl-ic { color:var(--busy); }
+.kcl-panel.alert { border-color:rgba(248,113,113,.4); } .kcl-panel.alert .kcl-panel-title .kcl-ic { color:var(--alert); }
+.kcl-panel.ok { border-color:rgba(74,222,128,.35); } .kcl-panel.ok .kcl-panel-title .kcl-ic { color:var(--ok); }
+.kcl-rates { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.kcl-rate { --c:var(--zero); text-align:center; padding:12px 8px; border-radius:10px; background:rgba(0,0,0,.22); border:1px solid color-mix(in srgb,var(--c) 40%,transparent); }
+.kcl-rate .kcl-ic { width:26px; height:26px; color:var(--c); }
+.kcl-rate b { display:block; font-size:22px; color:var(--c); margin:4px 0 2px; font-variant-numeric:tabular-nums; }
+.kcl-rate small { display:block; font-size:10px; color:var(--mut); text-transform:uppercase; letter-spacing:.3px; }
+.kcl-rate .kcl-mini { margin:8px 0 4px; } .kcl-rate .kcl-mini > div { background:var(--c); }
+.kcl-rate { cursor:pointer; transition:transform .15s, border-color .15s; } .kcl-rate:hover, .kcl-rate.on { transform:translateY(-1px); border-color:var(--c); }
+.kcl-rate em { font-style:normal; font-size:11px; color:var(--mut); }
+.kcl-note { font-size:12px; color:var(--mut); margin:10px 0 0; }
+.kcl-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+.kcl-input { flex:1 1 180px; min-width:0; height:34px; padding:0 10px; color:#e2e8f0; background:#0d1625; border:1px solid #3a4961; border-radius:9px; font:inherit; font-size:13px; outline:none; }
+.kcl-input:focus { border-color:#829fff; box-shadow:0 0 0 3px rgba(110,152,247,.16); }
+.kcl-seg { display:inline-flex; padding:3px; background:#0d1625; border:1px solid #344258; border-radius:10px; gap:2px; }
+.kcl-seg button { height:28px; padding:0 12px; color:var(--mut); background:transparent; border:0; border-radius:7px; font:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+.kcl-seg button.on { color:#fff; background:#4268c9; }
+.kcl-btn { display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px; color:#dce5f5; background:#1b283c; border:1px solid #3c4d68; border-radius:9px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.kcl-btn:hover { background:#293b56; border-color:#7799e2; } .kcl-btn .kcl-ic { width:15px; height:15px; }
+.kcl-list { display:flex; flex-direction:column; gap:6px; }
+.kcl-row { display:flex; align-items:center; gap:10px; padding:9px 12px; background:rgba(0,0,0,.22); border:1px solid rgba(107,140,255,.16); border-left:3px solid var(--busy); border-radius:10px; }
+.kcl-row:hover { border-color:rgba(107,140,255,.5); }
+.kcl-row.mine { border-left-color:var(--ok); }
+.kcl-row-main { flex:1; min-width:0; }
+.kcl-link { color:#a9c0ff; font-family:'JetBrains Mono','SF Mono',monospace; font-size:12px; font-weight:600; text-decoration:none; }
+.kcl-link:hover { color:#d4e0ff; text-decoration:underline; }
+.kcl-snip { margin-top:2px; color:var(--mut); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kcl-tag { font-size:10px; font-weight:700; text-transform:uppercase; padding:2px 6px; border-radius:6px; color:var(--ok); background:rgba(74,222,128,.12); margin-left:6px; }
+.kcl-tag.dim { color:var(--mut); background:rgba(148,163,184,.12); }
+.kcl-acts { display:flex; gap:4px; flex:none; }
+.kcl-act { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; color:var(--mut); background:transparent; border:1px solid transparent; border-radius:8px; cursor:pointer; text-decoration:none; }
+.kcl-act:hover { color:#fff; background:#23334b; border-color:#3c4d68; } .kcl-act .kcl-ic { width:16px; height:16px; }
+.kcl-fav.on { color:var(--busy); } .kcl-fav.on .kcl-ic { fill:currentColor; }
+.kcl-empty { padding:24px 12px; text-align:center; color:var(--mut); font-size:13px; }
+.kcl-warnbar { margin:0 0 10px; padding:9px 12px; border-radius:9px; background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.4); color:var(--busy); font-size:12px; font-weight:600; }
+.kcl-raw { background:rgba(0,0,0,.2); border-radius:8px; padding:10px; color:#cbd5e1; font-size:12px; line-height:1.7; }
+.kcl-raw a { color:#a9c0ff; font-family:'JetBrains Mono',monospace; }
+.kcl-ids { display:flex; flex-wrap:wrap; gap:6px 14px; }
+.kcl-sec { margin-bottom:10px; padding:10px; border-radius:8px; background:rgba(0,0,0,.2); border-left:3px solid var(--c,var(--zero)); }
+.kcl-sec h4 { margin:0 0 6px; font-size:12px; color:var(--c,var(--mut)); }
+.kcl-tag.bad { color:var(--alert); background:rgba(248,113,113,.12); }
+.kcl-tag.warn { color:var(--busy); background:rgba(251,191,36,.12); }
+.kcl-row.k-sla { border-left-color:var(--alert); } .kcl-row.k-auto { border-left-color:var(--ok); }
+.kcl-row.k-low { border-left-color:var(--busy); } .kcl-row.k-topic { border-left-color:var(--blue); }
+.kcl-list.scroll { max-height:340px; overflow-y:auto; padding-right:4px; scrollbar-width:thin; }
+.kcl-row .kcl-tag:first-of-type { margin-left:8px; }
+.kcl-cols { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.kcl-colhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:6px 10px; border-radius:8px; font-size:12px; font-weight:700; color:var(--c); background:color-mix(in srgb,var(--c) 12%,transparent); border:1px solid color-mix(in srgb,var(--c) 30%,transparent); }
+.kcl-row.compact { padding:6px 8px; gap:6px; }
+.kcl-row.compact .kcl-link { display:block; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.kcl-row.compact .kcl-act { width:26px; height:26px; } .kcl-row.compact .kcl-act .kcl-ic { width:14px; height:14px; }
+.kcl-row.compact .kcl-acts { gap:0; }
+#AF_StataAF .af-tab .kcl-ic { width:15px; height:15px; }
+@media (max-width:700px) { .kcl-cols { grid-template-columns:1fr; } .kcl-rates { grid-template-columns:repeat(2,minmax(0,1fr)); } .kcl-grid.c3 { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+
+`;
+ensureStatStyle('kcl-css', KCL_CSS); // стили нужны сразу: иконки есть уже в панели вкладок
+
+// ============================================================================
+// ⭐ Общие хелперы разметки: оценки и списки чатов
+// ============================================================================
+const KCL_RATES = [
+    { r: 5, icon: 'smile', label: 'Отлично', color: '#4ade80' },
+    { r: 4, icon: 'smile', label: 'Хорошо', color: '#38bdf8' },
+    { r: 3, icon: 'meh', label: 'Нейтрально', color: '#fbbf24' },
+    { r: 2, icon: 'frown', label: 'Плохо', color: '#fb923c' },
+    { r: 1, icon: 'frown', label: 'Ужасно', color: '#f87171' }
+];
+const KCL_ID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+const kclLogsUrl = (id) => `https://skyeng.autofaq.ai/logs/${encodeURIComponent(id)}`;
+
+function kclRatesHtml(counts, total) {
+    return `<div class="kcl-rates">${KCL_RATES.map(x => {
+        const n = counts[x.r] || 0;
+        const pct = total > 0 ? (n * 100 / total) : 0;
+        return `<div class="kcl-rate" data-kcl-rate="${x.r}" style="--c:${x.color}" title="Показать диалоги с оценкой ${x.r}">
+            ${KCL_ICONS[x.icon]}
+            <b>${n}</b>
+            <small>${x.r} · ${x.label}</small>
+            <div class="kcl-mini"><div style="width:${pct}%"></div></div>
+            <em>${pct.toFixed(1).replace(/\.0$/, '')}%</em>
+        </div>`;
+    }).join('')}</div>`;
+}
+
+function kclIdLinks(htmlStr) {
+    const ids = [...new Set(String(htmlStr || '').match(KCL_ID_RE) || [])];
+    return `<div class="kcl-ids">${ids.map(id => `<a class="kcl-link" href="${kclLogsUrl(id)}" target="_blank">${escapeStatHtml(id)}</a>`).join('')}</div>`;
+}
+
+
+
+// ============================================================================
 // 🪟 win_StatisticaAF (СУПЕР-ДИЗАЙН ДАШБОРДА)
 // ============================================================================
 
@@ -1688,7 +1878,7 @@ var win_StatisticaAF = `
     background: #0d1625;
     border: 1px solid #344258;
     border-radius: 12px;
-    overflow-x: auto;
+    flex-wrap: wrap;
 }
 
 #AF_StataAF .af-tab {
@@ -1697,9 +1887,9 @@ var win_StatisticaAF = `
     justify-content: center;
     gap: 6px;
     flex: 1 1 0;
-    min-width: max-content;
+    min-width: 0;
     height: 34px;
-    padding: 0 12px;
+    padding: 0 10px;
     color: #94a3b8;
     background: transparent;
     border: 1px solid transparent;
@@ -1913,22 +2103,12 @@ var win_StatisticaAF = `
 
     <!-- Разделы -->
     <div class="af-tabs">
-        <button class="af-tab" id="retreivestata">
-            <span class="af-tab-icon">📊</span>
-            Статистика
-        </button>
-        <button class="af-tab" id="buttonCheckStats">
-            <span class="af-tab-icon">⭐</span>
-            CSAT + АЗ чаты
-        </button>
-        <button class="af-tab" id="buttonKCpower">
-            <span class="af-tab-icon">🎧</span>
-            Нагрузка КЦ
-        </button>
-        <button class="af-tab" id="buttonTPpower">
-            <span class="af-tab-icon">🛠</span>
-            Нагрузка ТП
-        </button>
+        <button class="af-tab" id="retreivestata">${KCL_ICONS.stats} Статистика</button>
+        <button class="af-tab" id="buttonMyChats">${KCL_ICONS.user} Мои чаты</button>
+        <button class="af-tab" id="buttonLine2">${KCL_ICONS.forward} 2ЛТП</button>
+        <button class="af-tab" id="buttonFav">${KCL_ICONS.star} Избранное</button>
+        <button class="af-tab" id="buttonKCpower">${KCL_ICONS.headset} Нагрузка КЦ</button>
+        <button class="af-tab" id="buttonTPpower">${KCL_ICONS.wrench} Нагрузка ТП</button>
     </div>
 
     <!-- Время обновления и прогресс -->
@@ -1949,8 +2129,10 @@ var win_StatisticaAF = `
         </div>
 
         <div id="outputstatafield"></div>
-        <div id="csatandthemes" style="display:none; line-height: 1.6;"></div>
         <div id="loadkctp" style="display:none; line-height: 1.6;"></div>
+        <div id="mystatfield" style="display:none;"></div>
+        <div id="line2field" style="display:none;"></div>
+        <div id="favfield" style="display:none;"></div>
     </div>
 </div>
 `;
@@ -2089,311 +2271,18 @@ function getbuttonGetStatButtonPress() {
 }
 
 // ============================================================================
-// 🔍 checkCSAT
-// ============================================================================
-
-async function checkCSAT() {
-    const runId = ++csatRunId;
-    const isStale = () => runId !== csatRunId;
-    const timeOut = document.getElementById("timeoutput");
-    if (timeOut) timeOut.value = new Date().toLocaleTimeString('ru-RU');['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
-    const checkBtn = document.getElementById('buttonCheckStats');
-    if (checkBtn) { checkBtn.classList.add('active-stat-tab'); checkBtn.innerHTML = '<span class="af-tab-icon">⏳</span> Загрузка...'; }
-
-    document.getElementById('outputstatafield')?.style.setProperty('display', 'none');
-    document.getElementById('loadkctp')?.style.setProperty('display', 'none');
-
-    const csatDiv = document.getElementById('csatandthemes');
-    if (csatDiv) { csatDiv.style.display = ''; csatDiv.innerHTML = ''; }
-
-    const loader = document.getElementById('msgloader');
-    const loaderText = document.getElementById('loader-text');
-    const loaderProgress = document.getElementById('loader-progress');
-
-    if (loader) loader.style.display = '';
-
-    // Те же границы суток по МСК, что и в «Статистике». Раньше даты считались
-    // через локальный часовой пояс компьютера, а конец дня обрезался на .059 вместо .999
-    const [leftDateFromGrab, rightDateToGrab] = getDateRangeStata(
-        document.getElementById("dateFromStat").value,
-        document.getElementById("dateToStat").value
-    );
-
-    let str = document.createElement('p');
-    str.style.paddingLeft = '50px';
-
-    try {
-        let page = 1;
-        let stringChatsWithoutTopic = "", flagvbad = "", flagbad = "", flagmid = "", abovecloseslaarr = "";
-        let csatScore = 0, csatCount = 0, slacount = 0;
-        let clschatarr = [], aclosedchats = [], flagok = [];
-        let count = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-        let totalChatsToProcess = 0;
-        let processedChats = 0;
-
-        let failedChats = 0;
-
-        while (true) {
-            const test = await apiFetch(CONFIGSTAT.API.QUEUES_ARCHIVE, {
-                serviceId: CONFIGSTAT.SERVICE_ID, mode: "Json", tsFrom: leftDateFromGrab, tsTo: rightDateToGrab, orderBy: "ts", orderDirection: "Asc", page, limit: 100
-            }, 'POST');
-            if (isStale()) return;
-
-            if (page === 1) totalChatsToProcess = test.total || 0;
-
-            const pageItems = test.items || [];
-
-            // Параллельная загрузка чатов страницы (раньше — строго по одному)
-            const pageChats = await mapWithConcurrency(pageItems, CONFIGSTAT.CONCURRENCY, async (item) => {
-                try {
-                    return await doOperationsWithConversations(item.conversationId);
-                } catch (error) {
-                    failedChats++;
-                    console.warn(`⚠️ CSAT: чат ${item.conversationId} не загрузился:`, error.message);
-                    return null;
-                } finally {
-                    processedChats++;
-                    if (loaderText && loaderProgress && !isStale()) {
-                        const pct = totalChatsToProcess ? Math.min(100, Math.round((processedChats / totalChatsToProcess) * 100)) : 0;
-                        loaderText.textContent = `⏳ Проверяем чаты: ${processedChats} из ${totalChatsToProcess} (${pct}%)`;
-                        loaderProgress.style.width = `${pct}%`;
-                    }
-                }
-            });
-            if (isStale()) return;
-
-            for (let itemIndex = 0; itemIndex < pageItems.length; itemIndex++) {
-                const item = pageItems[itemIndex];
-                const chat = pageChats[itemIndex];
-                if (!chat) continue;
-
-                if (typeof operatorId !== 'undefined' && chat.operatorId !== operatorId) continue;
-
-                clschatarr.push(item.conversationId);
-
-                // Проверяем автозакрытия в массиве messages
-                const messages = chat.messages || [];
-
-                const autoClosedMsg = messages.find(msg => msg.eventTpe === 'CloseConversation' && msg.payload?.src && ["inactivity_timer", "pause"].includes(msg.payload.src));
-                if (autoClosedMsg) {
-                    const srcReason = autoClosedMsg.payload.src;
-                    const srcLabel = srcReason === 'pause' ? '⏸️' : '⏳';
-                    const srcText = srcReason === 'pause' ? 'отложка' : 'таймер';
-                    console.log(`✅ Найдено автозакрытие: ${item.conversationId}, тип: ${srcReason}`);
-                    aclosedchats.push(`<span style="color:#a9c0ff; font-weight:700">${srcLabel}</span> <span name="aclsconv">${item.conversationId}</span> <span style="color:#64748b; font-size:10px;">(${srcText})</span> <span class="lookaclschat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span>`);
-                }
-
-                let tagStr = chat.payload?.tags?.value || '';
-                let formattedTag = 'Нет тега!';
-                if (tagStr === '[\n  "queue"\n]') formattedTag = 'Тег: Очередь КЦ';
-                else if (tagStr === '[\n  "request_forwarded_to_2l_tp"\n]') formattedTag = 'Тег: 2ЛТП';
-                else if (tagStr) formattedTag = escapeStatHtml(tagStr.replace(/[\[\]"\n]/g, '').replace(/,\s*/g, ', ').trim() || 'Нет тега!');
-
-                if ((item.stats?.conversationDuration || 0) / 60000 > CONFIGSTAT.SLA_THRESHOLD_MINUTES) {
-                    slacount++;
-                    let tsClean = typeof item.ts === 'string' ? item.ts.split(/\[UTC\]|\[GMT\]/)[0].trim() : item.ts;
-                    // Маркер [UTC] значит, что строка в UTC: добавляем 'Z', иначе
-                    // дата парсилась бы в локальном поясе оператора и «МСК» врало.
-                    let tmestmp = new Date(typeof tsClean === 'string' ? tsClean.replace(' ', 'T') + 'Z' : tsClean);
-                    if (isNaN(tmestmp.getTime())) tmestmp = new Date(tsClean);
-                    if (isNaN(tmestmp.getTime())) tmestmp = new Date();
-
-                    const tsTime = new Intl.DateTimeFormat('ru-RU', {
-                        timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit', hour12: false
-                    }).format(tmestmp);
-                    const duration = (item.stats.conversationDuration / 60000).toFixed(1);
-
-                    abovecloseslaarr += `<span style="color: red; font-weight:700">&#5129;</span> <a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" style="color:LightGoldenrod;" class="slaclchatids">${item.conversationId}</a> Время: ${duration}м <span class="lookchat modal-lookchat" data-hash="${item.conversationId}" style="margin-left: 10px; cursor: pointer">👁‍🗨</span> Создан: ${tsTime} МСК ${formattedTag}<br>`;
-                }
-
-                if (item.stats?.rate?.rate) {
-                    const rate = item.stats.rate.rate;
-                    csatScore += rate; csatCount++;
-                    flagok.push(rate);
-                    if (rate === 1) flagvbad += `• ${item.conversationId}<br>`;
-                    if (rate === 2) flagbad += `• ${item.conversationId}<br>`;
-                    if (rate === 3) flagmid += `• ${item.conversationId}<br>`;
-                }
-
-                if (chat.payload?.topicId?.value === "") {
-                    stringChatsWithoutTopic += `<a href="https://skyeng.autofaq.ai/logs/${item.conversationId}" target="_blank">${item.conversationId}</a><br>`;
-                }
-            }
-
-            if (test.total / 100 >= page) {
-                page++;
-            } else {
-                flagok.forEach(i => count[i] = (count[i] || 0) + 1);
-
-                const avg = csatCount > 0 ? (csatScore / csatCount).toFixed(2) : 'N/A';
-                const slaPct = clschatarr.length > 0 ? (100 - (slacount / clschatarr.length) * 100).toFixed(1) : 100;
-
-                if (loader) loader.style.display = "none";
-
-                const c5 = count[5] || 0, c4 = count[4] || 0, c3 = count[3] || 0, c2 = count[2] || 0, c1 = count[1] || 0;
-                const totalRatings = c5 + c4 + c3 + c2 + c1;
-
-                str.innerHTML = `
-                    <div style="padding: 12px;">
-                        <!-- Главные метрики -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
-                            <!-- CSAT Score -->
-                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                                <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px;">⭐</div>
-                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Средний CSAT</div>
-                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${avg}</div>
-                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Всего оценок: ${csatCount}</div>
-                                </div>
-                            </div>
-
-                            <!-- SLA Закрытия -->
-                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                                <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px;">🕒</div>
-                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">SLA Закрытия</div>
-                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${slaPct}%</div>
-                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Просрочено: ${slacount} из ${clschatarr.length}</div>
-                                </div>
-                            </div>
-
-                            <!-- Автозакрытия -->
-                            <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(134, 239, 172, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
-                                <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                                <div style="position: relative; z-index: 1;">
-                                    <div style="font-size: 32px; margin-bottom: 6px;">🤖</div>
-                                    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Автозакрытия</div>
-                                    <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${aclosedchats.length}</div>
-                                    <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Потеряшки</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Разбивка оценок -->
-                        <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.3s backwards;">
-                            <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 20px;">📊</span>
-                                <span>Детализация оценок CSAT</span>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 12px;">
-                                ${[
-                        { rate: 5, count: c5, emoji: '😊', color: '#86efac', label: 'Отлично' },
-                        { rate: 4, count: c4, emoji: '🙂', color: '#7dd3fc', label: 'Хорошо' },
-                        { rate: 3, count: c3, emoji: '😐', color: '#fcd34d', label: 'Средне' },
-                        { rate: 2, count: c2, emoji: '😞', color: '#fdba74', label: 'Плохо' },
-                        { rate: 1, count: c1, emoji: '😡', color: '#fca5a5', label: 'Ужасно' }
-                    ].map(item => {
-                        const percentage = totalRatings > 0 ? ((item.count / totalRatings) * 100).toFixed(1) : 0;
-                        return `
-                                        <div style="background: rgba(0, 0, 0, 0.22); border-radius: 10px; padding: 12px; border: 1px solid ${item.color}40; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: center; transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px ${item.color}60';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)';">
-                                            <div style="font-size: 32px; margin-bottom: 6px;">${item.emoji}</div>
-                                            <div style="font-size: 22px; font-weight: 800; color: ${item.color}; text-shadow: 0 0 12px ${item.color}80; margin-bottom: 4px;">${item.count}</div>
-                                            <div style="font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;">${item.label}</div>
-                                            <div style="background: rgba(0,0,0,0.3); height: 4px; border-radius: 2px; overflow: hidden; margin-top: 6px;">
-                                                <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, ${item.color}, ${item.color}cc); box-shadow: none; transition: width 0.5s ease;"></div>
-                                            </div>
-                                            <div style="font-size: 9px; color: #64748b; margin-top: 4px;">${percentage}%</div>
-                                        </div>
-                                    `;
-                    }).join('')}
-                            </div>
-
-                            <!-- Списки плохих оценок -->
-                            ${flagmid || flagbad || flagvbad ? `
-                                <div style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size: 13px; font-weight: 600; color: #cbd5e1; margin-bottom: 10px;">⚠️ Чаты с низкими оценками:</div>
-                                    ${flagmid ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(252, 211, 77, 0.1); border-left: 3px solid #fcd34d; border-radius: 6px;"><div style="color: #fcd34d; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😐 Оценки 3:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagmid}</div></div>` : ''}
-                                    ${flagbad ? `<div style="margin-bottom: 10px; padding: 10px; background: rgba(253, 186, 116, 0.1); border-left: 3px solid #fdba74; border-radius: 6px;"><div style="color: #fdba74; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😞 Оценки 2:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagbad}</div></div>` : ''}
-                                    ${flagvbad ? `<div style="padding: 10px; background: rgba(239, 68, 68, 0.1); border-left: 3px solid #fca5a5; border-radius: 6px;"><div style="color: #fca5a5; font-weight: 600; margin-bottom: 6px; font-size: 12px;">😡 Оценки 1:</div><div style="color: #cbd5e1; font-size: 11px; line-height: 1.5;">${flagvbad}</div></div>` : ''}
-                                </div>
-                            ` : ''}
-                        </div>
-
-                        <!-- Чаты без тематики -->
-                        ${stringChatsWithoutTopic ? `
-                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(252, 211, 77, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.4s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #fcd34d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 20px;">⚠️</span>
-                                    <span>Чаты без тематики</span>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
-                                    ${stringChatsWithoutTopic}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <!-- SLA Просрочки -->
-                        ${abovecloseslaarr ? `
-                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(239, 68, 68, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); margin-bottom: 16px; animation: cardEntrance 0.5s ease 0.5s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #fca5a5; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 20px;">🚨</span>
-                                    <span>Чаты с превышением SLA (> 25 минут)</span>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
-                                    ${abovecloseslaarr}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <!-- Автозакрытые чаты -->
-                        ${aclosedchats.length > 0 ? `
-                            <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6); animation: cardEntrance 0.5s ease 0.6s backwards;">
-                                <div style="font-size: 14px; font-weight: 700; color: #86efac; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 20px;">🤖</span>
-                                    <span>Автозакрытые чаты (потеряшки)</span>
-                                </div>
-                                <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; color: #cbd5e1; font-size: 11px; line-height: 1.6;">
-                                    ${aclosedchats.join('<br>')}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    <style>
-                        @keyframes cardEntrance {
-                            from { opacity: 0; transform: translateY(20px); }
-                            to { opacity: 1; transform: translateY(0); }
-                        }
-                    </style>
-                `;
-                if (failedChats) {
-                    const warning = document.createElement('div');
-                    warning.style.cssText = 'margin:0 12px 8px;padding:10px 14px;border-radius:8px;background:rgba(252,211,77,0.15);border:1px solid #fcd34d;color:#fcd34d;font-weight:600;';
-                    warning.textContent = `⚠️ Не загрузились ${failedChats} чатов — цифры могут быть занижены. Нажми кнопку ещё раз.`;
-                    str.prepend(warning);
-                }
-                break;
-            }
-        }
-    } catch (e) {
-        if (isStale()) return;
-        console.error('❌ checkCSAT:', e);
-        str.innerHTML = `<span style="color:red">Ошибка: ${escapeStatHtml(e.message)}</span>`;
-        if (loader) loader.style.display = 'none';
-    } finally {
-        // Устаревший запуск (нажали кнопку ещё раз) ничего не дописывает в окно
-        if (!isStale()) {
-            if (checkBtn) checkBtn.innerHTML = '<span class="af-tab-icon">⭐</span> CSAT + АЗ чаты';
-            if (csatDiv) csatDiv.appendChild(str);
-        }
-    }
-}
-
-// ============================================================================
 // 📊 checkload
 // ============================================================================
 
 async function checkload(department, flag) {
-    const time = document.getElementById("timeoutput"); if (time) time.value = new Date().toLocaleTimeString('ru-RU');['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower'].forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
+    const time = document.getElementById("timeoutput"); if (time) time.value = new Date().toLocaleTimeString('ru-RU');KCL_TABS.forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
 
     if (flag === 'КЦ') document.getElementById('buttonKCpower')?.classList.add('active-stat-tab');
     if (flag === 'ТП') document.getElementById('buttonTPpower')?.classList.add('active-stat-tab');
 
-    const out = document.getElementById('outputstatafield'), csat = document.getElementById('csatandthemes'), load = document.getElementById('loadkctp'), loader = document.getElementById('msgloader');
-    if (out) out.style.display = 'none'; if (csat) csat.style.display = 'none';
+    const out = document.getElementById('outputstatafield'), load = document.getElementById('loadkctp'), loader = document.getElementById('msgloader');
+    if (out) out.style.display = 'none';
+    ['mystatfield', 'line2field', 'favfield'].forEach(id => document.getElementById(id)?.style.setProperty('display', 'none'));
     if (load) { load.innerHTML = ''; load.style.display = ''; }
     if (loader) {
         loader.style.display = '';
@@ -2408,114 +2297,83 @@ async function checkload(department, flag) {
 
         const ops = (stat.onOperator || [])
             .filter(o => o.operator?.fullName?.match(deptPat) && o.operator.status !== 'Offline')
-            .map(o => ({ name: o.operator.fullName, status: { Online: '🟢', Busy: '🟡', Pause: '🔴' }[o.operator.status] || '⚪', chats: o.aCnt || 0 }));
+            .map(o => ({ name: o.operator.fullName, status: { Online: '🟢', Busy: '🟡', Pause: '🔴' }[o.operator.status] || '⚪', chats: o.aCnt || 0 }))
+            // Сначала онлайн, затем занят, в конце перерыв; внутри статуса — у кого меньше чатов, затем по имени
+            .sort((a, b) => ({ '🟢': 0, '🟡': 1, '🔴': 2 }[a.status] ?? 3) - ({ '🟢': 0, '🟡': 1, '🔴': 2 }[b.status] ?? 3)
+                || a.chats - b.chats || a.name.localeCompare(b.name, 'ru'));
 
         const onLine = ops.filter(o => o.status === '🟢').length, busy = ops.filter(o => o.status === '🟡').length, pause = ops.filter(o => o.status === '🔴').length;
         const totalChats = ops.reduce((s, o) => s + o.chats, 0), ratio = onLine ? totalChats / onLine : 0;
         const loadTxt = ratio <= 2.2 ? 'Низкая 🟢' : ratio <= 3.2 ? 'Средняя 🟡' : ratio <= 4.4 ? 'Высокая 🟠' : 'Критическая 🔴';
         const loadColor = ratio <= 2.2 ? '#86efac' : ratio <= 3.2 ? '#fcd34d' : ratio <= 4.4 ? '#fdba74' : '#fca5a5';
 
+        // Очередь (чаты без оператора) по группам отдела — как в AFOperatorStatus
+        const QUEUE_GROUPS = {
+            'КЦ': ['b6f7f34d-2f08-fc19-3661-29ac00842898'],
+            'ТП': ['c7bbb211-a217-4ed3-8112-98728dc382d8', '8266dbb1-db44-4910-8b5f-a140deeec5c0']
+        };
+        const queueIds = (sec === 'Prem' || sec === 'ТПPrem') ? ['c1262bdf-444a-41e1-974e-03d754dcff25'] : (QUEUE_GROUPS[flag] || []);
+        const queueCnt = (stat.unAssigned || []).filter(i => queueIds.includes(i.groupId)).reduce((sum, i) => sum + Number(i.count || 0), 0);
+        const queueColor = queueCnt === 0 ? '#86efac' : queueCnt <= 5 ? '#fcd34d' : '#fca5a5';
+
         if (load) {
+            const ICONS = KCL_ICONS;
+            ensureStatStyle('kcl-css', KCL_CSS);
+            const stCls = { '🟢': 'ok', '🟡': 'busy', '🔴': 'pause' };
+            const stTxt = { '🟢': 'Онлайн', '🟡': 'Занят', '🔴': 'Перерыв' };
+            const loadLbl = loadTxt.split(' ')[0];
+            const queueLvl = queueCnt === 0 ? 'ok' : queueCnt <= 5 ? 'busy' : 'alert';
+            const loadLvl = ratio <= 2.2 ? 'ok' : ratio <= 4.4 ? 'busy' : 'alert';
+
             load.innerHTML = `
-            <div style="padding: 12px;">
-                <!-- Главные метрики нагрузки -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
-                    <!-- Операторы на линии -->
-                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(66, 104, 201, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(66, 104, 201, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                        <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">👨‍💻</div>
-                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Операторов на линии</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${ops.length}</div>
-                            <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 16px;">🟢</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #86efac;">${onLine}</div>
-                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Online</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 16px;">🟡</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #fcd34d;">${busy}</div>
-                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Busy</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 16px;">🔴</div>
-                                    <div style="font-size: 14px; font-weight: 700; color: #fca5a5;">${pause}</div>
-                                    <div style="font-size: 8px; color: #64748b; text-transform: uppercase;">Pause</div>
-                                </div>
-                            </div>
+            <div class="kcl">
+                <div class="kcl-grid">
+                    <div class="kcl-card kcl-blue">
+                        <div class="kcl-head">${ICONS.users}<span>На линии</span></div>
+                        <div class="kcl-num">${ops.length}</div>
+                        <div class="kcl-split">
+                            <span class="kcl-chip ok"><i></i>${onLine} онлайн</span>
+                            <span class="kcl-chip busy"><i></i>${busy} занят</span>
+                            <span class="kcl-chip pause"><i></i>${pause} перерыв</span>
                         </div>
                     </div>
-
-                    <!-- Всего чатов -->
-                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid rgba(134, 239, 172, 0.3); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(134, 239, 172, 0.15); position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.1s backwards;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                        <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">💬</div>
-                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Чатов в работе</div>
-                            <div style="font-size: 28px; font-weight: 800; color: #f8fafc;">${totalChats}</div>
-                            <div style="font-size: 10px; color: #64748b; margin-top: 4px;">Распределено по операторам</div>
-                        </div>
+                    <div class="kcl-card kcl-green">
+                        <div class="kcl-head">${ICONS.chat}<span>В работе</span></div>
+                        <div class="kcl-num">${totalChats}</div>
+                        <div class="kcl-sub">чатов у операторов</div>
                     </div>
-
-                    <!-- Уровень нагрузки -->
-                    <div style="background: #1a2536; border-radius: 12px; padding: 15px; border: 1px solid ${loadColor}50; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 20px ${loadColor}30; position: relative; overflow: hidden; animation: cardEntrance 0.5s ease 0.2s backwards;">
-                        <div style="position: absolute; top: -50%; right: -20%; width: 150px; height: 150px; background: none; border-radius: 50%;"></div>
-                        <div style="position: relative; z-index: 1;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">⚖️</div>
-                            <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600;">Уровень нагрузки</div>
-                            <div style="font-size: 20px; font-weight: 800; color: ${loadColor}; text-shadow: 0 0 15px ${loadColor}80; margin-bottom: 4px;">${loadTxt}</div>
-                            <div style="font-size: 13px; color: #cbd5e1; font-weight: 600;">~ ${ratio.toFixed(1)} чат / оператор</div>
-                            <div style="background: rgba(0,0,0,0.3); height: 6px; border-radius: 3px; overflow: hidden; margin-top: 10px;">
-                                <div style="width: ${Math.min((ratio / 5) * 100, 100)}%; height: 100%; background: linear-gradient(90deg, ${loadColor}, ${loadColor}cc); box-shadow: none; transition: width 0.5s ease;"></div>
-                            </div>
-                        </div>
+                    <div class="kcl-card kcl-lvl-${queueLvl}">
+                        <div class="kcl-head">${ICONS.queue}<span>В очереди</span>${queueCnt > 0 ? '<b class="kcl-pulse"></b>' : ''}</div>
+                        <div class="kcl-num">${queueCnt}</div>
+                        <div class="kcl-sub">${queueCnt === 0 ? 'очередь пуста' : 'ждут оператора'}</div>
+                    </div>
+                    <div class="kcl-card kcl-lvl-${loadLvl}">
+                        <div class="kcl-head">${ICONS.gauge}<span>Нагрузка</span></div>
+                        <div class="kcl-num kcl-num-sm">${loadLbl}</div>
+                        <div class="kcl-sub">~ ${ratio.toFixed(1)} чат / оператор</div>
+                        <div class="kcl-bar"><div style="width:${Math.min((ratio / 5) * 100, 100)}%"></div></div>
                     </div>
                 </div>
 
-                <!-- Детализация по операторам -->
-                <div style="background: #1a2536; border-radius: 12px; padding: 16px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1); animation: cardEntrance 0.5s ease 0.3s backwards;">
-                    <div style="font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 20px;">📋</span>
-                        <span>Детализация по операторам</span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;">
+                <div class="kcl-panel">
+                    <div class="kcl-panel-title">${ICONS.list}<span>Детализация по операторам</span></div>
+                    <div class="kcl-ops">
                         ${ops.map((o, idx) => {
-                const chatColor = o.chats === 0 ? '#64748b' : o.chats <= 2 ? '#86efac' : o.chats <= 4 ? '#fcd34d' : '#fca5a5';
+                const cls = stCls[o.status] || 'unk';
+                const lvl = o.chats === 0 ? 'zero' : o.chats <= 2 ? 'ok' : o.chats <= 4 ? 'busy' : 'alert';
                 return `
-                                <div style="background: rgba(0, 0, 0, 0.22); border-radius: 10px; padding: 10px; border: 1px solid rgba(66, 104, 201, 0.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: all 0.3s ease; animation: operatorCardSlide 0.4s ease ${idx * 0.03}s backwards;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(66, 104, 201, 0.4)'; this.style.borderColor='rgba(66, 104, 201, 0.5)';" onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.3)'; this.style.borderColor='rgba(66, 104, 201, 0.2)';">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                                        <div style="flex: 1; min-width: 0;">
-                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                                                <span style="font-size: 16px;">${o.status}</span>
-                                                <span style="color: #e2e8f0; font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeStatHtml(o.name)}">${escapeStatHtml(o.name)}</span>
-                                            </div>
-                                            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px;">
-                                                ${o.status === '🟢' ? 'Доступен' : o.status === '🟡' ? 'Занят' : o.status === '🔴' ? 'На паузе' : 'Неизвестно'}
-                                            </div>
-                                        </div>
-                                        <div style="background: linear-gradient(135deg, ${chatColor}30, ${chatColor}10); border: 1px solid ${chatColor}40; border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 60px; box-shadow: 0 0 15px ${chatColor}30;">
-                                            <div style="font-size: 18px; font-weight: 800; color: ${chatColor}; text-shadow: 0 0 8px ${chatColor}80; line-height: 1;">${o.chats}</div>
-                                            <div style="font-size: 8px; color: #94a3b8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px;">чатов</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
+                        <div class="kcl-op" style="animation-delay:${idx * 0.03}s">
+                            <span class="kcl-pill ${cls}" style="--fill:100%" title="${stTxt[o.status] || 'Неизвестно'} · ${o.chats} чатов"><i></i></span>
+                            <div class="kcl-op-main">
+                                <div class="kcl-op-name" title="${escapeStatHtml(o.name)}">${escapeStatHtml(o.name)}</div>
+                                <div class="kcl-op-st">${stTxt[o.status] || 'Неизвестно'}</div>
+                            </div>
+                            <div class="kcl-badge ${lvl}"><b>${o.chats}</b><small>чатов</small></div>
+                        </div>`;
             }).join('')}
                     </div>
                 </div>
             </div>
-
-            <style>
-                @keyframes cardEntrance {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes operatorCardSlide {
-                    from { opacity: 0; transform: translateX(-20px); }
-                    to { opacity: 1; transform: translateX(0); }
-                }
-            </style>
             `;
         }
     } catch (e) {
@@ -2524,6 +2382,486 @@ async function checkload(department, flag) {
         if (loader) loader.style.display = 'none';
     }
 }
+
+// ============================================================================
+// 👤 МОИ ЧАТЫ · 2ЛТП · ИЗБРАННОЕ (перенесено из Addstat.js, один модуль статистики)
+// ============================================================================
+const STAT_FAV_KEY = 'af_stat_favorites'; // тот же ключ, что был в Addstat.js: избранное сохраняется
+let statFavs = {};
+try { statFavs = JSON.parse(localStorage.getItem(STAT_FAV_KEY) || '{}') || {}; } catch (e) { statFavs = {}; }
+const statFavSave = () => {
+    try { localStorage.setItem(STAT_FAV_KEY, JSON.stringify(statFavs)); } catch (e) { console.warn('[Statistica] избранное не сохранилось:', e); }
+};
+
+const KCL_PANES = ['outputstatafield', 'loadkctp', 'mystatfield', 'line2field', 'favfield'];
+const KCL_TABS = ['retreivestata', 'buttonMyChats', 'buttonLine2', 'buttonFav', 'buttonKCpower', 'buttonTPpower'];
+
+function kclActivate(tabId, paneId) {
+    KCL_TABS.forEach(id => document.getElementById(id)?.classList.toggle('active-stat-tab', id === tabId));
+    KCL_PANES.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = id === paneId ? '' : 'none'; });
+    const t = document.getElementById('timeoutput');
+    if (t) t.value = new Date().toLocaleTimeString('ru-RU');
+    ensureStatStyle('kcl-css', KCL_CSS);
+}
+
+// ---------- Скан архива за период: мои чаты, передачи на 2ЛТП, мои оценки ----------
+const KCL_L2_MARKERS = ['техподдержка 2-я линия', 'техподдержка 2 линия', '2-я линия crm2'];
+let kclScanState = { key: '', data: null, promise: null };
+
+function kclAnalyzeChat(item, conv, res) {
+    const myId = res.myId;
+    let touched = false, closedByMe = false, isLine2 = false, snippet = '';
+
+    const participants = conv.participatingOperatorsIds || item.participatingOperatorsIds || [];
+    if (myId && participants.map(String).includes(myId)) touched = true;
+
+    for (const m of (conv.messages || [])) {
+        if (myId) {
+            if (String(m.sender) === myId || (m.payload && (String(m.payload.sender) === myId || String(m.payload.oid) === myId))) touched = true;
+            // Последнее событие закрытия решает, кто закрыл чат
+            if (m.eventTpe === 'CloseConversation' || String(m.payload?.status).includes('Closed')) {
+                closedByMe = String(m.payload?.sender) === myId || String(m.payload?.oid) === myId;
+            }
+        }
+        let raw = m.txt || m.text || '';
+        if (m.tpe === 'Event' && m.payload) {
+            raw += ' ' + (m.payload.awakeText || '') + ' ' + (m.payload.comment || '');
+            if (m.payload.status) raw += ' ' + m.payload.status;
+        }
+        if (!raw && m.payload) raw = JSON.stringify(m.payload);
+        const clean = String(raw).replace(/<[^>]*>?/gm, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+        const norm = clean.toLowerCase();
+        if (KCL_L2_MARKERS.some(k => norm.includes(k))) {
+            isLine2 = true;
+            if (!snippet) snippet = clean.slice(0, 160);
+        }
+    }
+
+    const currentOp = conv.operatorId || conv.assigneeId || item.operatorId;
+    if (!closedByMe && myId && String(currentOp) === myId && touched) closedByMe = true;
+
+    // Чаты, закрытые мной или числящиеся за мной: по ним считаем CSAT, SLA, автозакрытия, тематики
+    const owned = !!myId && String(conv.operatorId) === myId;
+    const mineClosed = closedByMe || owned;
+    if (mineClosed) {
+        res.mineTotal++;
+        const auto = (conv.messages || []).find(msg => msg.eventTpe === 'CloseConversation' && ['inactivity_timer', 'pause'].includes(msg.payload?.src));
+        if (auto) res.auto.push({ id: item.conversationId, src: auto.payload.src });
+        const dur = (item.stats?.conversationDuration || 0) / 60000;
+        if (dur > CONFIGSTAT.SLA_THRESHOLD_MINUTES) res.slaBad.push({ id: item.conversationId, min: dur, ts: item.ts });
+        if (conv.payload?.topicId?.value === '') res.noTopic.push(item.conversationId);
+    }
+
+    if (touched) res.touched++;
+    if (closedByMe) res.closed++;
+
+    if (isLine2) {
+        res.line2.push({ id: item.conversationId, mine: touched, snippet, ts: item.ts || item.tsCreate || null });
+        if (touched) res.line2Mine++;
+    }
+
+    const rawRate = item.stats?.rate || conv.stats?.rate;
+    const rate = Number(typeof rawRate === 'object' && rawRate !== null ? rawRate.rate : rawRate) || 0;
+    if (rate > 0 && mineClosed && res.rates[rate] !== undefined) {
+        res.byRate[rate].push({ id: item.conversationId, ts: item.ts });
+        res.rates[rate]++;
+        res.csatSum += rate;
+        res.csatCnt++;
+    }
+}
+
+async function kclScan(force = false) {
+    const f = document.getElementById('dateFromStat')?.value;
+    const t = document.getElementById('dateToStat')?.value;
+    if (!f || !t) throw new Error('Выберите даты');
+    const myId = typeof operatorId !== 'undefined' ? String(operatorId || '') : '';
+    const key = `${f}|${t}|${myId}`;
+    if (!force && kclScanState.key === key) {
+        if (kclScanState.data) return kclScanState.data;
+        if (kclScanState.promise) return kclScanState.promise;
+    }
+
+    const [from, to] = getDateRangeStata(f, t);
+    const loader = document.getElementById('msgloader');
+    const loaderText = document.getElementById('loader-text');
+    const loaderBar = document.getElementById('loader-progress');
+    if (loader) loader.style.display = '';
+
+    const job = (async () => {
+        const res = { key, myId, from: f, to: t, touched: 0, closed: 0, line2Mine: 0, rates: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }, csatSum: 0, csatCnt: 0, line2: [], failed: 0, total: 0, mineTotal: 0, auto: [], slaBad: [], noTopic: [], byRate: { 1: [], 2: [], 3: [], 4: [], 5: [] } };
+        let page = 1, done = 0;
+        while (true) {
+            const data = await apiFetch(CONFIGSTAT.API.QUEUES_ARCHIVE, {
+                serviceId: CONFIGSTAT.SERVICE_ID, mode: 'Json', tsFrom: from, tsTo: to,
+                orderBy: 'ts', orderDirection: 'Asc', page, limit: CONFIGSTAT.PAGE_LIMIT
+            }, 'POST');
+            const items = data?.items || [];
+            if (!items.length) break;
+            if (page === 1) res.total = data.total || items.length;
+
+            const convs = await mapWithConcurrency(items, 12, async (item) => {
+                try { return await doOperationsWithConversations(item.conversationId); }
+                catch (err) { res.failed++; return null; }
+                finally {
+                    done++;
+                    const pct = res.total ? Math.min(100, Math.round(done * 100 / res.total)) : 0;
+                    if (loaderText) loaderText.textContent = `Анализ чатов: ${done} из ${res.total} (${pct}%)`;
+                    if (loaderBar) loaderBar.style.width = pct + '%';
+                }
+            });
+            items.forEach((item, i) => kclAnalyzeChat(item, convs[i] || {}, res));
+
+            if (page * CONFIGSTAT.PAGE_LIMIT >= (data.total || 0)) break;
+            page++;
+        }
+        res.line2.reverse(); // свежие сверху
+        return res;
+    })();
+
+    kclScanState = { key, data: null, promise: job };
+    try {
+        const res = await job;
+        kclScanState = { key, data: res, promise: null };
+        return res;
+    } catch (e) {
+        kclScanState = { key: '', data: null, promise: null };
+        throw e;
+    } finally {
+        if (loader) loader.style.display = 'none';
+    }
+}
+
+const kclErr = (e) => `<div class="kcl"><div class="kcl-warnbar">Ошибка: ${escapeStatHtml(e.message || e)}</div></div>`;
+const kclPeriod = (res) => res.from === res.to ? res.from : `${res.from} — ${res.to}`;
+const kclRefreshBtn = (what) => `<button class="kcl-btn" data-kcl-refresh="${what}" title="Пересчитать за период">${KCL_ICONS.refresh}Обновить</button>`;
+const kclWarnings = (res) => (!res.myId ? '<div class="kcl-warnbar">Не удалось определить ваш ID оператора: личные цифры будут нулевыми. Обновите страницу AutoFAQ.</div>' : '')
+    + (res.failed ? `<div class="kcl-warnbar">Не загрузились ${res.failed} чатов, цифры могут быть занижены. Нажмите «Обновить».</div>` : '');
+
+// Диалоги по оценкам: переключатель 5…1 и список чатов выбранной оценки
+let kclRateSel = 0;
+const KCL_RATE_TAG = { 5: 'good', 4: 'good', 3: 'warn', 2: 'warn', 1: 'bad' };
+
+function kclRateSelected(res) {
+    return kclRateSel && res.byRate[kclRateSel]?.length ? kclRateSel : ([1, 2, 3, 4, 5].find(n => res.byRate[n].length) || 5);
+}
+
+function kclRateListHtml(res, n) {
+    const items = res.byRate[n] || [];
+    if (!items.length) return `<div class="kcl-empty">Чатов с оценкой ${n} за этот период нет.</div>`;
+    return kclChipList(items.map(x => ({ id: x.id, tags: [[`${n} ★`, KCL_RATE_TAG[n]], ...(kclFmtTs(x.ts) ? [[`${kclFmtTs(x.ts)} МСК`, 'dim']] : [])] })), 'low');
+}
+
+function kclRateSection(res) {
+    const sel = kclRateSelected(res);
+    return `<div class="kcl-seg" id="kcl-rate-seg">${[5, 4, 3, 2, 1].map(n => `<button data-kcl-rate="${n}" class="${n === sel ? 'on' : ''}">${n} ★ · ${res.byRate[n].length}</button>`).join('')}</div>
+        <div id="kcl-rate-list" style="margin-top:10px">${kclRateListHtml(res, sel)}</div>`;
+}
+
+// Автозакрытые чаты: слева по таймеру неактивности, справа по отложке
+function kclAutoColumns(res) {
+    const col = (src, title, color) => {
+        const items = res.auto.filter(x => x.src === src).map(x => ({ id: x.id }));
+        return `<div><div class="kcl-colhead" style="--c:${color}"><span>${title}</span><b>${items.length}</b></div>${items.length ? kclChipList(items, 'auto', true) : '<div class="kcl-empty">Нет чатов</div>'}</div>`;
+    };
+    return `<div class="kcl-cols">${col('inactivity_timer', 'По таймеру', '#94a3b8')}${col('pause', 'По отложке', '#fbbf24')}</div>`;
+}
+
+// Детализация «Мои чаты»: SLA, автозакрытия, тематики и списки (перенесено из вкладки CSAT + АЗ)
+function kclChipList(items, kind, compact = false) {
+    const rows = items.map(x => `<div class="kcl-row k-${kind}${compact ? ' compact' : ''}">
+        <div class="kcl-row-main">
+            <a class="kcl-link" href="${kclLogsUrl(x.id)}" target="_blank" title="${escapeStatHtml(x.id)}">${escapeStatHtml(x.id)}</a>${(x.tags || []).map(([t, c]) => `<span class="kcl-tag ${c || 'dim'}">${escapeStatHtml(t)}</span>`).join('')}
+        </div>
+        <div class="kcl-acts">${kclHistBtn(x.id)}${kclExtBtn(x.id)}${kclFavBtn(x.id)}</div>
+    </div>`).join('');
+    return `<div class="kcl-list ${items.length > 6 ? 'scroll' : ''}">${rows}</div>`;
+}
+
+function kclMyDetails(res) {
+    const slaPct = res.mineTotal ? 100 - (res.slaBad.length * 100 / res.mineTotal) : 100;
+    const slaLvl = slaPct >= 95 ? 'kcl-lvl-ok' : slaPct >= 85 ? 'kcl-lvl-busy' : 'kcl-lvl-alert';
+    const panel = (cls, icon, title, body) => `<div class="kcl-panel ${cls}"><div class="kcl-panel-title">${KCL_ICONS[icon]}<span>${title}</span></div>${body}</div>`;
+    const csatChats = Object.values(res.byRate).some(a => a.length);
+    return `<div class="kcl-grid c3" style="margin-top:12px">
+            <div class="kcl-card ${slaLvl}">
+                <div class="kcl-head">${KCL_ICONS.queue}<span>SLA закрытия</span></div>
+                <div class="kcl-num">${slaPct.toFixed(1).replace(/\.0$/, '')}%</div>
+                <div class="kcl-sub">просрочено ${res.slaBad.length} из ${res.mineTotal}</div>
+            </div>
+            <div class="kcl-card kcl-green">
+                <div class="kcl-head">${KCL_ICONS.bot}<span>Автозакрытия</span></div>
+                <div class="kcl-num">${res.auto.length}</div>
+                <div class="kcl-sub">потеряшки</div>
+            </div>
+            <div class="kcl-card ${res.noTopic.length ? 'kcl-lvl-busy' : 'kcl-lvl-ok'}">
+                <div class="kcl-head">${KCL_ICONS.tag}<span>Без тематики</span></div>
+                <div class="kcl-num">${res.noTopic.length}</div>
+                <div class="kcl-sub">чатов без темы</div>
+            </div>
+        </div>
+        ${panel('', 'stats', 'Оценки моих закрытых чатов', kclRatesHtml(res.rates, res.csatCnt))}
+        ${csatChats ? panel('', 'chat', 'Диалоги по оценкам', kclRateSection(res)) : ''}
+        ${res.noTopic.length ? panel('warn', 'tag', 'Чаты без тематики', kclChipList(res.noTopic.map(id => ({ id })), 'topic')) : ''}
+        ${res.slaBad.length ? panel('alert', 'alert', `Чаты с превышением SLA (&gt; ${CONFIGSTAT.SLA_THRESHOLD_MINUTES} минут)`, kclChipList(res.slaBad.map(x => ({ id: x.id, tags: [[`${x.min.toFixed(1)} мин`, 'bad'], ...(kclFmtTs(x.ts) ? [[`${kclFmtTs(x.ts)} МСК`, 'dim']] : [])] })), 'sla')) : ''}
+        ${res.auto.length ? panel('ok', 'bot', 'Автозакрытые чаты (потеряшки)', kclAutoColumns(res)) : ''}`;
+}
+
+// ---------- Вкладка «Мои чаты» ----------
+async function kclOpenMy(force = false) {
+    kclActivate('buttonMyChats', 'mystatfield');
+    const pane = document.getElementById('mystatfield');
+    if (!pane) return;
+    pane.innerHTML = '';
+    try {
+        const res = await kclScan(force);
+        const avg = res.csatCnt ? res.csatSum / res.csatCnt : null;
+        const avgLvl = avg === null ? '' : avg >= 4.5 ? 'kcl-lvl-ok' : avg >= 4 ? 'kcl-lvl-busy' : 'kcl-lvl-alert';
+        pane.innerHTML = `<div class="kcl">
+            ${kclWarnings(res)}
+            <div class="kcl-tools"><span class="kcl-note" style="margin:0;flex:1">Мои чаты за ${escapeStatHtml(kclPeriod(res))} · всего в пуле: ${res.total}</span>${kclRefreshBtn('my')}</div>
+            <div class="kcl-grid">
+                <div class="kcl-card kcl-blue">
+                    <div class="kcl-head">${KCL_ICONS.inbox}<span>В работе</span></div>
+                    <div class="kcl-num">${res.touched}</div><div class="kcl-sub">взято мной</div>
+                </div>
+                <div class="kcl-card kcl-green">
+                    <div class="kcl-head">${KCL_ICONS.check}<span>Закрыто</span></div>
+                    <div class="kcl-num">${res.closed}</div><div class="kcl-sub">закрыто лично мной</div>
+                </div>
+                <div class="kcl-card kcl-lvl-busy">
+                    <div class="kcl-head">${KCL_ICONS.forward}<span>На 2ЛТП</span></div>
+                    <div class="kcl-num">${res.line2Mine}</div><div class="kcl-sub">передано мной</div>
+                </div>
+                <div class="kcl-card ${avgLvl}">
+                    <div class="kcl-head">${KCL_ICONS.star}<span>Мой CSAT</span></div>
+                    <div class="kcl-num">${avg === null ? '—' : avg.toFixed(2)}</div><div class="kcl-sub">оценок: ${res.csatCnt}</div>
+                </div>
+            </div>
+            ${kclMyDetails(res)}
+        </div>`;
+    } catch (e) {
+        console.error('❌ Мои чаты:', e);
+        pane.innerHTML = kclErr(e);
+    }
+}
+
+// ---------- Вкладка «2ЛТП»: передачи и поиск ----------
+let kclL2Scope = 'mine';
+
+const kclFavBtn = (id) => `<button class="kcl-act kcl-fav ${statFavs[id] ? 'on' : ''}" data-kcl-fav="${escapeStatHtml(id)}" title="${statFavs[id] ? 'Убрать из избранного' : 'В избранное'}">${KCL_ICONS.star}</button>`;
+const kclHistBtn = (id) => `<button class="kcl-act" data-kcl-hist="${escapeStatHtml(id)}" title="История чата">${KCL_ICONS.eye}</button>`;
+const kclExtBtn = (id) => `<a class="kcl-act" href="${kclLogsUrl(id)}" target="_blank" title="Открыть в AutoFAQ">${KCL_ICONS.ext}</a>`;
+
+function kclParseTs(ts) {
+    const clean = typeof ts === 'string' ? ts.split(/\[UTC\]|\[GMT\]/)[0].trim() : ts;
+    let d = new Date(typeof clean === 'string' ? clean.replace(' ', 'T') + 'Z' : clean);
+    if (isNaN(d.getTime())) d = new Date(clean);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function kclFmtTs(ts) {
+    const d = ts ? kclParseTs(ts) : null;
+    return d ? new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(d) : '';
+}
+
+async function kclOpenLine2(force = false) {
+    kclActivate('buttonLine2', 'line2field');
+    const pane = document.getElementById('line2field');
+    if (!pane) return;
+    pane.innerHTML = '';
+    try {
+        const res = await kclScan(force);
+        pane.innerHTML = `<div class="kcl">
+            ${kclWarnings(res)}
+            <div class="kcl-tools">
+                <div class="kcl-seg">
+                    <button data-kcl-scope="mine" class="${kclL2Scope === 'mine' ? 'on' : ''}">Мои</button>
+                    <button data-kcl-scope="all" class="${kclL2Scope === 'all' ? 'on' : ''}">Все</button>
+                </div>
+                <input class="kcl-input" id="kcl-l2-q" placeholder="Поиск по ID или тексту передачи" autocomplete="off">
+                ${kclRefreshBtn('line2')}
+            </div>
+            <div class="kcl-note" id="kcl-l2-count" style="margin:0 0 8px"></div>
+            <div class="kcl-list" id="kcl-l2-list"></div>
+        </div>`;
+        kclFillLine2();
+    } catch (e) {
+        console.error('❌ 2ЛТП:', e);
+        pane.innerHTML = kclErr(e);
+    }
+}
+
+function kclFillLine2() {
+    const list = document.getElementById('kcl-l2-list');
+    const res = kclScanState.data;
+    if (!list || !res) return;
+    const q = (document.getElementById('kcl-l2-q')?.value || '').trim().toLowerCase();
+    const rows = res.line2.filter(x => (kclL2Scope === 'all' || x.mine) && (!q || x.id.toLowerCase().includes(q) || (x.snippet || '').toLowerCase().includes(q) || (statFavs[x.id]?.comment || '').toLowerCase().includes(q)));
+    const count = document.getElementById('kcl-l2-count');
+    if (count) count.textContent = `Найдено передач на 2ЛТП: ${rows.length} (${kclL2Scope === 'mine' ? 'только мои' : 'все операторы'}) · ${kclPeriod(res)}`;
+    list.innerHTML = rows.length ? rows.map(x => `<div class="kcl-row ${x.mine ? 'mine' : ''}">
+        <div class="kcl-row-main">
+            <a class="kcl-link" href="${kclLogsUrl(x.id)}" target="_blank">${escapeStatHtml(x.id)}</a>
+            ${x.mine ? '<span class="kcl-tag">мой</span>' : ''}${kclFmtTs(x.ts) ? `<span class="kcl-tag dim">${kclFmtTs(x.ts)}</span>` : ''}
+            ${x.snippet ? `<div class="kcl-snip" title="${escapeStatHtml(x.snippet)}">${escapeStatHtml(x.snippet)}</div>` : ''}
+        </div>
+        <div class="kcl-acts">${kclHistBtn(x.id)}${kclExtBtn(x.id)}${kclFavBtn(x.id)}</div>
+    </div>`).join('') : '<div class="kcl-empty">Передач на 2ЛТП за этот период не найдено.</div>';
+}
+
+// ---------- Вкладка «Избранное» ----------
+function kclOpenFav() {
+    kclActivate('buttonFav', 'favfield');
+    const pane = document.getElementById('favfield');
+    if (!pane) return;
+    pane.innerHTML = `<div class="kcl">
+        <div class="kcl-tools">
+            <input class="kcl-input" id="kcl-fav-q" placeholder="Поиск по ID или заметке" autocomplete="off">
+        </div>
+        <div class="kcl-tools">
+            <input class="kcl-input" id="kcl-fav-id" placeholder="Добавить чат по ID" autocomplete="off">
+            <button class="kcl-btn" data-kcl-favadd="1">${KCL_ICONS.plus}Добавить</button>
+        </div>
+        <div class="kcl-note" id="kcl-fav-count" style="margin:0 0 8px"></div>
+        <div class="kcl-list" id="kcl-fav-list"></div>
+    </div>`;
+    kclFillFav();
+}
+
+function kclFillFav() {
+    const list = document.getElementById('kcl-fav-list');
+    if (!list) return;
+    const q = (document.getElementById('kcl-fav-q')?.value || '').trim().toLowerCase();
+    const ids = Object.keys(statFavs).filter(id => !q || id.toLowerCase().includes(q) || String(statFavs[id]?.comment || '').toLowerCase().includes(q));
+    const count = document.getElementById('kcl-fav-count');
+    if (count) count.textContent = `В избранном: ${ids.length} из ${Object.keys(statFavs).length}`;
+    list.innerHTML = ids.length ? ids.map(id => `<div class="kcl-row mine">
+        <div class="kcl-row-main">
+            <a class="kcl-link" href="${kclLogsUrl(id)}" target="_blank">${escapeStatHtml(id)}</a>
+            ${statFavs[id]?.date ? `<span class="kcl-tag dim">${escapeStatHtml(statFavs[id].date)}</span>` : ''}
+            <div class="kcl-snip" title="${escapeStatHtml(statFavs[id]?.comment)}">${escapeStatHtml(statFavs[id]?.comment)}</div>
+        </div>
+        <div class="kcl-acts">${kclHistBtn(id)}${kclExtBtn(id)}
+            <button class="kcl-act" data-kcl-edit="${escapeStatHtml(id)}" title="Изменить заметку">${KCL_ICONS.edit}</button>
+            <button class="kcl-act" data-kcl-del="${escapeStatHtml(id)}" title="Удалить из избранного">${KCL_ICONS.trash}</button>
+        </div>
+    </div>`).join('') : '<div class="kcl-empty">Избранных чатов нет. Добавьте их звёздочкой во вкладке «2ЛТП» или по ID выше.</div>';
+}
+
+const kclAskNote = async (value, okText) => {
+    if (window.chmafDialog?.prompt) {
+        return chmafDialog.prompt({ title: 'Заметка к чату', label: 'Введите заметку:', value, okText });
+    }
+    return value;
+};
+
+function kclSyncFav(id) {
+    document.querySelectorAll('[data-kcl-fav]').forEach(b => {
+        if (b.dataset.kclFav === id) { b.classList.toggle('on', !!statFavs[id]); b.title = statFavs[id] ? 'Убрать из избранного' : 'В избранное'; }
+    });
+    if (document.getElementById('favfield')?.style.display !== 'none') kclFillFav();
+}
+
+async function kclToggleFav(id) {
+    if (statFavs[id]) {
+        delete statFavs[id];
+    } else {
+        const note = await kclAskNote('На контроле (2ЛТП)', 'Добавить');
+        if (note === null || note === undefined) return;
+        statFavs[id] = { comment: note || 'Без комментария', date: new Date().toLocaleDateString('ru-RU') };
+    }
+    statFavSave();
+    kclSyncFav(id);
+}
+
+function kclOpenHistory(id) {
+    const chatHisWin = document.getElementById('AF_ChatHis');
+    if (chatHisWin && getComputedStyle(chatHisWin).display === 'none') document.getElementById('opennewcat')?.click();
+    const hashInput = document.getElementById('hashchathis');
+    if (hashInput) hashInput.value = id;
+    document.getElementById('btn_search_history')?.click();
+}
+
+// ---------- Обработчики модуля ----------
+document.addEventListener('click', async (e) => {
+    const win = e.target.closest('#AF_StataAF');
+    if (!win) return;
+
+    const tab = e.target.closest('#buttonMyChats, #buttonLine2, #buttonFav');
+    if (tab) {
+        if (tab.id === 'buttonMyChats') kclOpenMy();
+        else if (tab.id === 'buttonLine2') kclOpenLine2();
+        else kclOpenFav();
+        return;
+    }
+
+    const favBtn = e.target.closest('[data-kcl-fav]');
+    if (favBtn) { e.preventDefault(); kclToggleFav(favBtn.dataset.kclFav); return; }
+
+    const histBtn = e.target.closest('[data-kcl-hist]');
+    if (histBtn) { e.preventDefault(); kclOpenHistory(histBtn.dataset.kclHist); return; }
+
+    const delBtn = e.target.closest('[data-kcl-del]');
+    if (delBtn) {
+        delete statFavs[delBtn.dataset.kclDel];
+        statFavSave();
+        kclSyncFav(delBtn.dataset.kclDel);
+        return;
+    }
+
+    const editBtn = e.target.closest('[data-kcl-edit]');
+    if (editBtn) {
+        const id = editBtn.dataset.kclEdit;
+        const note = await kclAskNote(statFavs[id]?.comment || '', 'Сохранить');
+        if (note === null || note === undefined || !statFavs[id]) return;
+        statFavs[id].comment = note || 'Без комментария';
+        statFavSave();
+        kclFillFav();
+        return;
+    }
+
+    if (e.target.closest('[data-kcl-favadd]')) {
+        const input = document.getElementById('kcl-fav-id');
+        const id = (input?.value || '').trim();
+        if (id.length < 6 || statFavs[id]) { if (input) input.focus(); return; }
+        const note = await kclAskNote('На контроле', 'Добавить');
+        if (note === null || note === undefined) return;
+        statFavs[id] = { comment: note || 'Без комментария', date: new Date().toLocaleDateString('ru-RU') };
+        statFavSave();
+        if (input) input.value = '';
+        kclFillFav();
+        return;
+    }
+
+    const rateBtn = e.target.closest('[data-kcl-rate]');
+    if (rateBtn && kclScanState.data) {
+        kclRateSel = Number(rateBtn.dataset.kclRate);
+        win.querySelectorAll('[data-kcl-rate]').forEach(b => b.classList.toggle('on', Number(b.dataset.kclRate) === kclRateSel));
+        const list = document.getElementById('kcl-rate-list');
+        if (list) list.innerHTML = kclRateListHtml(kclScanState.data, kclRateSel);
+        document.getElementById('kcl-rate-seg')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
+
+    const scopeBtn = e.target.closest('[data-kcl-scope]');
+    if (scopeBtn) {
+        kclL2Scope = scopeBtn.dataset.kclScope;
+        win.querySelectorAll('[data-kcl-scope]').forEach(b => b.classList.toggle('on', b === scopeBtn));
+        kclFillLine2();
+        return;
+    }
+
+    const refresh = e.target.closest('[data-kcl-refresh]');
+    if (refresh) {
+        if (refresh.dataset.kclRefresh === 'my') kclOpenMy(true); else kclOpenLine2(true);
+    }
+});
+
+document.addEventListener('input', (e) => {
+    if (e.target.id === 'kcl-l2-q') kclFillLine2();
+    else if (e.target.id === 'kcl-fav-q') kclFillFav();
+});
+
 
 // ============================================================================
 // 🎯 ГЛОБАЛЬНЫЙ ДЕЛЕГАТОР СОБЫТИЙ
@@ -2554,7 +2892,7 @@ document.addEventListener('click', (e) => {
         const currentSort = ahtSortBtn.getAttribute('data-sort');
         const newSort = currentSort === 'asc' ? 'desc' : 'asc';
         ahtSortBtn.setAttribute('data-sort', newSort);
-        ahtSortBtn.textContent = newSort === 'asc' ? '⏱AHT ▲' : '⏱AHT ▼';
+        ahtSortBtn.innerHTML = `${(KCL_ICONS.timer || '').replace('class="kcl-ic"', 'class="kcl-ic" style="width:14px;height:14px"')}${newSort === 'asc' ? 'AHT ▲' : 'AHT ▼'}`;
 
         const table = document.getElementById('tableStats');
         if (!table) return;
@@ -2655,7 +2993,7 @@ document.addEventListener('click', (e) => {
             break;
 
         case 'clearstatawindow':
-            ['csatandthemes', 'outputstatafield', 'loadkctp'].forEach(id => {
+            ['outputstatafield', 'loadkctp', 'mystatfield', 'line2field', 'favfield'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = '';
             });
@@ -2666,7 +3004,7 @@ document.addEventListener('click', (e) => {
             break;
 
         case 'retreivestata':
-            ['csatandthemes', 'loadkctp'].forEach(id => {
+            ['loadkctp', 'mystatfield', 'line2field', 'favfield'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.display = "none";
             });
@@ -2674,7 +3012,7 @@ document.addEventListener('click', (e) => {
             const out = document.getElementById('outputstatafield');
             if (out) out.style.display = "";
 
-            ['retreivestata', 'buttonCheckStats', 'buttonKCpower', 'buttonTPpower']
+            KCL_TABS
                 .forEach(id => document.getElementById(id)?.classList.remove('active-stat-tab'));
 
             document.getElementById('retreivestata')?.classList.add('active-stat-tab');
@@ -2688,10 +3026,6 @@ document.addEventListener('click', (e) => {
             if (tOut) tOut.value = new Date().toLocaleTimeString('ru-RU');
 
             getStats();
-            break;
-
-        case 'buttonCheckStats':
-            checkCSAT();
             break;
 
         case 'buttonKCpower':
@@ -2709,4 +3043,4 @@ document.addEventListener('click', (e) => {
 // ⚡ window.CONFIGSTAT — обязателен: top-level const НЕ создаёт свойство window,
 // а content.js (doOperationsWithConversations) и др. читают конфиг через window.
 window.CONFIGSTAT = CONFIGSTAT;
-window.getStats = getStats; window.checkCSAT = checkCSAT; window.checkload = checkload; window.resetRateCounts = resetRateCounts; window.getDateRangeStata = getDateRangeStata; window.getbuttonGetStatButtonPress = getbuttonGetStatButtonPress;
+window.getStats = getStats; window.checkload = checkload; window.resetRateCounts = resetRateCounts; window.getDateRangeStata = getDateRangeStata; window.getbuttonGetStatButtonPress = getbuttonGetStatButtonPress;
