@@ -89,7 +89,6 @@
         { id: 'CheckPrices', icon: '🏷', label: 'Цены', title: 'Check Price — наборы цен', url: 'https://billing-marketing.skyeng.ru/priceSet/list' },
         { id: 'CheckVidConnection', icon: '📹', label: 'Видео', title: 'Проверка видеосервера', url: 'https://video-check.skyeng.ru/' },
         { id: 'goProcash', icon: '💳', label: 'BIN', title: 'Check BIN банка', url: 'https://procash.app/tools/bin-lookup' },
-        { id: 'faqext', icon: '❓', label: 'ChMAF', title: 'Инструкция ChMAF', url: 'https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971' },
         { id: 'rkKidsTP', icon: '🧒', label: 'РК Kids', title: 'Админка Kids РК (встречи клубов)', url: 'https://group.skyeng.ru/admin/?crudAction=index&crudControllerFqcn=App%5CController%5CAdmin%5CClubKidMeetingCrudController&entityFqcn=App%5CEntity%5CClubMeeting' },
         { id: 'rkAdultsTP', icon: '👥', label: 'РК Adults', title: 'Админка Adults РК (расписание клубов)', url: 'https://skyeng.ru/clubs/admin/schedule' },
         { id: 'flexAdminTP', icon: '🎓', label: 'Flex', title: 'Админка Flex (семинары за сегодня)', url: flexAdminTodayUrl }
@@ -412,6 +411,33 @@
             #AF_Links .lkg-panel::-webkit-scrollbar { width: 6px; }
             #AF_Links .lkg-panel::-webkit-scrollbar-thumb { background: #536a8e; border-radius: 4px; }
 
+            /* Редактирование быстрого доступа */
+            #AF_Links .lkg-title-row { display: flex; align-items: center; gap: 10px; }
+            #AF_Links .lkg-hint { flex: 1; min-width: 0; color: #66748c; font-size: 10px; font-weight: 500; letter-spacing: 0; text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #AF_Links .lkg-reset { padding: 2px 8px; color: #8d9cb6; background: transparent; border: 1px solid #344258; border-radius: 7px; cursor: pointer; font: inherit; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+            #AF_Links .lkg-reset:hover { color: #fff; border-color: #7799e2; }
+            #AF_Links .lkg-quick-add { display: flex; align-items: center; justify-content: center; min-height: 58px; color: #6b7c99; background: transparent; border: 1px dashed #3c4d68; border-radius: 9px; cursor: pointer; transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+            #AF_Links .lkg-quick-add:hover { color: #cfe0ff; background: rgba(66, 104, 201, .12); border-color: #7799e2; }
+            #AF_Links .lkg-link.is-dragging { opacity: .35; transform: scale(.96); }
+            #AF_Links.lkg-dragging .lkg-quick { outline: 1px dashed rgba(119, 153, 226, .5); outline-offset: 4px; border-radius: 11px; }
+            #AF_Links .lkg-quick.drop-over { outline: 1px solid #7799e2 !important; background: rgba(66, 104, 201, .08); }
+            #AF_Links .lkg-link.drop-target { border-color: #7799e2 !important; background: #2a3f66; box-shadow: 0 0 0 2px rgba(119, 153, 226, .35); transform: scale(1.04); }
+            #AF_Links.lkg-dragging #lkg-grid-holder { border-radius: 11px; }
+            #AF_Links #lkg-grid-holder.drop-over { outline: 1px dashed #c49a4a; outline-offset: 4px; background: rgba(196, 154, 74, .06); }
+            #AF_Links .lkg-help { gap: 5px; }
+            .lkg-ctx, .lkg-picker { position: fixed; z-index: var(--z-popover, 2147483000); min-width: 200px; padding: 5px; color: #edf2fb; background: #111827; border: 1px solid #344258; border-radius: 12px; box-shadow: 0 18px 50px rgba(3, 9, 22, .6); font-family: 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif; font-size: 12px; }
+            .lkg-ctx *, .lkg-picker * { box-sizing: border-box; }
+            .lkg-ctx button, .lkg-picker-list button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; color: #dce5f5; background: transparent; border: 0; border-radius: 8px; cursor: pointer; font: inherit; text-align: left; }
+            .lkg-ctx button:hover, .lkg-picker-list button:hover { color: #fff; background: #23334b; }
+            .lkg-picker { width: 260px; }
+            .lkg-picker input { width: 100%; height: 32px; margin-bottom: 5px; padding: 0 10px; color: #edf2fb; background: #0d1625; border: 1px solid #3a4961; border-radius: 8px; outline: none; font: inherit; }
+            .lkg-picker input:focus { border-color: #829fff; }
+            .lkg-picker-list { max-height: 260px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #536a8e transparent; }
+            .lkg-picker-empty { padding: 12px; text-align: center; color: #66748c; }
+            .lkg-dialog label.lkg-check { display: flex; align-items: center; gap: 8px; margin-top: 4px; cursor: pointer; }
+            .lkg-dialog label.lkg-check input { width: 16px; height: 16px; padding: 0; margin: 0; }
+            .lkg-dialog label.lkg-check span { display: inline; margin: 0; color: #cdd8ec; font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+
             /* Диалог своей кнопки */
             .lkg-dialog-overlay {
                 position: fixed;
@@ -476,21 +502,48 @@
 
     /* ---------- Разметка ---------- */
 
+    /* ---------- Быстрый доступ: состав и порядок настраивает сам оператор ---------- */
+
+    const DEPT = isTP ? 'tp' : 'kc';
+    const defaultQuickIds = () => LINKS.filter(b => b.top).map(b => b.id);
+
+    /** Кнопка по id: встроенная или своя (в быстром доступе может быть любая). */
+    function itemById(id) {
+        const builtin = linkById.get(id);
+        if (builtin) return { ...builtin, kind: 'builtin' };
+        const c = config.customButtons.find(b => b.id === id);
+        return c ? { id: c.id, icon: c.icon, label: c.title, title: c.title, url: c.url, kind: 'custom' } : null;
+    }
+
+    function getQuickIds() {
+        const saved = config.quick && Array.isArray(config.quick[DEPT]) ? config.quick[DEPT] : null;
+        return (saved || defaultQuickIds()).filter((id, i, arr) => itemById(id) && arr.indexOf(id) === i);
+    }
+
+    function setQuickIds(ids) {
+        config.quick = { ...(config.quick || {}), [DEPT]: ids };
+        saveConfig();
+        renderAll();
+    }
+
+    function linkBtnHtml(item, quick) {
+        const custom = item.kind === 'custom';
+        const idAttr = custom ? `data-custom-id="${esc(item.id)}"` : `id="${esc(item.id)}"`;
+        const cls = `lkg-link${quick ? ' lkg-quick-btn' : ''}${item.action ? ' is-action' : ''}${custom ? ' is-custom' : ''}`;
+        const tip = `${item.title} — правый клик: меню, можно перетащить`;
+        return `<button type="button" class="${cls}" ${idAttr} data-lid="${esc(item.id)}" draggable="true" title="${esc(tip)}">` +
+            `<span class="lkg-link-ico">${custom ? esc(item.icon) : item.icon}</span><span class="lkg-link-text">${esc(item.label)}</span></button>`;
+    }
+
     function linksGridHtml() {
-        const base = LINKS.filter(b => !b.top).map(b =>
-            `<button type="button" class="lkg-link${b.action ? ' is-action' : ''}" id="${b.id}" title="${esc(b.title)}">` +
-            `<span class="lkg-link-ico">${b.icon}</span><span class="lkg-link-text">${esc(b.label)}</span></button>`
-        );
-        const own = config.customButtons.map(b =>
-            `<button type="button" class="lkg-link is-custom" data-custom-id="${esc(b.id)}" title="${esc(b.title)} — правый клик: изменить">` +
-            `<span class="lkg-link-ico">${esc(b.icon)}</span><span class="lkg-link-text">${esc(b.title)}</span></button>`
-        );
+        const inQuick = new Set(getQuickIds());
+        const base = LINKS.filter(b => !inQuick.has(b.id)).map(b => linkBtnHtml({ ...b, kind: 'builtin' }, false));
+        const own = config.customButtons.filter(b => !inQuick.has(b.id)).map(b => linkBtnHtml(itemById(b.id), false));
         return `<div class="lkg-grid">${base.concat(own).join('')}</div>`;
     }
 
-    const quickHtml = () => `<div class="lkg-quick">${LINKS.filter(b => b.top).map(b =>
-        `<button type="button" class="lkg-link lkg-quick-btn${b.action ? ' is-action' : ''}" id="${b.id}" title="${esc(b.title)}"><span class="lkg-link-ico">${b.icon}</span><span class="lkg-link-text">${esc(b.label)}</span></button>`
-    ).join('')}</div>`;
+    const quickHtml = () => `<div class="lkg-quick" id="lkg-quick">${getQuickIds().map(id => linkBtnHtml(itemById(id), true)).join('')}` +
+        `<button type="button" class="lkg-quick-add" id="lkg-quick-add" title="Добавить в быстрый доступ (или перетащите сюда кнопку)">${ICONS.plus}</button></div>`;
 
     const fieldsHtml = () => `<div class="lkg-fields">${TP_FIELDS.map(f => `
         <div class="lkg-field">
@@ -511,6 +564,7 @@
                 <span class="lkg-label">Версии МП</span>
                 <button type="button" class="lkg-btn lkg-btn-sm lkg-version" id="curVeriOS" title="Актуальная версия iOS. Клик — App Store">iOS: …</button>
                 <button type="button" class="lkg-btn lkg-btn-sm lkg-version" id="curVerAndroid" title="Актуальная версия Android. Клик — Google Play">Android: …</button>
+                <button type="button" class="lkg-btn lkg-btn-sm lkg-help" id="faqext" title="Инструкция по ChMAF">${svg('<circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4.5"/><path d="M12 17.5h.01"/>')} Инструкция</button>
             </div>` : '';
 
         return `
@@ -522,8 +576,12 @@
                     <button type="button" class="lkg-btn lkg-btn-accent" id="add-custom-btn" title="Добавить свою кнопку-ссылку">${ICONS.plus} Кнопка</button>
                 </div>
                 <div class="lkg-section">
-                    <div class="lkg-section-title">Быстрый доступ</div>
-                    ${quickHtml()}
+                    <div class="lkg-section-title lkg-title-row">
+                        <span>Быстрый доступ</span>
+                        <span class="lkg-hint">перетащите кнопку на другую — они поменяются местами · правый клик — меню</span>
+                        <button type="button" class="lkg-reset" id="lkg-quick-reset" title="Вернуть набор кнопок по умолчанию">Сбросить</button>
+                    </div>
+                    <div id="lkg-quick-holder">${quickHtml()}</div>
                 </div>
                 <div class="lkg-section">
                     <div class="lkg-section-title">Ссылки</div>
@@ -561,6 +619,12 @@
         if (holder) holder.innerHTML = linksGridHtml();
     }
 
+    function renderAll() {
+        const quick = document.getElementById('lkg-quick-holder');
+        if (quick) quick.innerHTML = quickHtml();
+        renderGrid();
+    }
+
     /* ---------- Диалог своей кнопки ---------- */
 
     function editCustomButton(existing) {
@@ -570,10 +634,11 @@
             <div class="lkg-dialog" role="dialog" aria-modal="true">
                 <div class="lkg-dialog-body">
                     <div class="lkg-dialog-title">${existing ? '✏️ Изменить кнопку' : '➕ Новая кнопка'}</div>
-                    <div class="lkg-dialog-msg">Кнопка появится в разделе «Ссылки». Правый клик по ней — изменить.</div>
+                    <div class="lkg-dialog-msg">Кнопка появится в разделе «Ссылки» или в быстром доступе. Правый клик по ней — меню.</div>
                     <label><span>Название</span><input id="lkg-btn-title" maxlength="40" placeholder="Моя ссылка"></label>
                     <label><span>Значок (эмодзи)</span><input id="lkg-btn-icon" maxlength="8" placeholder="🔗"></label>
                     <label><span>Адрес</span><input id="lkg-btn-url" placeholder="https://…"></label>
+                    <label class="lkg-check"><input type="checkbox" id="lkg-btn-quick"><span>Показывать в быстром доступе</span></label>
                 </div>
                 <div class="lkg-dialog-foot">
                     ${existing ? '<button type="button" class="is-danger" id="lkg-btn-delete">🗑 Удалить</button>' : ''}
@@ -586,6 +651,7 @@
         $('#lkg-btn-title').value = existing ? existing.title : '';
         $('#lkg-btn-icon').value = existing ? existing.icon : '';
         $('#lkg-btn-url').value = existing ? existing.url : '';
+        $('#lkg-btn-quick').checked = !!existing && getQuickIds().includes(existing.id);
 
         const close = () => overlay.remove();
         $('#lkg-btn-cancel').onclick = close;
@@ -605,10 +671,14 @@
                 notify('Нужны название и адрес, начинающийся с http:// или https://', 'warning');
                 return;
             }
-            if (existing) Object.assign(existing, { title, icon, url });
-            else config.customButtons.push({ id: `custom-${Date.now()}`, title, icon, url });
-            saveConfig();
-            renderGrid();
+            let id;
+            if (existing) { Object.assign(existing, { title, icon, url }); id = existing.id; }
+            else { id = `custom-${Date.now()}`; config.customButtons.push({ id, title, icon, url }); }
+            const ids = getQuickIds();
+            const wantQuick = $('#lkg-btn-quick').checked;
+            if (wantQuick && !ids.includes(id)) ids.push(id);
+            const next = wantQuick ? ids : ids.filter(x => x !== id);
+            setQuickIds(next); // сохраняет конфиг и перерисовывает быстрый доступ и «Ссылки»
             close();
         };
 
@@ -629,8 +699,7 @@
                     return;
                 }
                 config.customButtons = config.customButtons.filter(b => b.id !== existing.id);
-                saveConfig();
-                renderGrid();
+                setQuickIds(getQuickIds().filter(x => x !== existing.id));
                 close();
                 notify?.('Кнопка удалена');
             });
@@ -667,11 +736,177 @@
         return versionsPromise;
     }
 
+    /* ---------- Редактирование быстрого доступа: drag&drop, меню, выбор из списка ---------- */
+
+    let ctxMenu = null;
+    let picker = null;
+    const closeCtx = () => { if (ctxMenu) { ctxMenu.remove(); ctxMenu = null; } };
+    const closePicker = () => { if (picker) { picker.remove(); picker = null; } };
+
+    function placePopup(el, x, y) {
+        document.body.appendChild(el);
+        const r = el.getBoundingClientRect();
+        el.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 8)) + 'px';
+        el.style.top = Math.max(8, Math.min(y, window.innerHeight - r.height - 8)) + 'px';
+    }
+
+    function resetQuick(btn) {
+        // Два клика: первый спрашивает, второй сбрасывает
+        if (!btn.dataset.armed) {
+            btn.dataset.armed = '1';
+            btn.textContent = 'Точно?';
+            setTimeout(() => { delete btn.dataset.armed; if (btn.isConnected) btn.textContent = 'Сбросить'; }, 3000);
+            return;
+        }
+        config.quick = { ...(config.quick || {}), [DEPT]: null };
+        saveConfig();
+        renderAll();
+        notify('Быстрый доступ сброшен');
+    }
+
+    function openCtx(btn, x, y) {
+        closeCtx(); closePicker();
+        const id = btn.dataset.lid;
+        const item = itemById(id);
+        if (!item) return;
+        const ids = getQuickIds();
+        const idx = ids.indexOf(id);
+        const rows = [idx >= 0 ? ['rm', 'Убрать из быстрого доступа'] : ['add', 'Добавить в быстрый доступ']];
+        if (idx > 0) rows.push(['left', '← Сдвинуть влево']);
+        if (idx >= 0 && idx < ids.length - 1) rows.push(['right', 'Сдвинуть вправо →']);
+        if (item.kind === 'custom') rows.push(['edit', '✏ Изменить…']);
+
+        ctxMenu = document.createElement('div');
+        ctxMenu.className = 'lkg-ctx';
+        ctxMenu.innerHTML = rows.map(([act, text]) => `<button type="button" data-act="${act}">${esc(text)}</button>`).join('');
+        ctxMenu.addEventListener('click', ev => {
+            const act = ev.target.closest('[data-act]')?.dataset.act;
+            if (!act) return;
+            closeCtx();
+            const list = getQuickIds();
+            const i = list.indexOf(id);
+            if (act === 'add') list.push(id);
+            else if (act === 'rm') list.splice(i, 1);
+            else if (act === 'left') [list[i - 1], list[i]] = [list[i], list[i - 1]];
+            else if (act === 'right') [list[i + 1], list[i]] = [list[i], list[i + 1]];
+            else if (act === 'edit') { editCustomButton(config.customButtons.find(b => b.id === id)); return; }
+            setQuickIds(list);
+        });
+        placePopup(ctxMenu, x, y);
+    }
+
+    function openPicker(anchor) {
+        closeCtx(); closePicker();
+        const inQuick = new Set(getQuickIds());
+        const pool = [
+            ...LINKS.filter(b => !inQuick.has(b.id)).map(b => ({ ...b, kind: 'builtin' })),
+            ...config.customButtons.filter(b => !inQuick.has(b.id)).map(b => itemById(b.id))
+        ];
+        picker = document.createElement('div');
+        picker.className = 'lkg-picker';
+        picker.innerHTML = '<input placeholder="Найти кнопку…" autocomplete="off"><div class="lkg-picker-list"></div>';
+        const list = picker.querySelector('.lkg-picker-list');
+        const fill = () => {
+            const q = picker.querySelector('input').value.trim().toLowerCase();
+            const rows = pool.filter(it => !q || it.label.toLowerCase().includes(q) || String(it.title).toLowerCase().includes(q));
+            list.innerHTML = rows.length
+                ? rows.map(it => `<button type="button" data-pick="${esc(it.id)}"><span>${it.kind === 'custom' ? esc(it.icon) : it.icon}</span><span>${esc(it.label)}</span></button>`).join('')
+                : '<div class="lkg-picker-empty">Все кнопки уже в быстром доступе</div>';
+        };
+        fill();
+        picker.querySelector('input').addEventListener('input', fill);
+        list.addEventListener('click', ev => {
+            const id = ev.target.closest('[data-pick]')?.dataset.pick;
+            if (!id) return;
+            closePicker();
+            setQuickIds([...getQuickIds(), id]);
+        });
+        const r = anchor.getBoundingClientRect();
+        placePopup(picker, r.left, r.bottom + 6);
+        picker.querySelector('input').focus();
+    }
+
+    function setupQuickEditing(win) {
+        let drag = null; // { id, from: 'quick' | 'grid' }
+        const targets = e => ({
+            slot: e.target.closest('#lkg-quick .lkg-link[data-lid]'),
+            quick: e.target.closest('#lkg-quick'),
+            grid: e.target.closest('#lkg-grid-holder')
+        });
+        const clearDnd = () => {
+            win.classList.remove('lkg-dragging');
+            win.querySelectorAll('.is-dragging, .drop-target, .drop-over').forEach(el => el.classList.remove('is-dragging', 'drop-target', 'drop-over'));
+        };
+
+        win.addEventListener('dragstart', e => {
+            const btn = e.target.closest('.lkg-link[data-lid]');
+            if (!btn) return;
+            drag = { id: btn.dataset.lid, from: btn.closest('#lkg-quick') ? 'quick' : 'grid' };
+            e.dataTransfer.effectAllowed = 'move';
+            try { e.dataTransfer.setData('text/plain', drag.id); } catch (_) { /* не критично */ }
+            closeCtx(); closePicker();
+            btn.classList.add('is-dragging');
+            win.classList.add('lkg-dragging');
+        });
+        win.addEventListener('dragend', () => { drag = null; clearDnd(); });
+
+        win.addEventListener('dragover', e => {
+            if (!drag) return;
+            const { slot, quick, grid } = targets(e);
+            const canDrop = quick || (grid && drag.from === 'quick');
+            if (!canDrop) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            win.querySelectorAll('.drop-target, .drop-over').forEach(el => el.classList.remove('drop-target', 'drop-over'));
+            if (slot && slot.dataset.lid !== drag.id) slot.classList.add('drop-target');
+            else if (quick && !slot) quick.classList.add('drop-over');
+            else if (grid) grid.classList.add('drop-over');
+        });
+
+        win.addEventListener('drop', e => {
+            if (!drag) return;
+            const { slot, quick, grid } = targets(e);
+            const ids = getQuickIds();
+            const from = ids.indexOf(drag.id);
+            if (slot && slot.dataset.lid !== drag.id) {
+                const to = ids.indexOf(slot.dataset.lid);
+                if (from >= 0) [ids[from], ids[to]] = [ids[to], ids[from]]; // две кнопки быстрого доступа меняются местами
+                else ids[to] = drag.id; // кнопка из «Ссылок» занимает место, а прежняя уходит в «Ссылки»
+            } else if (quick && !slot) {
+                if (from >= 0) ids.push(ids.splice(from, 1)[0]); else ids.push(drag.id);
+            } else if (grid && from >= 0) {
+                ids.splice(from, 1); // перетащили из быстрого доступа обратно в «Ссылки»
+            } else {
+                return;
+            }
+            e.preventDefault();
+            drag = null;
+            clearDnd();
+            setQuickIds(ids);
+        });
+
+        win.addEventListener('contextmenu', e => {
+            const btn = e.target.closest('.lkg-link[data-lid]');
+            if (!btn) return;
+            e.preventDefault();
+            openCtx(btn, e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mousedown', e => {
+            if (ctxMenu && !e.target.closest('.lkg-ctx')) closeCtx();
+            if (picker && !e.target.closest('.lkg-picker') && !e.target.closest('#lkg-quick-add')) closePicker();
+        }, true);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCtx(); closePicker(); } });
+    }
+
     /* ---------- События ---------- */
 
     function attachEvents(win) {
         // Делегирование: переживает перерисовку сетки
         win.addEventListener('click', e => {
+            if (e.target.closest('#lkg-quick-add')) { openPicker(e.target.closest('#lkg-quick-add')); return; }
+            const resetBtn = e.target.closest('#lkg-quick-reset');
+            if (resetBtn) { resetQuick(resetBtn); return; }
             const btn = e.target.closest('.lkg-link');
             if (!btn) return;
             if (btn.dataset.customId) {
@@ -686,17 +921,13 @@
             else if (item.url) open(typeof item.url === 'function' ? item.url() : item.url);
         });
 
-        win.addEventListener('contextmenu', e => {
-            const btn = e.target.closest('.lkg-link[data-custom-id]');
-            if (!btn) return;
-            e.preventDefault();
-            const item = config.customButtons.find(b => b.id === btn.dataset.customId);
-            if (item) editCustomButton(item);
-        });
+        setupQuickEditing(win);
 
         document.getElementById('add-custom-btn').onclick = () => editCustomButton(null);
 
         if (!isTP) return;
+
+        document.getElementById('faqext').onclick = () => open('https://confluence.skyeng.tech/pages/viewpage.action?pageId=140564971');
 
         TP_FIELDS.forEach(f => {
             const buttonEl = document.getElementById(f.btn);
