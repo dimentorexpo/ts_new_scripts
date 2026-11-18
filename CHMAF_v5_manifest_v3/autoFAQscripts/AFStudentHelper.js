@@ -145,6 +145,9 @@
         copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>',
         spark: '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z"/><path d="M19 15v4M17 17h4"/>',
         wallet: '<path d="M3 7a2 2 0 012-2h13v4"/><path d="M3 7v11a2 2 0 002 2h15a1 1 0 001-1v-9a1 1 0 00-1-1H5a2 2 0 01-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/>',
+        key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
+        crmUser: '<circle cx="12" cy="8" r="4.5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+        trmCap: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10.5" r="2.2"/><path d="M5.8 16.5c.5-1.8 1.8-2.6 3.2-2.6s2.7.8 3.2 2.6"/><path d="M14.5 9h3.5"/><path d="M14.5 12.5h3.5"/><path d="M14.5 16h2"/>',
         clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
         doc: '<path d="M7 3h7l5 5v13H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v5h5M9.5 13h6M9.5 17h6"/>',
         ext: '<path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
@@ -225,6 +228,120 @@
     #${BLOCK_ID} .sth-stg.bad{color:#fecaca;background:rgba(239,68,68,.25);border-color:rgba(252,165,165,.6)}
     #${BLOCK_ID} .sth-stg.warn{color:#fde68a;background:rgba(251,191,36,.16);border-color:rgba(251,191,36,.5)}
     #${BLOCK_ID} .sth-table td.cr{white-space:normal;min-width:230px}
+    @keyframes sthLivePulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.4),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.6),0 4px 24px rgba(239,68,68,.75)}}
+    @keyframes sthSoonPulse{0%,100%{box-shadow:0 0 0 1px rgba(251,191,36,.35),0 2px 10px rgba(245,158,11,.22)}50%{box-shadow:0 0 0 2px rgba(253,224,71,.55),0 3px 18px rgba(245,158,11,.55)}}
+    #${BLOCK_ID} .sth-card.live{--ic:#fff;background:linear-gradient(135deg,#991b1b,#dc2626);border:1px solid #fca5a5;border-left:4px solid #fff;animation:sthLivePulse 1.8s ease-in-out infinite}
+    #${BLOCK_ID} .sth-card.live .sth-lbl,#${BLOCK_ID} .sth-card.live .sth-val{color:#fff!important}
+    #${BLOCK_ID} .sth-card.live .sth-val{font-size:14px;font-weight:800;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+    #${BLOCK_ID} .sth-card.live .sth-sub,#${BLOCK_ID} .sth-card.live .sth-list li{color:#fee2e2!important}
+    #${BLOCK_ID} .sth-card.soonp{background:rgba(251,191,36,.13);border:1px solid rgba(251,191,36,.65);border-left:4px solid #f59e0b;animation:sthSoonPulse 2.4s ease-in-out infinite}
+    #${BLOCK_ID} .sth-card.soonp .sth-val{font-weight:800}
+    #${BLOCK_ID} .sth-hchip.live{color:#fff;background:linear-gradient(135deg,#b91c1c,#ef4444);border-color:#fecaca;font-weight:800;animation:sthLivePulse 1.8s ease-in-out infinite}
+    #${BLOCK_ID} .sth-hchip.soonp{font-weight:800;animation:sthSoonPulse 2.4s ease-in-out infinite}
+    #${BLOCK_ID} .sth-list li.ph-done{opacity:.5}
+    #${BLOCK_ID} .sth-list li.ph-live{font-weight:800}
+    #${BLOCK_ID} .sth-ph{display:inline-block;margin-right:6px;padding:0 6px;border-radius:999px;font-size:10px;font-style:normal;font-weight:800;letter-spacing:.3px;text-transform:uppercase;vertical-align:1px}
+    #${BLOCK_ID} .sth-ph.live{color:#991b1b;background:#fff}
+    #${BLOCK_ID} .sth-ph.soon{color:#78350f;background:#fcd34d}
+    #${BLOCK_ID} .sth-ph.done{color:#94a3b8;background:rgba(148,163,184,.18)}
+    #${BLOCK_ID}.light .sth-card.soonp{background:rgba(245,158,11,.16);border-color:rgba(217,119,6,.6);border-left-color:#d97706}
+    #${BLOCK_ID}.light .sth-card.live:not(.km):not(.vac){background:linear-gradient(135deg,#991b1b,#dc2626);box-shadow:0 2px 12px rgba(220,38,38,.4)}
+    #${BLOCK_ID}.light .sth-card.soonp:not(.km):not(.vac){background:#fffbeb}
+    #${BLOCK_ID}.light .sth-hchip.live{color:#b91c1c;background:rgba(220,38,38,.14);border-color:rgba(220,38,38,.65)}
+    #${BLOCK_ID}.light .sth-hchip.soonp{color:#92400e}
+    #${BLOCK_ID}.light .sth-list li.ph-done{opacity:.55}
+    #${BLOCK_ID}.light .sth-ph.done{color:#64748b;background:rgba(100,116,139,.14)}
+    #${BLOCK_ID}.light .sth-ph.soon{color:#78350f;background:#fde68a}
+    /* --- Уроки сегодня: читаемые строки и бейдж LIVE --- */
+    #${BLOCK_ID} .sth-card.live .sth-lbl{display:flex;align-items:center;gap:6px;letter-spacing:.6px}
+    #${BLOCK_ID} .sth-card.live .sth-lbl::after{content:'\\25CF  LIVE';margin-left:auto;padding:1px 8px;border-radius:999px;background:#fff;color:#b91c1c;font-size:10px;font-weight:800;letter-spacing:.8px;animation:sthLivePulse 1.8s ease-in-out infinite}
+    #${BLOCK_ID} .sth-card.live .sth-val{font-size:15px;line-height:1.25;margin-top:2px}
+    #${BLOCK_ID} .sth-card.live .sth-list{gap:5px;margin-top:8px}
+    #${BLOCK_ID} .sth-card.live .sth-list li{align-items:center;padding:6px 10px;border-radius:9px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24)}
+    #${BLOCK_ID} .sth-card.live .sth-list li.ph-live{background:rgba(255,255,255,.24);border-color:rgba(255,255,255,.7)}
+    #${BLOCK_ID} .sth-card.live .sth-list li,#${BLOCK_ID} .sth-card.live .sth-list li *{color:#fff!important}
+    #${BLOCK_ID} .sth-card.live .sth-list li.ph-done{opacity:.6}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-lsvc{padding:1px 7px;border-radius:6px;background:rgba(0,0,0,.3);font-size:11.5px}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-ph.live{color:#b91c1c!important;background:#fff}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-ph.soon{color:#78350f!important;background:#fcd34d}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-ph.done{color:#fee2e2!important;background:rgba(0,0,0,.25)}
+    #${BLOCK_ID} .sth-card.soonp .sth-list{gap:5px;margin-top:8px}
+    #${BLOCK_ID} .sth-card.soonp .sth-list li{align-items:center;padding:5px 10px;border-radius:9px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4)}
+    #${BLOCK_ID}.light .sth-card.soonp .sth-list li,#${BLOCK_ID}.light .sth-card.soonp .sth-list li *:not(.sth-ph){color:#78350f}
+    #${BLOCK_ID} .sth-card.soonp .sth-lsvc{padding:1px 7px;border-radius:6px;background:rgba(0,0,0,.2)}
+    #${BLOCK_ID}.light .sth-card.soonp .sth-lsvc{background:rgba(245,158,11,.22)}
+    #${BLOCK_ID} .sth-tid{display:inline-block;margin-left:4px;padding:0 6px;border-radius:6px;background:rgba(148,163,184,.2);font-family:ui-monospace,Consolas,monospace;font-size:11px;font-weight:700}
+    #${BLOCK_ID} .sth-card.live .sth-tid{background:rgba(0,0,0,.3)}
+    #${BLOCK_ID} .sth-key{display:inline-flex;align-items:center;justify-content:center;width:24px;height:22px;padding:0;margin-left:4px;border-radius:6px;border:1px solid rgba(245,179,0,.6);background:rgba(245,179,0,.14);color:#fbbf24;cursor:pointer;vertical-align:middle}
+    #${BLOCK_ID} .sth-key .sth-i{--ic:currentColor;width:13px;height:13px}
+    #${BLOCK_ID} .sth-key:hover{background:rgba(245,179,0,.32)}
+    #${BLOCK_ID} .sth-key.busy{opacity:.55;pointer-events:none}
+    #${BLOCK_ID} .sth-key.done{background:rgba(74,222,128,.25);border-color:#4ade80;color:#86efac}
+    #${BLOCK_ID} .sth-key.err{background:rgba(248,113,113,.25);border-color:#f87171;color:#fca5a5}
+    #${BLOCK_ID}.light .sth-key{color:#b45309;background:rgba(245,158,11,.12);border-color:rgba(217,119,6,.55)}
+    #${BLOCK_ID}.light .sth-key.done{color:#15803d;background:rgba(22,163,74,.12);border-color:rgba(22,163,74,.5)}
+    #${BLOCK_ID}.light .sth-key.err{color:#b91c1c;background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.5)}
+    #${BLOCK_ID} .sth-card.live .sth-key{background:rgba(255,255,255,.2);border-color:#fff;color:#fff!important}
+    #${BLOCK_ID} .sth-trow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:3px;font-size:12px;font-weight:500}
+    #${BLOCK_ID} .sth-trow.ph-done{opacity:.5}
+    #${BLOCK_ID} .sth-card.live .sth-trow,#${BLOCK_ID} .sth-card.live .sth-trow *{color:#fff!important}
+    #${BLOCK_ID} .sth-key{position:relative;transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+    #${BLOCK_ID} .sth-key:hover{transform:translateY(-1px) rotate(-8deg)}
+    #${BLOCK_ID} .sth-key.busy .sth-i{animation:sthKeySpin .9s linear infinite}
+    #${BLOCK_ID} .sth-key.done{animation:sthKeyPop .55s cubic-bezier(.3,1.7,.5,1)}
+    #${BLOCK_ID} .sth-key.err{animation:sthKeyShake .45s}
+    #${BLOCK_ID} .sth-key::after{content:'';position:absolute;inset:-1px;border-radius:7px;border:2px solid currentColor;opacity:0;pointer-events:none}
+    #${BLOCK_ID} .sth-key.done::after{animation:sthKeyRing .7s ease-out}
+    @keyframes sthKeyRing{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+    @keyframes sthKeySpin{to{transform:rotate(360deg)}}
+    @keyframes sthKeyPop{0%{transform:scale(.6) rotate(-25deg)}60%{transform:scale(1.18) rotate(8deg)}100%{transform:none}}
+    @keyframes sthKeyShake{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+    #${BLOCK_ID} .sth-cap{display:inline-block;margin-right:6px;padding:0 8px;border-radius:999px;font-size:10px;font-style:normal;font-weight:700;letter-spacing:.4px;text-transform:uppercase;line-height:17px;color:#c4b5fd;background:rgba(167,139,250,.16);border:1px solid rgba(167,139,250,.5);vertical-align:1px}
+    #${BLOCK_ID}.light .sth-cap{color:#6d28d9;background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.45)}
+    #${BLOCK_ID}.light .sth-card.soonp .sth-list li .sth-cap{color:#6d28d9}
+    #${BLOCK_ID} .sth-card.live .sth-cap{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.65)}
+    /* --- Капсула «Преподаватель» и ключик логинера: заметнее и аккуратнее --- */
+    #${BLOCK_ID} .sth-cap,#${BLOCK_ID}.light .sth-cap{padding:0 10px;font-size:10.5px;line-height:18px;color:#fff;background:linear-gradient(135deg,#2563eb,#0ea5e9);border:1px solid rgba(255,255,255,.4);box-shadow:0 1px 6px rgba(37,99,235,.5)}
+    #${BLOCK_ID} .sth-card.live .sth-cap,#${BLOCK_ID}.light .sth-card.live .sth-cap{background:linear-gradient(135deg,#15803d,#22c55e);border-color:#fff;box-shadow:0 1px 8px rgba(0,0,0,.35)}
+    #${BLOCK_ID}.light .sth-card.soonp .sth-list li .sth-cap{color:#fff}
+    #${BLOCK_ID} .sth-key,#${BLOCK_ID}.light .sth-key{width:26px;height:26px;margin-left:6px;border:0;border-radius:50%;color:#451a03;background:linear-gradient(135deg,#fde047,#f59e0b);box-shadow:0 2px 8px rgba(245,158,11,.5),inset 0 1px 0 rgba(255,255,255,.55)}
+    #${BLOCK_ID} .sth-key .sth-i{width:15px;height:15px}
+    #${BLOCK_ID} .sth-key:hover,#${BLOCK_ID}.light .sth-key:hover{background:linear-gradient(135deg,#fef08a,#fbbf24);box-shadow:0 3px 14px rgba(245,158,11,.75),inset 0 1px 0 rgba(255,255,255,.6);transform:scale(1.14) rotate(-14deg)}
+    #${BLOCK_ID} .sth-key.done,#${BLOCK_ID}.light .sth-key.done{color:#052e16;background:linear-gradient(135deg,#86efac,#22c55e);box-shadow:0 2px 10px rgba(34,197,94,.6)}
+    #${BLOCK_ID} .sth-key.err,#${BLOCK_ID}.light .sth-key.err{color:#fff;background:linear-gradient(135deg,#fb7185,#dc2626);box-shadow:0 2px 10px rgba(220,38,38,.6)}
+    #${BLOCK_ID} .sth-key::after{border-radius:50%;inset:-2px}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-key{color:#451a03!important;background:linear-gradient(135deg,#fde047,#f59e0b)!important;box-shadow:0 0 0 2px rgba(255,255,255,.9),0 2px 10px rgba(0,0,0,.35)!important}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-key.done{color:#052e16!important;background:linear-gradient(135deg,#86efac,#22c55e)!important}
+    #${BLOCK_ID} .sth-card.live .sth-list li .sth-key.err{color:#fff!important;background:linear-gradient(135deg,#fb7185,#991b1b)!important}
+    /* Строка урока в две линии: сверху услуга (с многоточием), снизу преподаватель */
+    #${BLOCK_ID} .sth-lessons li{flex-direction:column;align-items:stretch;gap:6px}
+    #${BLOCK_ID} .sth-lessons li>span:first-child{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;overflow:hidden;white-space:nowrap}
+    #${BLOCK_ID} .sth-lessons li>span:first-child .sth-lsvc{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-break:normal}
+    #${BLOCK_ID} .sth-lessons li>b{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px}
+    #${BLOCK_ID} .sth-lessons .sth-tid{margin-left:0}
+    /* --- Красная карточка: ключик голубой (жёлтый на красном терялся) + строка урока строго в границах --- */
+    #${BLOCK_ID} .sth-card.live .sth-key,#${BLOCK_ID} .sth-card.live .sth-list li .sth-key,#${BLOCK_ID} .sth-card.live .sth-trow .sth-key{color:#fff!important;background:linear-gradient(135deg,#38bdf8,#2563eb)!important;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 2px 10px rgba(0,0,0,.4)!important}
+    #${BLOCK_ID} .sth-card.live .sth-key.done,#${BLOCK_ID} .sth-card.live .sth-list li .sth-key.done,#${BLOCK_ID} .sth-card.live .sth-trow .sth-key.done{color:#052e16!important;background:linear-gradient(135deg,#86efac,#22c55e)!important}
+    #${BLOCK_ID} .sth-card.live .sth-key.err,#${BLOCK_ID} .sth-card.live .sth-list li .sth-key.err,#${BLOCK_ID} .sth-card.live .sth-trow .sth-key.err{color:#fff!important;background:linear-gradient(135deg,#64748b,#0f172a)!important}
+    #${BLOCK_ID} .sth-lessons{grid-template-columns:minmax(0,1fr)}
+    #${BLOCK_ID} .sth-lessons li,#${BLOCK_ID}.tp .sth-lessons li{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;justify-content:flex-start;gap:6px;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+    #${BLOCK_ID} .sth-lessons li>b{justify-content:flex-start;min-width:0;text-align:left}
+    /* --- Услуга (STK) переносится на новую строку целиком --- */
+    #${BLOCK_ID} .sth-lessons li>span:first-child{flex-wrap:wrap;overflow:visible;white-space:normal;row-gap:4px}
+    #${BLOCK_ID} .sth-lessons li>span:first-child .sth-lsvc{flex:1 1 100%;overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;word-break:break-all;line-height:1.35}
+    /* --- Ссылки CRM / TRM у преподавателя --- */
+    #${BLOCK_ID} .sth-ext,#${BLOCK_ID}.light .sth-ext{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 9px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.5px;text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.4);transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+    #${BLOCK_ID} .sth-ext.crm{background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 1px 6px rgba(124,58,237,.5)}
+    #${BLOCK_ID} .sth-ext.trm{background:linear-gradient(135deg,#0d9488,#14b8a6);box-shadow:0 1px 6px rgba(13,148,136,.5)}
+    #${BLOCK_ID} .sth-ext:hover{transform:translateY(-1px) scale(1.06);filter:brightness(1.12);color:#fff}
+    #${BLOCK_ID} .sth-card.live .sth-ext,#${BLOCK_ID} .sth-card.live .sth-list li .sth-ext,#${BLOCK_ID} .sth-card.live .sth-trow .sth-ext{color:#fff!important;border-color:#fff;box-shadow:0 1px 8px rgba(0,0,0,.35)}
+    /* --- CRM / TRM: круглые кнопки-иконки, как ключик --- */
+    #${BLOCK_ID} .sth-ext,#${BLOCK_ID}.light .sth-ext{width:26px;height:26px;padding:0;border-radius:50%;border:0;box-shadow:0 2px 8px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.35)}
+    #${BLOCK_ID} .sth-ext .sth-i{--ic:currentColor;width:15px;height:15px}
+    #${BLOCK_ID} .sth-ext.crm{box-shadow:0 2px 8px rgba(124,58,237,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+    #${BLOCK_ID} .sth-ext.trm{box-shadow:0 2px 8px rgba(13,148,136,.55),inset 0 1px 0 rgba(255,255,255,.35)}
+    #${BLOCK_ID} .sth-ext:hover{transform:scale(1.14) rotate(-10deg)}
+    #${BLOCK_ID} .sth-card.live .sth-ext,#${BLOCK_ID} .sth-card.live .sth-list li .sth-ext,#${BLOCK_ID} .sth-card.live .sth-trow .sth-ext{border:0;box-shadow:0 0 0 2px rgba(255,255,255,.92),0 2px 10px rgba(0,0,0,.4)}
     @keyframes sthKmPulse{0%,100%{box-shadow:0 0 0 1px rgba(248,113,113,.35),0 4px 14px rgba(220,38,38,.35)}50%{box-shadow:0 0 0 2px rgba(254,202,202,.55),0 4px 22px rgba(239,68,68,.7)}}
     #${BLOCK_ID} .sth-card.vac{background:linear-gradient(135deg,#b45309,#f59e0b);border:1px solid #fde68a;border-left:4px solid #fff;box-shadow:0 0 0 1px rgba(251,191,36,.35),0 4px 18px rgba(245,158,11,.45)}
     #${BLOCK_ID} .sth-card.warn.vac .sth-lbl{color:#fffbeb!important}
@@ -626,7 +743,8 @@
                 type: l.lessonType,
                 sid: String(l.educationService?.id ?? l.educationServiceId ?? ''),
                 key: l.educationService?.serviceTypeKey || '',
-                teacher: [l.teacher?.general?.name, l.teacher?.general?.surname].filter(Boolean).join(' ')
+                teacher: [l.teacher?.general?.name, l.teacher?.general?.surname].filter(Boolean).join(' '),
+                tid: String(l.teacher?.general?.id ?? l.teacher?.id ?? l.teacherId ?? l.teacher?.userId ?? l.teacher?.general?.userId ?? '')
             }));
     }
 
@@ -706,7 +824,11 @@
         let today = null, tasks = null;
         if (light) {
             if (futArr) {
-                today = todayLessons(futArr);
+                // Начавшийся урок мог уже уйти из «будущих» в историю — берём его оттуда, пока он идёт
+                const nowMs = Date.now(), seen = new Set(futArr.map((l) => l.startedAt + '|' + lessonSvcId(l)));
+                const liveHist = (arr(hr) || []).filter((l) => ts(l) <= nowMs && ts(l) > nowMs - LESSON_LIVE_MIN * 6e4
+                    && !MISS.includes(l.status) && !/cancel/i.test(l.status || '') && !seen.has(l.startedAt + '|' + lessonSvcId(l)));
+                today = todayLessons(futArr.concat(liveHist));
                 // Услуга и преподаватель: из урока, а если там пусто — из списка услуг ученика
                 for (const l of today) {
                     const sv = services.find((x) => String(x.id) === l.sid);
@@ -908,11 +1030,159 @@
 
     const LESSON_TYPES = { regular: 'Регулярный', single: 'Одиночный', trial: 'Пробный' };
     const hhmm = (iso) => new Date(iso).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
+
+    // ---- Подсветка уроков сегодня: идёт сейчас (красный) / скоро и позже (жёлтый) / уже прошёл ----
+    const LESSON_LIVE_MIN = 60;  // сколько минут после старта урок считается идущим
+    const LESSON_SOON_MIN = 90;  // за сколько минут до старта урок считается «скоро» (жёлтый пульсирует)
+    function lessonPhase(l, now = Date.now()) {
+        const t = Date.parse(l && l.at);
+        if (isNaN(t)) return 'later';
+        if (now < t) return t - now <= LESSON_SOON_MIN * 6e4 ? 'soon' : 'later';
+        return now < t + LESSON_LIVE_MIN * 6e4 ? 'live' : 'done';
+    }
+    const minsText = (m) => m >= 60 ? `${Math.floor(m / 60)} ч${m % 60 ? ' ' + (m % 60) + ' мин' : ''}` : `${Math.max(m, 0)} мин`;
+    // Текст обратного отсчёта; обновляется на месте раз в несколько секунд (см. lessonsTimer)
+    function cdText(kind, iso, now = Date.now()) {
+        const t = Date.parse(iso);
+        if (isNaN(t)) return '';
+        return kind === 'live' ? `идёт ${minsText(Math.floor((now - t) / 6e4))}` : minsText(Math.max(1, Math.ceil((t - now) / 6e4)));
+    }
+    const cdSpan = (kind, iso) => `<span class="sth-cd" data-k="${kind}" data-at="${esc(iso)}">${esc(cdText(kind, iso))}</span>`;
+    function lessonsLevel(today, now = Date.now()) {
+        const ph = today.map((l) => lessonPhase(l, now));
+        const pick = (p) => today.filter((_, i) => ph[i] === p);
+        const live = pick('live'), soon = pick('soon'), later = pick('later'), done = pick('done');
+        return { ph, live, soon, later, done, level: live.length ? 'live' : soon.length ? 'soon' : later.length ? 'later' : 'done' };
+    }
+    // Главная строка карточки «Уроки сегодня»
+    function lessonsHeadline(S, total) {
+        if (S.level === 'live') return `Урок идёт сейчас · с ${esc(hhmm(S.live[0].at))} (${cdSpan('live', S.live[0].at)})`;
+        if (S.level === 'soon') return `Скоро: ${esc(hhmm(S.soon[0].at))} · через ${cdSpan('soon', S.soon[0].at)}`;
+        if (S.level === 'later') return `Сегодня ещё ${S.later.length} шт.: ${esc(S.later.map((l) => hhmm(l.at)).join(', '))}`;
+        return `Все ${total} прошли`;
+    }
+    function lessonsChip(d) {
+        const S = lessonsLevel(d.today);
+        const tipAll = `Уроки сегодня (МСК): ${d.today.map((l) => hhmm(l.at)).join(', ')}`;
+        if (S.level === 'live') return `<span class="sth-hchip bad live" title="${esc(tipAll)}">Урок идёт сейчас</span>`;
+        if (S.level === 'soon') return `<span class="sth-hchip warn soonp" title="${esc(tipAll)}">Урок через ${cdSpan('soon', S.soon[0].at)}</span>`;
+        if (S.level === 'later') return `<span class="sth-hchip warn" title="${esc(tipAll)}">Уроки сегодня: ${d.today.length}</span>`;
+        return `<span class="sth-hchip info" title="${esc(tipAll)}">Уроки сегодня: ${d.today.length}</span>`;
+    }
+    const LESSON_LVL_CLASS = { live: 'bad live', soon: 'warn soonp', later: 'warn', done: 'mute' };
+    function lessonRowInfo(l) {
+        return `${LESSON_TYPES[l.type] || l.type || ''} · ${l.sid || l.key ? `${l.sid ? '#' + l.sid + ' ' : ''}${l.key || ''}`.trim() : 'услуга не указана'} · ${l.teacher || 'без преподавателя'}${l.tid ? ' (ID ' + l.tid + ')' : ''}`;
+    }
+
+    const liveNow = (d) => !!(d && d.today && d.today.length && lessonsLevel(d.today).live.length); // у ученика прямо сейчас идёт урок
+    // ---- Ссылка-логинер (ключик у ID ученика и преподавателя) ----
+    const keyBtn = (id, who) => /^\d+$/.test(String(id || ''))
+        ? `<button type="button" class="sth-key" data-uid="${esc(id)}" data-who="${who === 'ученика' ? 'student' : 'teacher'}" title="Ссылка-логинер ${who}: сгенерировать и скопировать">${ico('key')}</button>` : '';
+    // Быстрые ссылки на преподавателя: карточка в CRM и TRM 2.0
+    const teacherLinks = (id) => /^\d+$/.test(String(id || ''))
+        ? `<a class="sth-ext crm" href="https://crm2.skyeng.ru/persons/${id}" target="_blank" rel="noopener noreferrer" title="Открыть преподавателя в CRM" aria-label="CRM">${ico('crmUser')}</a><a class="sth-ext trm" href="https://trm.skyeng.ru/teacher/${id}" target="_blank" rel="noopener noreferrer" title="Открыть преподавателя в TRM 2.0" aria-label="TRM">${ico('trmCap')}</a>` : '';
+    function loginLinkFor(userId) {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => reject(new Error('таймаут')), 20000);
+            const done = (fn, v) => { clearTimeout(timer); fn(v); };
+            try {
+                chrome.runtime.sendMessage({
+                    action: 'getFetchRequest',
+                    fetchURL: 'https://id.skyeng.ru/admin/auth/login-links',
+                    requestOptions: {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({ 'login_link_form[id]': String(userId), 'login_link_form[target]': 'https://vimbox.skyeng.ru', 'login_link_form[lifetime]': '3600', 'login_link_form[create]': '' }).toString(),
+                        credentials: 'include'
+                    }
+                }, (r) => {
+                    if (chrome.runtime.lastError) return done(reject, new Error(chrome.runtime.lastError.message));
+                    if (!r || !r.success) return done(reject, new Error((r && r.error) || 'ошибка запроса'));
+                    const m = String(r.fetchansver || '').match(/https:\/\/id\.skyeng\.ru\/auth\/login-link\/[A-Za-z0-9_/-]+/g);
+                    if (!m) return done(reject, new Error('ссылка не найдена'));
+                    done(resolve, m[m.length - 1].replace(/["']+$/, ''));
+                });
+            } catch (error) { done(reject, error); }
+        });
+    }
+
+    // ---- Тосты: небольшие уведомления снизу справа (не зависят от темы страницы) ----
+    const TOAST_ICONS = {
+        key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
+        ok: '<path d="M20 6 9 17l-5-5"/>',
+        err: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5h.01"/>'
+    };
+    const toastSvg = (n) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOAST_ICONS[n]}</svg>`;
+    function ensureToastStyle(doc) {
+        if (doc.getElementById('sth-toast-css')) return;
+        const st = doc.createElement('style');
+        st.id = 'sth-toast-css';
+        st.textContent = `
+            #sth-toasts{position:fixed;right:18px;bottom:18px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+            .sth-toast{--tc:#fbbf24;position:relative;overflow:hidden;pointer-events:auto;display:flex;align-items:flex-start;gap:11px;width:max-content;min-width:270px;max-width:380px;padding:12px 15px 14px 12px;color:#edf2fb;background:rgba(15,23,42,.97);border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);border-radius:14px;box-shadow:0 16px 44px rgba(3,9,22,.55),0 0 0 1px rgba(255,255,255,.04) inset,0 0 26px color-mix(in srgb,var(--tc) 22%,transparent);font:13px/1.35 Inter,'Segoe UI',system-ui,sans-serif;cursor:pointer;animation:sthToastIn .42s cubic-bezier(.2,1.25,.4,1) both}
+            .sth-toast.ok{--tc:#4ade80}.sth-toast.err{--tc:#f87171}
+            .sth-toast.out{animation:sthToastOut .26s ease forwards}
+            .sth-toast-ico{flex:0 0 auto;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:var(--tc);background:color-mix(in srgb,var(--tc) 18%,transparent);border:1px solid color-mix(in srgb,var(--tc) 40%,transparent)}
+            .sth-toast.busy .sth-toast-ico svg{animation:sthKeySpin 1s linear infinite}
+            .sth-toast.ok .sth-toast-ico{animation:sthKeyPop .55s cubic-bezier(.3,1.7,.5,1)}
+            .sth-toast.err .sth-toast-ico{animation:sthKeyShake .45s}
+            .sth-toast-t{font-weight:700;color:#fff;letter-spacing:.1px}
+            .sth-toast-s{margin-top:2px;color:#a6b4cb;font-size:12px;overflow-wrap:anywhere}
+            .sth-toast-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--tc);transform-origin:left;animation:sthToastBar var(--d,3.5s) linear forwards}
+            @keyframes sthToastIn{from{opacity:0;transform:translateX(34px) scale(.92)}to{opacity:1;transform:none}}
+            @keyframes sthToastOut{to{opacity:0;transform:translateX(34px) scale(.94)}}
+            @keyframes sthToastBar{to{transform:scaleX(0)}}
+            @keyframes sthKeySpin{to{transform:rotate(360deg)}}
+            @keyframes sthKeyPop{0%{transform:scale(.6) rotate(-25deg)}60%{transform:scale(1.18) rotate(8deg)}100%{transform:none}}
+            @keyframes sthKeyShake{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}`;
+        (doc.head || doc.documentElement).appendChild(st);
+    }
+    // Один тост на действие: сначала «busy», затем update() меняет его на успех или ошибку
+    function sthToast(doc, o) {
+        ensureToastStyle(doc);
+        let wrap = doc.getElementById('sth-toasts');
+        if (!wrap) { wrap = doc.createElement('div'); wrap.id = 'sth-toasts'; doc.body.appendChild(wrap); }
+        const el = doc.createElement('div');
+        let timer = null;
+        const close = () => { clearTimeout(timer); el.classList.add('out'); setTimeout(() => el.remove(), 260); };
+        const paint = (x) => {
+            clearTimeout(timer);
+            el.className = `sth-toast ${x.kind}`;
+            el.innerHTML = `<div class="sth-toast-ico">${toastSvg(x.icon)}</div><div><div class="sth-toast-t">${esc(x.title)}</div>${x.sub ? `<div class="sth-toast-s">${esc(x.sub)}</div>` : ''}</div>${x.ms ? `<i class="sth-toast-bar" style="--d:${x.ms}ms"></i>` : ''}`;
+            if (x.ms) timer = setTimeout(close, x.ms);
+        };
+        el.addEventListener('click', close);
+        paint(o);
+        wrap.appendChild(el);
+        return { update: paint, close };
+    }
+    async function runLoginKey(doc, btn) {
+        if (btn.classList.contains('busy')) return;
+        const title = btn.dataset.t0 || btn.title;
+        btn.dataset.t0 = title;
+        const who = btn.dataset.who === 'teacher' ? 'Преподаватель' : 'Ученик';
+        btn.classList.remove('done', 'err'); btn.classList.add('busy');
+        const toast = sthToast(doc, { kind: 'busy', icon: 'key', title: 'Генерирую ссылку-логинер…', sub: `${who} · ID ${btn.dataset.uid}` });
+        try {
+            copyText(doc, await loginLinkFor(btn.dataset.uid));
+            btn.classList.add('done'); btn.title = 'Ссылка-логинер скопирована';
+            toast.update({ kind: 'ok', icon: 'ok', title: 'Ссылка-логинер скопирована', sub: `${who} · ID ${btn.dataset.uid} · действует 1 час`, ms: 3500 });
+        } catch (error) {
+            const msg = (error && error.message) || 'ошибка';
+            btn.classList.add('err'); btn.title = 'Не удалось получить логинер: ' + msg;
+            toast.update({ kind: 'err', icon: 'err', title: 'Не удалось получить ссылку', sub: `${msg}. Проверьте вход в id.skyeng.ru`, ms: 5500 });
+        } finally {
+            btn.classList.remove('busy');
+            setTimeout(() => { btn.classList.remove('done', 'err'); btn.title = title; }, 2500);
+        }
+    }
     function lessonsCard(d) {
-        // Компактно и только если уроки сегодня есть: время через запятую, детали (тип, услуга, преподаватель) — в подсказке
+        // Компактно и только если уроки сегодня есть. Цвет: красный — урок идёт, жёлтый — впереди, серый — все прошли
         if (!d.today || !d.today.length) return '';
-        const tip = d.today.map((l) => `${hhmm(l.at)} · ${LESSON_TYPES[l.type] || l.type || ''} · ${l.sid || l.key ? `${l.sid ? '#' + l.sid + ' ' : ''}${l.key || ''}`.trim() : 'услуга не указана'} · ${l.teacher || 'без преподавателя'}`).join('\n');
-        return `<div class="sth-card warn" title="${esc(tip)}"><div class="sth-lbl">${ico('clock')}Уроки сегодня (МСК)</div><div class="sth-val">${d.today.length} шт.: ${esc(d.today.map((l) => hhmm(l.at)).join(', '))}</div></div>`;
+        const S = lessonsLevel(d.today);
+        const tip = d.today.map((l, i) => `${hhmm(l.at)}${{ live: ' (идёт сейчас)', soon: ' (скоро)', done: ' (прошёл)', later: '' }[S.ph[i]]} · ${lessonRowInfo(l)}`).join('\n');
+        const all = d.today.slice(0, 5).map((l, i) => `<div class="sth-trow ph-${S.ph[i]}"><b>${esc(hhmm(l.at))}</b>${l.teacher || l.tid ? ' <em class="sth-cap">Преподаватель</em>' : ''}${l.teacher ? esc(l.teacher) : ''}${l.tid ? ` <span class="sth-tid" title="ID преподавателя">ID ${esc(l.tid)}</span>${keyBtn(l.tid, 'преподавателя')}${teacherLinks(l.tid)}` : ''}</div>`).join('');
+        return `<div class="sth-card ${LESSON_LVL_CLASS[S.level]}" title="${esc(tip)}"><div class="sth-lbl">${ico('clock')}Уроки сегодня (МСК)</div><div class="sth-val">${lessonsHeadline(S, d.today.length)}</div>${all}</div>`;
     }
     const TASK_GROUPS = /technical_support_(second_line|outgoing)/i;
     const TASK_GROUP_TITLES = /исход|2-?я\s+линия|2\s*лтп/i;
@@ -952,7 +1222,7 @@
         const km = d.services.filter((x) => x.km);
         if (km.length) out.push(`<span class="sth-hchip bad" title="Кризисное сопровождение">КМ · ${km.length}</span>`);
         if (d.services.some((x) => x.credit && !x.credit.unknown)) out.push(d.services.some(creditLate) ? '<span class="sth-hchip bad" title="Есть просроченный этап рассрочки">Рассрочка: просрочка</span>' : '<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
-        if (d.today?.length) out.push(`<span class="sth-hchip info" title="Уроки сегодня (МСК): ${esc(d.today.map((l) => hhmm(l.at)).join(', '))}">Уроки сегодня: ${d.today.length}</span>`);
+        if (d.today?.length) out.push(lessonsChip(d));
         const mine = tpTasks(d), wait = mine.filter((t) => t.status === 'waiting').length;
         if (mine.length) out.push(`<span class="sth-hchip ${wait ? 'bad' : 'warn'}" title="Задачи ТП Исход / 2ЛТП${wait ? ': не взято в работу ' + wait : ''}">Задачи ТП: ${mine.length}</span>`);
         return out.length ? `<span class="sth-hchips">${out.join('')}</span>` : '';
@@ -1136,6 +1406,8 @@
                     po.classList.add('done'); setTimeout(() => po.classList.remove('done'), 1500);
                     return;
                 }
+                const lk = e.target.closest('.sth-key');
+                if (lk) { e.preventDefault(); e.stopPropagation(); runLoginKey(doc, lk); return; }
                 const apc = e.target.closest('.sth-apcopy');
                 if (apc) {
                     copyText(doc, apc.dataset.link || '');
@@ -1179,7 +1451,7 @@
             try { header.insertAdjacentElement('afterend', block); } catch { return; }
         }
         // ТП: по умолчанию свёрнуто, раскрывается само, только если есть активная задача ТП Исход / 2ЛТП (пока пользователь не переключил вручную)
-        if (state.mode === 'tp' && !state.userToggled) state.collapsed = !tpTasks(state.data).length;
+        if (state.mode === 'tp' && !state.userToggled) state.collapsed = !(tpTasks(state.data).length || liveNow(state.data)); // и когда идёт урок
         block.classList.toggle('collapsed', state.collapsed);
         block.classList.toggle('tp', state.mode === 'tp');
         block.classList.toggle('light', themeLight());
@@ -1190,6 +1462,7 @@
             <div class="sth-head">
                 <span class="sth-title">${ico('info')}Вспомогательная информация по У</span>
                 <span class="sth-id" title="ID ученика">${esc(state.id || '—')}</span>
+                ${keyBtn(state.id, 'ученика')}
                 ${state.role ? `<span class="sth-role ${role.kind}">${ico(roleIco)}${esc(role.text)}</span>` : ''}
                 ${state.data?.services?.some((x) => x.corp) ? `<span class="sth-role corp" title="Есть корпоративная услуга: general.corporate или paymentAgreement.companyContract">${ico('tag')}Корпоративный</span>` : ''}
                 <a class="sth-crm" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}" target="_blank" rel="noopener" title="Открыть ученика в CRM">CRM ↗</a>
@@ -1347,6 +1620,21 @@
     if (window.AFStudentHelperTest) window.AFStudentHelperTest.api = { loadAll, renderBody, get state() { return state; }, cache, tick };
 
     setInterval(tick, TICK_MS);
+
+    // Уроки идут во времени: раз в 10 сек обновляем обратный отсчёт на месте, а при смене фазы урока перерисовываем блок
+    let lessonSig = '';
+    setInterval(() => {
+        try {
+            const doc = getFrameDoc();
+            const d = state.data;
+            if (!doc || !d || !d.today || !d.today.length) { lessonSig = ''; return; }
+            const sig = lessonsLevel(d.today).ph.join(',');
+            if (lessonSig && sig !== lessonSig && !state.loading) renderBlock(doc);
+            lessonSig = sig;
+            doc.querySelectorAll('#' + BLOCK_ID + ' .sth-cd').forEach((el) => { el.textContent = cdText(el.dataset.k, el.dataset.at); });
+        } catch { /* не критично */ }
+    }, 10000);
+
     // Режим для страницы CRM синхронизируем независимо от экрана диалога (иначе смена настройки в Settings доходит до CRM только после открытия чата)
     setInterval(() => { try { const k = operatorKind(); if (k) syncShared(k); const b = getFrameDoc()?.getElementById(BLOCK_ID); if (b) b.classList.toggle('light', themeLight()); } catch { /* ignore */ } }, 1500);
     tick();
