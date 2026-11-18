@@ -343,7 +343,7 @@
     // Старые ключи remindertextCRM* и т. п. оставлены: резервные копии, сделанные
     // до перехода на crm_reminders_v2, при импорте всё ещё восстанавливаются
     // (AlarmClock мигрирует их в новый формат).
-    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|crm_department|crmsth_enabled|crmsth_theme|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
+    const EXPORT_KEYS = /^(audioCRM|audioCRMvol|splinterCRM|repeatsound|sound_strCRM|skyauto_enabled|crm_department|crmsth_enabled|crmsth_theme|skyauto_ui_pos|test_studCRM|test_teachCRM|CRM_LinksCustom|customquery|bugsarray|jiraFavsV2|jiraRecentQueries|mmsRecentQueries|mms_.*|cfs_.*|crm_reminders_v2|tplWidgetCyberV3\..*|winTop.*|winLeft.*|remindertextCRM1?|setchasCRM1?|setminutaCRM1?|chronostamp1?)$/;
 
     $('savesettingstofileCRM').onclick = () => {
         const data = {};

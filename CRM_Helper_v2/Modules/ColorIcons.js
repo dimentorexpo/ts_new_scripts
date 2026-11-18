@@ -92,6 +92,7 @@
         memo: `<rect x="4.5" y="3.5" width="13" height="17" rx="2.5" fill="${CREAM}" stroke="#F5C542" stroke-width="1.4"/><path d="M8 8h6M8 11.5h6M8 15h3" ${stroke(AMBER_D, 1.6)}/><path d="M19.2 7.3l1.5 1.5-7.4 7.4-2.1.6.6-2.1z" fill="${ORANGE}"/>`,
 
         // — Ссылки и инструменты —
+        bookOpen: `<path d="M12 6.5C10 5 7 4.5 3 5v13c4-.5 7 0 9 1.5z" fill="${BLUE}"/><path d="M12 6.5C14 5 17 4.5 21 5v13c-4-.5-7 0-9 1.5z" fill="${BLUE_L}"/><path d="M12 6.5v13" ${stroke(BLUE_D, 1.4)}/><path d="M5.5 8.5c1.5 0 3 .2 4.5.8M5.5 11.5c1.5 0 3 .2 4.5.8" ${stroke('#fff', 1.4)}/><path d="M14 9.3c1.5-.6 3-.8 4.5-.8M14 12.3c1.5-.6 3-.8 4.5-.8" ${stroke(BLUE, 1.4)}/>`,
         books: `<rect x="3" y="14.5" width="18" height="5.5" rx="1.6" fill="${BLUE}"/><rect x="4.5" y="9.2" width="16" height="5.3" rx="1.6" fill="${GREEN}"/><rect x="3.5" y="3.8" width="14" height="5.4" rx="1.6" fill="${RED}"/><path d="M6 17.2h6M7.5 11.9h5M6.5 6.5h4" ${stroke('#fff', 1.3)}/>`,
         lockKey: `<path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" ${stroke(GRAY_D, 2.4)}/><rect x="4.5" y="10.5" width="15" height="10.5" rx="3" fill="${AMBER}"/><circle cx="12" cy="15" r="1.7" fill="#7A4B00"/><rect x="11.2" y="15.5" width="1.6" height="3" rx=".8" fill="#7A4B00"/>`,
         bug: `<path d="M5 11l-2.3-1M5.5 15h-3M6 19l-2.3 1.6M19 11l2.3-1M18.5 15h3M18 19l2.3 1.6" ${stroke(INK, 1.5)}/><ellipse cx="12" cy="14.2" rx="6.5" ry="7" fill="${RED}"/><circle cx="12" cy="6.5" r="3.2" fill="${INK}"/><path d="M12 8.5v12.5" ${stroke(INK, 1.4)}/><g fill="${INK}"><circle cx="9" cy="13" r="1.3"/><circle cx="15" cy="13" r="1.3"/><circle cx="9.6" cy="17.5" r="1.1"/><circle cx="14.4" cy="17.5" r="1.1"/></g>`,
@@ -133,7 +134,7 @@
         '🗓': 'calendarAuto', '📅': 'calendar', '🧰': 'toolbox', '🎧': 'headset', '🎲': 'dice',
         '🔕': 'bellOff', '🔔': 'bell', '⚙': 'gear', '⏰': 'alarm', '👥': 'users',
         '📇': 'cardIndex', '🍀': 'clover', '🙅': 'prohibit', '🧩': 'puzzle', '🍏': 'apple', '🤖': 'robot',
-        '📝': 'memo', '★': 'star', '☆': 'star', '🗑': 'trash', '📚': 'books', '🔐': 'lockKey', '🐞': 'bug',
+        '📝': 'memo', '★': 'star', '☆': 'star', '🗑': 'trash', '📚': 'books', '📖': 'bookOpen', '🔐': 'lockKey', '🐞': 'bug',
         '⛏': 'pickaxe', '🗣': 'speak', '🚫': 'prohibit', '💸': 'moneyFly', '🌀': 'cyclone', '🛠': 'tools',
         '💳': 'card', '🧮': 'abacus', '🔁': 'repeat', '🏡': 'house', 'ℹ': 'info', '💫': 'sparkle',
         '🌐': 'globe', '📜': 'scroll', '🏷': 'tag', '📔': 'bookOrange', '📗': 'bookGreen', '📘': 'bookBlue',

@@ -1246,3 +1246,36 @@ a.crm-screenshot-link:hover img { box-shadow: 0 0 0 2px #2f6db3; }
 .crm-dept-choice:hover, .crm-dept-choice:focus-visible { background: var(--crm-bg-hover); border-color: var(--crm-accent); outline: none; }
 .crm-dept-choice b { font-size: 13px; font-weight: 600; }
 .crm-dept-choice span { font-size: 12px; color: var(--crm-text-2); }
+
+/* ===== Поиск в Confluence ===== */
+.cfs-banner { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; padding: 9px 12px; font-size: 12.5px; line-height: 1.4; color: var(--crm-text); background: var(--crm-bad-soft); border: 1px solid var(--crm-bad); border-radius: var(--crm-r); }
+.cfs-banner.crm-hidden { display: none; }
+.cfs-banner span { flex: 1; min-width: 0; }
+.cfs-banner .crm-btn { flex: none; white-space: nowrap; }
+.cfs-filters { margin-top: 8px; align-items: center; }
+.cfs-filters > .crm-select, .cfs-spacebtn { width: auto; flex: 0 0 auto; }
+.cfs-spacebox { position: relative; }
+.cfs-spacebtn { min-width: 190px; max-width: 280px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfs-spacebtn.is-set { color: var(--crm-accent-ink); border-color: var(--crm-accent-line); background: var(--crm-accent-soft); }
+/* fixed: окно модуля обрезает содержимое (overflow: hidden), список должен выходить за его границы */
+.cfs-pop { position: fixed; z-index: 10; width: 340px; max-width: calc(100vw - 60px); padding: 6px; background: var(--crm-bg-2); border: 1px solid var(--crm-line-strong); border-radius: var(--crm-r); box-shadow: 0 18px 50px rgba(3, 9, 22, .55); }
+.cfs-pop.crm-hidden { display: none; }
+.cfs-pop .crm-input { width: 100%; margin-bottom: 5px; }
+.cfs-pop-list { max-height: 270px; overflow-y: auto; }
+.cfs-pop-title { padding: 6px 8px 3px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--crm-text-3); }
+.cfs-pop-opt { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 7px 8px; font: inherit; font-size: 12px; text-align: left; color: var(--crm-text); background: transparent; border: 0; border-radius: 6px; cursor: pointer; }
+.cfs-pop-opt:hover { background: var(--crm-bg-hover); }
+.cfs-pop-opt.is-active { color: var(--crm-accent-ink); background: var(--crm-accent-soft); }
+.cfs-pop-key { flex: none; min-width: 54px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; font-weight: 700; color: var(--crm-accent); }
+.cfs-pop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfs-pop-note { padding: 10px; font-size: 12px; text-align: center; color: var(--crm-text-3); }
+.cfs-results { max-height: 520px; margin-top: 8px; overflow-y: auto; padding-right: 2px; }
+.cfs-item { display: block; margin-bottom: 6px; padding: 10px 12px; color: inherit; text-decoration: none; background: var(--crm-bg-2); border: 1px solid var(--crm-line); border-radius: var(--crm-r); transition: background-color .15s ease, border-color .15s ease; }
+.cfs-item:hover { background: var(--crm-bg-hover); border-color: var(--crm-accent-line); }
+.cfs-item-top { display: flex; align-items: center; gap: 8px; }
+.cfs-item-ico { display: inline-flex; flex: none; }
+.cfs-item-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--crm-text); overflow-wrap: anywhere; }
+.cfs-item-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cfs-excerpt { margin-top: 6px; font-size: 12.5px; line-height: 1.5; color: var(--crm-text-2); overflow-wrap: anywhere; }
+.cfs-excerpt mark, .cfs-item-title mark { padding: 0 2px; color: var(--crm-text); background: var(--crm-warn-soft); border-radius: 3px; }
+.cfs-more { width: 100%; margin-top: 2px; }
