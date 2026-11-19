@@ -1049,13 +1049,15 @@
     const hhmm = (iso) => new Date(iso).toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' });
 
     // ---- Подсветка уроков сегодня: идёт сейчас (красный) / скоро и позже (жёлтый) / уже прошёл ----
-    const LESSON_LIVE_MIN = 60;  // сколько минут после старта урок считается идущим
+    const LESSON_LIVE_MIN = 50;  // длительность обычного урока, мин (столько после старта он считается идущим)
+    const LESSON_SHORT_MIN = 25; // длительность короткого урока (в ключе услуги есть «short»), мин
+    const lessonDurMin = (l) => /short/i.test(String((l && l.key) || '')) ? LESSON_SHORT_MIN : LESSON_LIVE_MIN;
     const LESSON_SOON_MIN = 90;  // за сколько минут до старта урок считается «скоро» (жёлтый пульсирует)
     function lessonPhase(l, now = Date.now()) {
         const t = Date.parse(l && l.at);
         if (isNaN(t)) return 'later';
         if (now < t) return t - now <= LESSON_SOON_MIN * 6e4 ? 'soon' : 'later';
-        return now < t + LESSON_LIVE_MIN * 6e4 ? 'live' : 'done';
+        return now < t + lessonDurMin(l) * 6e4 ? 'live' : 'done';
     }
     const minsText = (m) => m >= 60 ? `${Math.floor(m / 60)} ч${m % 60 ? ' ' + (m % 60) + ' мин' : ''}` : `${Math.max(m, 0)} мин`;
     // Текст обратного отсчёта; обновляется на месте раз в несколько секунд (см. lessonsTimer)
@@ -1229,7 +1231,7 @@
             const cm = raw.replace(/\s+/g, ' ');
             const long = cm.length > 140 || raw.includes('\n');
             return `<li class="sth-task ${groupKind(t)}" style="display:block"><div><span class="sth-grp ${groupKind(t)}">${groupKind(t) === 'out' ? ico('phoneOut') : groupKind(t) === 'l2' ? ico('layers2') : ''}${esc(t.operatorGroup?.title || t.operatorGroup?.name || '')}</span> <a class="sth-tlink" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(t.userId || state.id || '')}/customer-support/task/${encodeURIComponent(t.id)}" target="_blank" rel="noopener" title="Открыть задачу в CRM"><b>#${esc(t.id)}</b></a> · ${esc(t.type?.label || t.type?.name || '')}</div>
-                <div class="sth-tmeta">${t.status === 'waiting' ? '<span class="sth-wait">не взята в работу</span>' : esc(t.status || '')}${t.operator?.name ? ' · ' + esc(t.operator.name) : ''}${when ? ' · на ' + esc(when) : ''}${t.extra?.requestSubtopicLabel ? ' · ' + esc(t.extra.requestSubtopicLabel) : ''}</div>
+                <div class="sth-tmeta">${t.status === 'waiting' ? '<span class="sth-wait">не взята в работу</span>' : t.status === 'processing' ? 'В работе у' : esc(t.status || '')}${t.operator?.name ? (t.status === 'processing' ? ' ' : ' · ') + esc(t.operator.name) : ''}${when ? ' · на ' + esc(when) : ''}${t.extra?.requestSubtopicLabel ? ' · ' + esc(t.extra.requestSubtopicLabel) : ''}</div>
                 ${cm ? `<div class="sth-cm-short" style="color:var(--mut)">${esc(cm.length > 140 ? cm.slice(0, 138) + '…' : cm)}</div>
                     <div class="sth-cm-full">${linkify(raw)}</div>
                     ${long ? '<button type="button" class="sth-cm-toggle" data-more="Показать полностью" data-less="Свернуть">Показать полностью</button>' : ''}` : ''}</li>`;
