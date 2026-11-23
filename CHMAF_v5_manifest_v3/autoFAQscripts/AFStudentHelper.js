@@ -160,7 +160,7 @@
 
     // ── Стили (вставляются в документ iframe) ───────────────────────────────
     const CSS = `
-    #${BLOCK_ID}{--bg:#2a303c;--line:rgba(255,255,255,.08);--txt:#e5e9f0;--mut:#9aa7bd;margin:0;padding:10px 18px 12px;background:linear-gradient(180deg,#2e3440,#2a303c);border-bottom:1px solid var(--line);font-family:Roboto,system-ui,sans-serif;color:var(--txt);font-size:13px;line-height:1.4;box-sizing:border-box}
+    #${BLOCK_ID}{--bg:#2a303c;--line:rgba(255,255,255,.08);--txt:#e5e9f0;--mut:#9aa7bd;margin:0;padding:10px 18px 12px;flex:0 0 auto;position:relative;z-index:2;background:linear-gradient(180deg,#2e3440,#2a303c);border-bottom:1px solid var(--line);font-family:Roboto,system-ui,sans-serif;color:var(--txt);font-size:13px;line-height:1.4;box-sizing:border-box}
     #${BLOCK_ID} *{box-sizing:border-box}
     #${BLOCK_ID} .sth-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
     #${BLOCK_ID} .sth-title{font-weight:700;font-size:13px;letter-spacing:.2px;display:flex;align-items:center;gap:7px}
@@ -210,7 +210,21 @@
     #${BLOCK_ID} .sth-hchip{font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid;white-space:nowrap}
     #${BLOCK_ID} .sth-hchip.bad{color:#fecaca;background:rgba(239,68,68,.3);border-color:rgba(252,165,165,.7)}
     #${BLOCK_ID} .sth-hchip.warn{color:#fde68a;background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.55)}
+    #${BLOCK_ID} .sth-hchip.ok{color:#bbf7d0;background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.45)}
+    #${BLOCK_ID}.light .sth-hchip.ok{color:#15803d;background:rgba(22,163,74,.1);border-color:rgba(22,163,74,.4)}
     #${BLOCK_ID} .sth-hchip.info{color:#bae6fd;background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5)}
+    /* Компактный вид: строка-заголовок живёт в верхней полосе AutoFAQ (над колонкой чата), раскрытая часть — над кнопками чата */
+    #${BLOCK_ID}{padding:6px 12px 8px}
+    #${BLOCK_ID}.sth-lift{z-index:auto}
+    #${BLOCK_ID}.sth-lift .sth-head{position:fixed;top:var(--sth-top);left:var(--sth-left);width:var(--sth-w);height:40px;z-index:90;padding:0 4px}
+    #${BLOCK_ID}.sth-lift.collapsed{padding:0;border-bottom:0}
+    #${BLOCK_ID}.sth-lift .sth-body{margin-top:0}
+    #${BLOCK_ID}:not(.tp) .sth-body{display:flex;flex-wrap:wrap;gap:6px;max-height:40vh;overflow:auto}
+    #${BLOCK_ID}:not(.tp).collapsed .sth-body{display:none}
+    #${BLOCK_ID}:not(.tp) .sth-card.wide{flex:1 1 100%;padding:6px 10px}
+    #${BLOCK_ID}:not(.tp) .sth-card:not(.wide){flex:0 0 auto;padding:4px 10px;display:flex;align-items:center;gap:8px;border-radius:8px}
+    #${BLOCK_ID}:not(.tp) .sth-card:not(.wide) .sth-lbl{margin:0;white-space:nowrap}
+    #${BLOCK_ID}:not(.tp) .sth-card:not(.wide) .sth-sub{display:none}
     #${BLOCK_ID}.tp .sth-body{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
     #${BLOCK_ID}.tp .sth-body:empty{display:none}
     #${BLOCK_ID}.tp.collapsed .sth-body{display:none}
@@ -1180,7 +1194,8 @@
     }
     function lessonsCard(d) {
         // Компактно и только если уроки сегодня есть. Цвет: красный — урок идёт, жёлтый — впереди, серый — все прошли
-        if (!d.today || !d.today.length) return '';
+        if (!d.today) return card('mute', 'info', 'Уроки сегодня', 'Нет данных'); // как в CRM, но компактно
+        if (!d.today.length) return card('ok', 'info', 'Уроки сегодня', 'Нет');
         const S = lessonsLevel(d.today);
         const tip = d.today.map((l, i) => `${hhmm(l.at)}${{ live: ' (идёт сейчас)', soon: ' (скоро)', done: ' (прошёл)', later: '' }[S.ph[i]]} · ${lessonRowInfo(l)}`).join('\n');
         const all = d.today.slice(0, 5).map((l, i) => `<div class="sth-trow ph-${S.ph[i]}"><b>${esc(hhmm(l.at))}</b>${l.teacher || l.tid ? ' <em class="sth-cap">Преподаватель</em>' : ''}${l.teacher ? esc(l.teacher) : ''}${l.tid ? ` <span class="sth-tid" title="ID преподавателя">ID ${esc(l.tid)}</span>${keyBtn(l.tid, 'преподавателя')}${teacherLinks(l.tid)}` : ''}</div>`).join('');
@@ -1198,9 +1213,9 @@
         return '';
     };
     function tasksCard(d) {
-        if (!d.tasks) return '';
+        if (!d.tasks) return card('mute', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет данных');
         const mine = d.tasks.filter((t) => (TASK_GROUPS.test(t.operatorGroup?.name || '') || TASK_GROUP_TITLES.test(t.operatorGroup?.title || '')) && !TASK_DONE.test(t.status || ''));
-        if (!mine.length) return '';
+        if (!mine.length) return card('ok', 'tag', 'Задачи ТП Исход / 2ЛТП', 'Нет');
         const waiting = mine.filter((t) => t.status === 'waiting').length;
         const rows = mine.map((t) => {
             const when = t.activeOn ? `${fmtDate(t.activeOn)} ${hhmm(t.activeOn)}` : '';
@@ -1224,9 +1239,10 @@
         const km = d.services.filter((x) => x.km);
         if (km.length) out.push(`<span class="sth-hchip bad" title="Кризисное сопровождение">КМ · ${km.length}</span>`);
         if (d.services.some((x) => x.credit && !x.credit.unknown)) out.push(d.services.some(creditLate) ? '<span class="sth-hchip bad" title="Есть просроченный этап рассрочки">Рассрочка: просрочка</span>' : '<span class="sth-hchip warn" title="Есть активная рассрочка">Рассрочка</span>');
-        if (d.today?.length) out.push(lessonsChip(d));
+        if (d.today) out.push(d.today.length ? lessonsChip(d) : '<span class="sth-hchip ok" title="Уроки сегодня (МСК)">Уроки сегодня: 0</span>'); // как в CRM
         const mine = tpTasks(d), wait = mine.filter((t) => t.status === 'waiting').length;
         if (mine.length) out.push(`<span class="sth-hchip ${wait ? 'bad' : 'warn'}" title="Задачи ТП Исход / 2ЛТП${wait ? ': не взято в работу ' + wait : ''}">Задачи ТП: ${mine.length}</span>`);
+        else if (d.tasks) out.push('<span class="sth-hchip ok" title="Задачи ТП Исход / 2ЛТП">Задач ТП нет</span>'); // как в CRM
         return out.length ? `<span class="sth-hchips">${out.join('')}</span>` : '';
     }
 
@@ -1445,12 +1461,12 @@
                 }
             });
         }
-        if (block.previousElementSibling !== header || !block.isConnected) {
+        if (block.nextElementSibling !== header || !block.isConnected) {
             // Не чаще раза в 1.5 с: если React постоянно перестраивает шапку, не устраиваем «перетягивание» узла
             const now = Date.now();
             if (block.isConnected && now - (block._movedAt || 0) < 1500) return;
             block._movedAt = now;
-            try { header.insertAdjacentElement('afterend', block); } catch { return; }
+            try { header.insertAdjacentElement('beforebegin', block); } catch { return; }
         }
         // ТП: по умолчанию свёрнуто, раскрывается само, только если есть активная задача ТП Исход / 2ЛТП (пока пользователь не переключил вручную)
         if (state.mode === 'tp' && !state.userToggled) state.collapsed = !(tpTasks(state.data).length || liveNow(state.data)); // и когда идёт урок
@@ -1467,6 +1483,7 @@
                 ${keyBtn(state.id, 'ученика')}
                 ${state.role ? `<span class="sth-role ${role.kind}">${ico(roleIco)}${esc(role.text)}</span>` : ''}
                 ${state.data?.services?.some((x) => x.corp) ? `<span class="sth-role corp" title="Есть корпоративная услуга: general.corporate или paymentAgreement.companyContract">${ico('tag')}Корпоративный</span>` : ''}
+                ${state.mode === 'tp' ? tpChips(state.data) : ''}
                 <a class="sth-crm" href="https://crm2.skyeng.ru/persons/${encodeURIComponent(state.id || '')}" target="_blank" rel="noopener" title="Открыть ученика в CRM">CRM ↗</a>
                 <span class="sth-spacer"></span>
                 ${state.mode !== 'tp' && state.data && state.data.services?.length ? `<button class="sth-btn sth-tplbtn" type="button" title="Шаблоны поверх интерфейса">${ico('tag')}Шаблоны</button>` : ''}
@@ -1476,7 +1493,31 @@
             <div class="sth-body">${renderBody()}</div>
             ${state.tplFloat && state.data?.services ? renderOverlay(state.data) : ''}`;
         // Не трогаем DOM, если ничего не изменилось (иначе мигание и сброс раскрытого спойлера)
-        if (block._html !== html) { block._html = html; block.innerHTML = html; }
+        if (block._html !== html) {
+            block._html = html; block.innerHTML = html;
+            // Пояснения карточек скрыты в компактном виде — показываем их во всплывающей подсказке
+            block.querySelectorAll('.sth-card:not(.wide)').forEach((c) => {
+                const sub = c.querySelector('.sth-sub');
+                if (sub && !c.title) c.title = sub.textContent.trim();
+            });
+        }
+        liftHead(doc, block);
+    }
+
+    // Строку-заголовок ставим в верхнюю полосу AutoFAQ, ровно над колонкой чата.
+    // Нет полосы — блок остаётся обычным (заголовок внутри блока).
+    function liftHead(doc, block) {
+        const bar = doc.querySelector('header[class*="Layout_Header"]');
+        const col = block?.parentElement;
+        if (!bar || !col || !block.isConnected) { block?.classList.remove('sth-lift'); return; }
+        const hr = bar.getBoundingClientRect(), cr = col.getBoundingClientRect();
+        const um = bar.querySelector('[class*="user-menu"]');
+        const right = Math.min(cr.right, um ? um.getBoundingClientRect().left - 12 : cr.right);
+        if (hr.height < 40 || right - cr.left < 320) { block.classList.remove('sth-lift'); return; }
+        block.style.setProperty('--sth-top', Math.round(hr.top + (hr.height - 40) / 2) + 'px');
+        block.style.setProperty('--sth-left', Math.round(cr.left) + 'px');
+        block.style.setProperty('--sth-w', Math.round(right - cr.left) + 'px');
+        block.classList.add('sth-lift');
     }
 
     // ── Жизненный цикл ──────────────────────────────────────────────────────
@@ -1615,7 +1656,8 @@
         }
         if (role !== state.role) { state.role = role; renderBlock(doc); return; }
         // React мог пересоздать шапку и унести блок — возвращаем на место (из кеша, без запросов)
-        if (!block || block.previousElementSibling !== header) renderBlock(doc);
+        if (!block || block.nextElementSibling !== header) renderBlock(doc);
+        else liftHead(doc, block); // колонку могли растянуть сплиттером — подгоняем заголовок
     }
 
     // Тестовый хук (используется только если страница задала window.AFStudentHelperTest)
