@@ -29,6 +29,7 @@ async function init_settings() {
         newIconsFab: 1,
         newIconsTabs: 1,
         newIconsTestUser: 1,
+        newIconsLinks: 1,
         // Тестовые ID (блок «Тестовые ID»): без ключей в DEFAULTS поля
         // показывали строку "undefined" (Settings.get возвращал undefined)
         test_stud: '',
@@ -3196,6 +3197,7 @@ async function init_settings() {
                         <label class="set-toggle" title="Кнопки справа: шаблоны, темы, меню, история…"><input type="checkbox" id="newIconsFab"> Правая панель</label>
                         <label class="set-toggle" title="Вкладки Шаб / Win / Mac / iOS / Android…"><input type="checkbox" id="newIconsTabs"> Вкладки шаблонов</label>
                         <label class="set-toggle" title="Окно логинера с тестовыми У/П"><input type="checkbox" id="newIconsTestUser"> Окно У/П</label>
+                        <label class="set-toggle" title="Окно «Ссылки и инструменты»: SVG-иконки вместо эмодзи"><input type="checkbox" id="newIconsLinks"> Ссылки и инструменты</label>
                     </div>
                     <div class="set-row">
                         <span class="set-label">Фон диалогов</span>
@@ -3444,6 +3446,7 @@ async function init_settings() {
         bindToggle('newIconsFab', 'newIconsFab', iconsChanged);
         bindToggle('newIconsTabs', 'newIconsTabs', iconsChanged);
         bindToggle('newIconsTestUser', 'newIconsTestUser', iconsChanged);
+        bindToggle('newIconsLinks', 'newIconsLinks', iconsChanged);
 
         bindToggle('hidelpmwindow', 'disablelpmwindow', (v) => {
             const lpm = document.getElementById('TestUsers');

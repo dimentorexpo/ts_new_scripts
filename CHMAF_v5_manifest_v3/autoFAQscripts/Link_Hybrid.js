@@ -534,6 +534,7 @@
     const ICON_BY_ID = {"deleteaclnk": ["trash", "#fb7185"], "knoweledgebase": ["books", "#7dd3fc"], "essayadmin": ["pen", "#fdba74"], "resetMMPassword": ["lock", "#fbbf24"], "GrListData": ["users", "#c4b5fd"], "minecraftAccs": ["cube", "#86efac"], "openIPCheck": ["globe", "#38bdf8"], "confbugs": ["bug", "#f472b6"], "timetable": ["calendar", "#7dd3fc"], "talksadm": ["chat", "#5eead4"], "compensNotFairPayments": ["ban", "#fb7185"], "compens": ["cash", "#86efac"], "CMS": ["layers", "#a78bfa"], "kidscms": ["layers", "#c4b5fd"], "useradm": ["wrench", "#fdba74"], "transactions": ["card", "#38bdf8"], "billingadm": ["calc", "#fbbf24"], "subscribebilling": ["repeat", "#5eead4"], "userfeatures": ["toggle", "#86efac"], "testroom": ["info", "#7dd3fc"], "apelation": ["scale", "#fbbf24"], "browserstack": ["monitor", "#fb923c"], "certificates": ["award", "#fcd34d"], "promocodes": ["tag", "#f9a8d4"], "helpocentrstud": ["books", "#c4b5fd"], "helpocentrteach": ["books", "#86efac"], "trshoothing": ["hammer", "#fdba74"], "Synchronizer": ["sync", "#86efac"], "AddRemoveChat": ["chat", "#7dd3fc"], "CheckPrices": ["tag", "#fbbf24"], "CheckVidConnection": ["video", "#f472b6"], "goProcash": ["card", "#5eead4"], "rkKidsTP": ["smile", "#fbbf24"], "rkAdultsTP": ["users", "#c4b5fd"], "flexAdminTP": ["present", "#fb7185"], "knoweledgebaseKC": ["books", "#7dd3fc"], "lessonrecordKC": ["video", "#f472b6"], "skyhomeKC": ["brief", "#fdba74"], "timetableKC": ["calendar", "#7dd3fc"], "CalcKC": ["calc", "#fbbf24"], "nachislyatorKC": ["cash", "#86efac"], "rassrochKC": ["card", "#38bdf8"], "pondpisKC": ["repeat", "#5eead4"], "omniKC": ["mail", "#7dd3fc"], "RKKC": ["users", "#c4b5fd"], "rkKidsKC": ["smile", "#fbbf24"], "rkAdultsKC": ["users", "#c4b5fd"], "flexAdminKC": ["present", "#fb7185"], "shablKC": ["doc", "#fdba74"], "narushKC": ["alert", "#fbbf24"], "grafKC": ["calendar", "#86efac"]};
     function iconHtml(item) {
         if (item.kind === 'custom') return esc(item.icon);
+        if (localStorage.getItem('newIconsLinks') === '0') return item.icon; // переключатель в настройках: прежние эмодзи
         const d = ICON_BY_ID[item.id];
         if (!d || !ICON_SHAPES[d[0]]) return item.icon; // нет SVG — прежний эмодзи
         return `<svg class="lkg-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="color:${d[1]}" aria-hidden="true">${ICON_SHAPES[d[0]]}</svg>`;
@@ -637,6 +638,9 @@
         if (quick) quick.innerHTML = quickHtml();
         renderGrid();
     }
+
+    // Переключатель «Новые иконки → Ссылки и инструменты» (Settings.js) — перерисовать без перезагрузки
+    window.addEventListener('chmaf:icons-mode', () => { try { renderAll(); } catch { /* окно ещё не создано */ } });
 
     /* ---------- Диалог своей кнопки ---------- */
 
