@@ -1202,13 +1202,13 @@
         return `<div class="sth-card ${LESSON_LVL_CLASS[S.level]}" title="${esc(tip)}"><div class="sth-lbl">${ico('clock')}Уроки сегодня (МСК)</div><div class="sth-val">${lessonsHeadline(S, d.today.length)}</div>${all}</div>`;
     }
     const TASK_GROUPS = /technical_support_(second_line|outgoing)/i;
-    const TASK_GROUP_TITLES = /исход|2-?я\s+линия|2\s*лтп/i;
+    const TASK_GROUP_TITLES = /исход(?!ящ)|2-?я\s+линия|2\s*лтп/i; // «Исходящие звонки» сюда намеренно не попадают
     const TASK_DONE = /^(completed|complete|done|closed|canceled|cancelled|resolved|finished)$/i;
     // Текст комментария с кликабельными ссылками (экранирование до разметки)
     const linkify = (t) => esc(t).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
     const groupKind = (t) => {
         const n = t.operatorGroup?.name || '', ti = t.operatorGroup?.title || '';
-        if (/outgoing/i.test(n) || /исход/i.test(ti)) return 'out';
+        if (/outgoing/i.test(n) || /исход(?!ящ)/i.test(ti)) return 'out';
         if (/second_line/i.test(n) || /2-?я\s+линия|2\s*лтп/i.test(ti)) return 'l2';
         return '';
     };

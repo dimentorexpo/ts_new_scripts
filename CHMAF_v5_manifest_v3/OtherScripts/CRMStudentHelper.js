@@ -1210,13 +1210,13 @@
         return card(`wide ${LESSON_LVL_CLASS[S.level]}`, 'clock', 'Уроки сегодня (МСК)', lessonsHeadline(S, d.today.length), '', `<ul class="sth-list sth-lessons">${rows.join('')}</ul>`);
     }
     const TASK_GROUPS = /technical_support_(second_line|outgoing)/i;
-    const TASK_GROUP_TITLES = /исход|2-?я\s+линия|2\s*лтп/i;
+    const TASK_GROUP_TITLES = /исход(?!ящ)|2-?я\s+линия|2\s*лтп/i; // «Исходящие звонки» (исход+ящ…) сюда намеренно не попадают
     const TASK_DONE = /^(completed|complete|done|closed|canceled|cancelled|resolved|finished)$/i;
     // Текст комментария с кликабельными ссылками (экранирование до разметки)
     const linkify = (t) => esc(t).replace(/https?:\/\/[^\s<]+/g, (u) => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
     const groupKind = (t) => {
         const n = t.operatorGroup?.name || '', ti = t.operatorGroup?.title || '';
-        if (/outgoing/i.test(n) || /исход/i.test(ti)) return 'out';
+        if (/outgoing/i.test(n) || /исход(?!ящ)/i.test(ti)) return 'out';
         if (/second_line/i.test(n) || /2-?я\s+линия|2\s*лтп/i.test(ti)) return 'l2';
         return '';
     };
